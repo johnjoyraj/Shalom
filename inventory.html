@@ -11,7 +11,16 @@
   
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Google Identity Services (GIS) SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
   <style>
+    /* Security Guard: Hide entire ERP until authenticated as johnjoyraj@gmail.com */
+    body:not(.auth-cleared) #erpMainAppWrapper {
+      display: none !important;
+    }
+
     /* Dedicated POS Billing & ERP Styles */
     .erp-body {
       background-color: #f1f4f2;
@@ -1087,6 +1096,9 @@
 </head>
 <body class="erp-body">
 
+  <!-- Main Protected ERP Wrapper -->
+  <div id="erpMainAppWrapper">
+
   <!-- ERP Top Header -->
   <header class="erp-header">
     <div class="erp-header-container">
@@ -1671,6 +1683,9 @@
     </div>
   </div>
 
+  </div>
+  <!-- End of #erpMainAppWrapper -->
+
   <!-- Dedicated Print Container for Barcode Labels Sheet -->
   <div id="printBarcodeWrapper" style="display: none;"></div>
 
@@ -1681,6 +1696,7 @@
   <div class="toast-container" id="erpToastContainer"></div>
 
   <!-- Scripts -->
+  <script src="js/auth.js"></script>
   <script src="js/html5-qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="js/products.js"></script>
