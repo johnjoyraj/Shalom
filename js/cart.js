@@ -134,28 +134,7 @@ class ShalomCart {
     const subtotal = this.items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
     const itemCount = this.items.reduce((sum, item) => sum + item.quantity, 0);
 
-    let discount = 0;
-    let couponMessage = '';
-
-    if (this.appliedCoupon && subtotal > 0) {
-      const couponRule = ACTIVE_COUPONS[this.appliedCoupon.code];
-      if (couponRule) {
-        if (subtotal < couponRule.minOrder) {
-          couponMessage = `Minimum order ₹${couponRule.minOrder} required for ${this.appliedCoupon.code}`;
-        } else {
-          if (couponRule.discountPercent) {
-            discount = Math.round((subtotal * couponRule.discountPercent) / 100);
-            if (couponRule.maxDiscount) {
-              discount = Math.min(discount, couponRule.maxDiscount);
-            }
-          } else if (couponRule.flatDiscount) {
-            discount = couponRule.flatDiscount;
-          }
-        }
-      }
-    }
-
-    // Delivery Fee logic as specified:
+    // Delivery Fee:
     // - Pick from store is free (₹0)
     // - Upto 5 Km is ₹50
     // - Upto 10 Km is ₹100
@@ -169,66 +148,38 @@ class ShalomCart {
       deliveryFee = 0;
       deliveryLabel = "Pick from Store (Free)";
     } else if (this.selectedDelivery === 'upto10km') {
-      if (this.appliedCoupon && ACTIVE_COUPONS[this.appliedCoupon.code]?.freeDelivery) {
-        deliveryFee = 0;
-        deliveryLabel = "Delivery Up to 10 Km (Free Promo)";
-      } else {
-        deliveryFee = 100;
-        deliveryLabel = "Delivery Up to 10 Km (₹100)";
-      }
+      deliveryFee = 100;
+      deliveryLabel = "Delivery Up to 10 Km (₹100)";
     } else {
       // Default upto5km
-      if (this.appliedCoupon && ACTIVE_COUPONS[this.appliedCoupon.code]?.freeDelivery) {
-        deliveryFee = 0;
-        deliveryLabel = "Delivery Up to 5 Km (Free Promo)";
-      } else {
-        deliveryFee = 50;
-        deliveryLabel = "Delivery Up to 5 Km (₹50)";
-      }
+      deliveryFee = 50;
+      deliveryLabel = "Delivery Up to 5 Km (₹50)";
     }
 
-    const netTaxable = Math.max(0, subtotal - discount);
-    const gst = Math.round(netTaxable * this.gstRate);
-    const grandTotal = Math.max(0, netTaxable + deliveryFee + gst);
+    const gst = Math.round(subtotal * this.gstRate);
+    const grandTotal = Math.max(0, subtotal + deliveryFee + gst);
 
     return {
       subtotal,
       itemCount,
-      discount,
-      couponMessage,
+      discount: 0,
+      couponMessage: '',
       selectedDelivery: this.selectedDelivery,
       deliveryLabel,
       deliveryFee,
       isFreeDelivery: deliveryFee === 0,
       gst,
       grandTotal,
-      appliedCoupon: this.appliedCoupon
+      appliedCoupon: null
     };
   }
 
   applyCouponCode(code) {
-    const upperCode = (code || '').trim().toUpperCase();
-    if (!upperCode) return { success: false, message: 'Please enter a coupon code.' };
-
-    const couponRule = ACTIVE_COUPONS[upperCode];
-    if (!couponRule) {
-      return { success: false, message: 'Invalid coupon code. Try SHALOM50 or KERALA10' };
-    }
-
-    const { subtotal } = this.getTotals();
-    if (subtotal < couponRule.minOrder) {
-      return {
-        success: false,
-        message: `Min order value of ₹${couponRule.minOrder} needed to apply ${upperCode}.`
-      };
-    }
-
-    this.saveCoupon({ code: upperCode, ...couponRule });
-    return { success: true, message: `Coupon "${upperCode}" applied! ${couponRule.desc}` };
+    return { success: false, message: 'Discount codes are disabled.' };
   }
 
   removeCoupon() {
-    this.saveCoupon(null);
+    this.appliedCoupon = null;
   }
 
   playChimeSound() {

@@ -1122,6 +1122,9 @@
         <button type="button" class="erp-nav-tab" id="tabStockMaster" data-tab="stockMasterView">
           <span>📦 Stock Inventory (1,281 Items)</span>
         </button>
+        <button type="button" class="erp-nav-tab" id="tabOnlineOrders" data-tab="onlineOrdersView">
+          <span>🛎️ Online Orders <span class="badge-pending-count" id="pendingOrdersCountBadge" style="display: inline-block; background: #ef4444; color: #ffffff; font-size: 0.72rem; padding: 2px 7px; border-radius: 12px; margin-left: 4px; font-weight: 800;">0</span></span>
+        </button>
       </nav>
 
       <div class="erp-header-right">
@@ -1509,6 +1512,38 @@
 
     </section>
 
+    <!-- =======================================================================
+         VIEW 4: INCOMING ONLINE ORDERS & VERIFICATION
+         ======================================================================= -->
+    <section class="erp-view-panel" id="onlineOrdersView">
+      <div class="pos-card" style="margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+          <div>
+            <h3 style="margin: 0; font-size: 1.2rem; color: #06281e; display: flex; align-items: center; gap: 8px;">
+              <span>🛎️ Customer Online Orders</span>
+              <span id="onlineOrdersBadge" style="background: #ef4444; color: #fff; font-size: 0.76rem; padding: 2px 8px; border-radius: 12px; font-weight: 800;">0 Pending</span>
+            </h3>
+            <p style="margin: 4px 0 0 0; font-size: 0.82rem; color: #5b6f65;">
+              Orders placed by customers on the storefront. Review items & payment. <em>Only confirmed orders enter the permanent billing ledger & deduct stock.</em>
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <select id="onlineOrdersFilter" class="form-input-compact" style="width: 190px; padding: 6px 10px;">
+              <option value="pending" selected>Pending Confirmation</option>
+              <option value="confirmed">Confirmed & Billed</option>
+              <option value="all">All Orders</option>
+            </select>
+            <button type="button" class="btn btn-outline btn-sm" id="refreshOnlineOrdersBtn">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <!-- Orders Cards Container -->
+        <div id="onlineOrdersListContainer" style="display: flex; flex-direction: column; gap: 14px;">
+          <!-- Rendered dynamically by js/inventory.js -->
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- =========================================================================
@@ -1697,6 +1732,7 @@
 
   <!-- Scripts -->
   <script src="js/auth.js"></script>
+  <script src="js/orders.js"></script>
   <script src="js/html5-qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="js/products.js"></script>

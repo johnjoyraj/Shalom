@@ -61,9 +61,16 @@ document.addEventListener('DOMContentLoaded', () => {
     tabPosBilling: document.getElementById('tabPosBilling'),
     tabBillHistory: document.getElementById('tabBillHistory'),
     tabStockMaster: document.getElementById('tabStockMaster'),
+    tabOnlineOrders: document.getElementById('tabOnlineOrders'),
     posBillingView: document.getElementById('posBillingView'),
     billHistoryView: document.getElementById('billHistoryView'),
     stockMasterView: document.getElementById('stockMasterView'),
+    onlineOrdersView: document.getElementById('onlineOrdersView'),
+    onlineOrdersListContainer: document.getElementById('onlineOrdersListContainer'),
+    onlineOrdersFilter: document.getElementById('onlineOrdersFilter'),
+    refreshOnlineOrdersBtn: document.getElementById('refreshOnlineOrdersBtn'),
+    pendingOrdersCountBadge: document.getElementById('pendingOrdersCountBadge'),
+    onlineOrdersBadge: document.getElementById('onlineOrdersBadge'),
 
     // POS Billing Counter
     posBarcodeInput: document.getElementById('posBarcodeInput'),
@@ -1684,11 +1691,13 @@ document.addEventListener('DOMContentLoaded', () => {
     el.tabPosBilling?.classList.toggle('active', viewId === 'posBillingView');
     el.tabBillHistory?.classList.toggle('active', viewId === 'billHistoryView');
     el.tabStockMaster?.classList.toggle('active', viewId === 'stockMasterView');
+    el.tabOnlineOrders?.classList.toggle('active', viewId === 'onlineOrdersView');
 
     // Views
     el.posBillingView?.classList.toggle('active', viewId === 'posBillingView');
     el.billHistoryView?.classList.toggle('active', viewId === 'billHistoryView');
     el.stockMasterView?.classList.toggle('active', viewId === 'stockMasterView');
+    el.onlineOrdersView?.classList.toggle('active', viewId === 'onlineOrdersView');
 
     if (viewId === 'posBillingView') {
       setTimeout(() => el.posBarcodeInput?.focus(), 100);
@@ -1696,7 +1705,250 @@ document.addEventListener('DOMContentLoaded', () => {
       renderBillHistoryTable();
     } else if (viewId === 'stockMasterView') {
       renderStockTable();
+    } else if (viewId === 'onlineOrdersView') {
+      renderOnlineOrders();
     }
+  }
+
+  // =========================================================================
+  // ONLINE ORDERS & VERIFICATION ENGINE
+  // =========================================================================
+
+  function renderOnlineOrders() {
+    if (!el.onlineOrdersListContainer) return;
+    const filter = el.onlineOrdersFilter?.value || 'pending';
+    let orders = (typeof shalomOrderQueue !== 'undefined') ? shalomOrderQueue.getOrders() : [];
+
+    // Update pending badge
+    const pendingOrders = orders.filter(o => o.status === 'PENDING');
+    if (el.pendingOrdersCountBadge) {
+      el.pendingOrdersCountBadge.textContent = pendingOrders.length;
+      el.pendingOrdersCountBadge.style.display = pendingOrders.length > 0 ? 'inline-block' : 'none';
+    }
+    if (el.onlineOrdersBadge) {
+      el.onlineOrdersBadge.textContent = `${pendingOrders.length} Pending`;
+    }
+
+    if (filter === 'pending') {
+      orders = pendingOrders;
+    } else if (filter === 'confirmed') {
+      orders = orders.filter(o => o.status === 'CONFIRMED');
+    }
+
+    if (orders.length === 0) {
+      el.onlineOrdersListContainer.innerHTML = `
+        <div style="text-align: center; padding: 48px 20px; background: #ffffff; border-radius: 12px; border: 1px dashed #d4e5dc;">
+          <div style="font-size: 2.2rem; margin-bottom: 8px;">🛎️</div>
+          <strong style="color: #0c3c2e; font-size: 1.05rem;">No ${filter === 'pending' ? 'Pending' : ''} Online Orders</strong>
+          <p style="font-size: 0.82rem; color: #5b6f65; margin: 4px 0 0 0;">
+            When customers place orders on the storefront (index.html), they appear here instantly for confirmation.
+          </p>
+        </div>
+      `;
+      return;
+    }
+
+    el.onlineOrdersListContainer.innerHTML = orders.map(order => {
+      const isPending = order.status === 'PENDING';
+      const isConfirmed = order.status === 'CONFIRMED';
+
+      const statusBadge = isPending 
+        ? `<span style="background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 20px; font-weight: 800; font-size: 0.74rem;">⏳ PENDING STORE CONFIRMATION</span>`
+        : (isConfirmed 
+            ? `<span style="background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 20px; font-weight: 800; font-size: 0.74rem;">✅ CONFIRMED & BILLED (Bill #${order.billNo || ''})</span>`
+            : `<span style="background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 20px; font-weight: 800; font-size: 0.74rem;">❌ CANCELLED</span>`);
+
+      const cleanPhone = (order.customer?.phone || '').replace(/\D/g, '');
+      const waLink = `https://wa.me/91${cleanPhone}?text=Hello%20${encodeURIComponent(order.customer?.name || '')},%20regarding%20your%20Shalom%20Kerala%20Stores%20order%20${order.orderId}:`;
+
+      return `
+        <div class="online-order-card" style="background: #ffffff; border: 1.5px solid ${isPending ? '#d4af37' : '#e2ebe5'}; border-radius: 14px; padding: 20px; box-shadow: 0 4px 14px rgba(6, 40, 30, 0.05);">
+          <!-- Header -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; border-bottom: 1px solid #edf3ef; padding-bottom: 12px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <strong style="font-size: 1.05rem; color: #0c3c2e;">${order.orderId}</strong>
+                ${statusBadge}
+              </div>
+              <div style="font-size: 0.76rem; color: #5b6f65; margin-top: 4px;">
+                Placed: ${order.submittedAt ? new Date(order.submittedAt).toLocaleString('en-IN') : order.createdAt}
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 1.3rem; font-weight: 800; color: #06281e;">₹${(order.totals?.grandTotal || 0).toLocaleString('en-IN')}</div>
+              <div style="font-size: 0.74rem; color: #5b6f65;">UPI: 7379325499@ybl</div>
+            </div>
+          </div>
+
+          <!-- Customer & Delivery Info -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 16px; background: #fbfdfc; padding: 12px 14px; border-radius: 10px; border: 1px solid #eef5f1;">
+            <div>
+              <div style="font-size: 0.72rem; color: #5b6f65; font-weight: 700; text-transform: uppercase;">Customer Details</div>
+              <div style="font-weight: 800; color: #16231d; font-size: 0.95rem; margin-top: 2px;">${order.customer?.name || 'Customer'}</div>
+              <div style="font-size: 0.82rem; color: #0c3c2e; margin-top: 2px;">
+                📞 <strong>${order.customer?.phone || 'N/A'}</strong>
+                <a href="${waLink}" target="_blank" style="margin-left: 8px; color: #25D366; text-decoration: none; font-weight: 700;">💬 WhatsApp</a>
+              </div>
+            </div>
+            <div>
+              <div style="font-size: 0.72rem; color: #5b6f65; font-weight: 700; text-transform: uppercase;">Delivery Mode & Address</div>
+              <div style="font-weight: 800; color: #0c3c2e; font-size: 0.88rem; margin-top: 2px;">${order.delivery?.type || 'Pickup'}</div>
+              <div style="font-size: 0.8rem; color: #5b6f65; margin-top: 2px;">
+                ${order.customer?.address || ''} ${order.customer?.area ? ', ' + order.customer.area : ''}
+              </div>
+              ${order.customer?.landmark ? `<div style="font-size: 0.76rem; color: #7d998d;">Landmark: ${order.customer.landmark}</div>` : ''}
+            </div>
+          </div>
+
+          <!-- Items Table -->
+          <div style="margin-bottom: 16px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.84rem;">
+              <thead>
+                <tr style="background: #f0f4f2; color: #0c3c2e; text-align: left;">
+                  <th style="padding: 6px 10px;">Item</th>
+                  <th style="padding: 6px 10px; text-align: center;">Qty</th>
+                  <th style="padding: 6px 10px; text-align: right;">Unit Price</th>
+                  <th style="padding: 6px 10px; text-align: right;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${order.items.map(it => `
+                  <tr style="border-bottom: 1px solid #f0f4f2;">
+                    <td style="padding: 7px 10px;"><strong>${it.name}</strong> <span style="font-size: 0.74rem; color: #7d998d;">(${it.code || 'SK'})</span></td>
+                    <td style="padding: 7px 10px; text-align: center; font-weight: 700;">${it.quantity}</td>
+                    <td style="padding: 7px 10px; text-align: right;">₹${it.unitPrice}</td>
+                    <td style="padding: 7px 10px; text-align: right; font-weight: 800;">₹${it.unitPrice * it.quantity}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Actions -->
+          <div style="display: flex; justify-content: flex-end; gap: 10px; align-items: center; border-top: 1px solid #edf3ef; padding-top: 14px;">
+            ${isPending ? `
+              <button type="button" class="btn btn-outline btn-sm reject-online-order-btn" data-order-id="${order.orderId}" style="border-color: #ef4444; color: #ef4444;">
+                ✕ Reject Order
+              </button>
+              <button type="button" class="btn btn-primary confirm-online-order-btn" data-order-id="${order.orderId}" style="background: linear-gradient(135deg, #1d7057, #0c3c2e); font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+                <span>✓ Confirm Order & Create Bill</span>
+              </button>
+            ` : (isConfirmed ? `
+              <button type="button" class="btn btn-outline btn-sm reprint-online-bill-btn" data-bill-no="${order.billNo}">
+                🖨️ Re-Print Thermal Receipt (${order.billNo})
+              </button>
+            ` : '')}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Attach Confirm Click Handler
+    el.onlineOrdersListContainer.querySelectorAll('.confirm-online-order-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const oId = btn.getAttribute('data-order-id');
+        confirmAndBillOnlineOrder(oId);
+      });
+    });
+
+    // Attach Reject Click Handler
+    el.onlineOrdersListContainer.querySelectorAll('.reject-online-order-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const oId = btn.getAttribute('data-order-id');
+        const reason = prompt('Enter cancellation reason (e.g. Out of stock, Customer request):', 'Out of stock');
+        if (reason && typeof shalomOrderQueue !== 'undefined') {
+          shalomOrderQueue.rejectOrder(oId, reason);
+          showToast(`Order #${oId} marked as Cancelled.`, 'info');
+          renderOnlineOrders();
+        }
+      });
+    });
+
+    // Attach Reprint Handler
+    el.onlineOrdersListContainer.querySelectorAll('.reprint-online-bill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const bNo = btn.getAttribute('data-bill-no');
+        const allBills = loadSavedBills();
+        const found = allBills.find(b => b.billNo === bNo);
+        if (found) {
+          print2InchThermalReceipt(found);
+        } else {
+          showToast('Bill record not found.', 'error');
+        }
+      });
+    });
+  }
+
+  function confirmAndBillOnlineOrder(orderId) {
+    if (typeof shalomOrderQueue === 'undefined') return;
+    const order = shalomOrderQueue.getOrderById(orderId);
+    if (!order) {
+      showToast('Order not found.', 'error');
+      return;
+    }
+
+    // 1. Generate next POS Bill Number
+    const billNumber = generateNextBillNumber();
+    const totals = order.totals || {};
+
+    // 2. Create official Bill Record
+    const newBill = {
+      billNo: billNumber,
+      orderRefId: order.orderId,
+      timestamp: new Date().toISOString(),
+      formattedDate: new Date().toLocaleDateString('en-IN') + ' ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+      customerName: order.customer?.name || 'Online Customer',
+      customerPhone: order.customer?.phone || '',
+      paymentMode: 'UPI (Confirmed)',
+      utrRef: order.payment?.utr || `UPI-ORD-${order.orderId}`,
+      deliveryType: order.delivery?.type || 'Pickup',
+      deliveryFee: totals.deliveryFee || 0,
+      discount: 0,
+      gstMode: 'included',
+      subtotal: totals.subtotal || 0,
+      gstAmount: totals.gst || 0,
+      grandTotal: totals.grandTotal || 0,
+      items: order.items.map(it => ({
+        id: it.id || it.productId,
+        code: it.code || 'SK',
+        name: it.name,
+        unitPrice: it.unitPrice || it.price,
+        quantity: it.quantity,
+        subtotal: (it.unitPrice || it.price) * it.quantity,
+        unit: it.unit || 'Standard'
+      })),
+      status: 'Paid'
+    };
+
+    // 3. Save to Permanent POS Bills Storage
+    const allBills = loadSavedBills();
+    allBills.unshift(newBill);
+    saveBills(allBills);
+
+    // 4. Deduct Stock in Real-Time
+    order.items.forEach(it => {
+      const pid = it.id || it.productId;
+      const targetProd = liveStock.find(p => p.id === pid || p.code === it.code);
+      if (targetProd) {
+        targetProd.stock = Math.max(0, (targetProd.stock || 0) - it.quantity);
+      }
+    });
+    saveStockOverrides(false);
+    updateKpis();
+
+    // 5. Update Status in Online Order Queue
+    shalomOrderQueue.confirmOrder(orderId, billNumber);
+
+    // 6. Sound & Toast Feedback
+    playScannerBeep();
+    showToast(`Order #${orderId} CONFIRMED! Generated Bill #${billNumber}`, 'success');
+
+    // 7. Preview/Print Thermal Receipt
+    preview2InchThermalSlip(newBill);
+
+    // 8. Re-render views
+    renderOnlineOrders();
+    renderBillHistoryTable();
   }
 
   // =========================================================================
@@ -1733,6 +1985,9 @@ document.addEventListener('DOMContentLoaded', () => {
     el.tabPosBilling?.addEventListener('click', () => switchTab('posBillingView'));
     el.tabBillHistory?.addEventListener('click', () => switchTab('billHistoryView'));
     el.tabStockMaster?.addEventListener('click', () => switchTab('stockMasterView'));
+    el.tabOnlineOrders?.addEventListener('click', () => switchTab('onlineOrdersView'));
+    el.refreshOnlineOrdersBtn?.addEventListener('click', renderOnlineOrders);
+    el.onlineOrdersFilter?.addEventListener('change', renderOnlineOrders);
 
     // Barcode Scanner input
     el.posBarcodeInput?.addEventListener('keydown', (e) => {
@@ -2034,6 +2289,12 @@ document.addEventListener('DOMContentLoaded', () => {
     renderActiveBillTable();
     renderStockTable();
     renderBillHistoryTable();
+    renderOnlineOrders();
+    if (typeof shalomOrderQueue !== 'undefined') {
+      shalomOrderQueue.subscribe(() => {
+        renderOnlineOrders();
+      });
+    }
     initRemoteScanListeners();
     bindGlobalEvents();
 

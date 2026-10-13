@@ -109,6 +109,22 @@ document.addEventListener('DOMContentLoaded', () => {
     closeOrdersModalBtn: document.getElementById('closeOrdersModalBtn'),
     ordersListContainer: document.getElementById('ordersListContainer'),
 
+    // Customer Login Modal
+    custLoginModal: document.getElementById('custLoginModal'),
+    custLoginBackdrop: document.getElementById('custLoginBackdrop'),
+    closeCustLoginBtn: document.getElementById('closeCustLoginBtn'),
+    custLoginForm: document.getElementById('custLoginForm'),
+    custPhoneInput: document.getElementById('custPhoneInput'),
+    custNameInput: document.getElementById('custNameInput'),
+    custLoginSubmitBtn: document.getElementById('custLoginSubmitBtn'),
+    btnMobileScan: document.getElementById('btnMobileScan'),
+
+    // Mobile Camera Scanner
+    mobileScannerModal: document.getElementById('mobileScannerModal'),
+    mobileScannerBackdrop: document.getElementById('mobileScannerBackdrop'),
+    closeMobileScannerBtn: document.getElementById('closeMobileScannerBtn'),
+    flipCameraBtn: document.getElementById('flipCameraBtn'),
+
     // Toast Container
     toastContainer: document.getElementById('toastContainer')
   };
@@ -122,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderMainMenu();
     renderCategories();
     renderProducts();
+    renderCustomerAuthUI();
     bindEvents();
     
     // Subscribe to cart
@@ -913,49 +930,235 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Orders Modal
+   * Customer Session & Auth
+   */
+  const CUSTOMER_SESSION_KEY = 'shalom_customer_session';
+
+  function getCustomerSession() {
+    try {
+      const saved = localStorage.getItem(CUSTOMER_SESSION_KEY);
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function saveCustomerSession(name, phone) {
+    const session = { name: name.trim(), phone: phone.trim() };
+    localStorage.setItem(CUSTOMER_SESSION_KEY, JSON.stringify(session));
+    renderCustomerAuthUI();
+    if (document.getElementById('billingName')) document.getElementById('billingName').value = session.name;
+    if (document.getElementById('billingPhone')) document.getElementById('billingPhone').value = session.phone;
+    return session;
+  }
+
+  function clearCustomerSession() {
+    localStorage.removeItem(CUSTOMER_SESSION_KEY);
+    renderCustomerAuthUI();
+    showToast('You have signed out.', 'info');
+  }
+
+  function renderCustomerAuthUI() {
+    const container = document.getElementById('customerAuthContainer');
+    if (!container) return;
+    const session = getCustomerSession();
+    if (session && session.name) {
+      container.innerHTML = `
+        <div class="customer-logged-pill">
+          <span>👤 ${session.name}</span>
+          <button type="button" class="customer-logout-btn" id="logoutCustBtn" title="Sign out">Logout</button>
+        </div>
+      `;
+      document.getElementById('logoutCustBtn')?.addEventListener('click', clearCustomerSession);
+    } else {
+      container.innerHTML = `
+        <button type="button" class="nav-link-btn" id="customerLoginBtn">
+          <span>👤 Sign In</span>
+        </button>
+      `;
+      document.getElementById('customerLoginBtn')?.addEventListener('click', openCustomerLoginModal);
+    }
+  }
+
+  function openCustomerLoginModal() {
+    const session = getCustomerSession();
+    if (session) {
+      if (elements.custPhoneInput) elements.custPhoneInput.value = session.phone || '';
+      if (elements.custNameInput) elements.custNameInput.value = session.name || '';
+    }
+    elements.custLoginModal?.classList.add('open');
+    elements.custLoginBackdrop?.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => elements.custPhoneInput?.focus(), 100);
+  }
+
+  function closeCustomerLoginModal() {
+    elements.custLoginModal?.classList.remove('open');
+    elements.custLoginBackdrop?.classList.remove('visible');
+    document.body.style.overflow = '';
+  }
+
+  /**
+   * Mobile Camera Scanner
+   */
+  let mobileScannerInstance = null;
+  let currentMobileFacingMode = 'environment';
+  let lastScannedItemCode = null;
+  let lastScannedItemTime = 0;
+
+  function openMobileScanner() {
+    elements.mobileScannerModal?.classList.add('open');
+    elements.mobileScannerBackdrop?.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+    startMobileScanner();
+  }
+
+  function closeMobileScanner() {
+    stopMobileScanner();
+    elements.mobileScannerModal?.classList.remove('open');
+    elements.mobileScannerBackdrop?.classList.remove('visible');
+    document.body.style.overflow = '';
+  }
+
+  function startMobileScanner() {
+    const feedback = document.getElementById('scannerDetectionFeedback');
+    if (feedback) feedback.textContent = 'Starting camera scanner...';
+
+    if (typeof Html5Qrcode === 'undefined') {
+      if (feedback) feedback.textContent = 'Scanner engine loading, please retry in a second...';
+      return;
+    }
+
+    if (!mobileScannerInstance) {
+      mobileScannerInstance = new Html5Qrcode('scannerVideoContainer');
+    }
+
+    const config = {
+      fps: 15,
+      qrbox: { width: 250, height: 180 },
+      aspectRatio: 1.33
+    };
+
+    mobileScannerInstance.start(
+      { facingMode: currentMobileFacingMode },
+      config,
+      (decodedText) => onBarcodeScanned(decodedText),
+      (err) => {}
+    ).then(() => {
+      if (feedback) feedback.textContent = 'Camera active. Point at barcode or SKU label.';
+    }).catch(err => {
+      if (feedback) feedback.textContent = 'Please allow camera permission to scan barcodes.';
+    });
+  }
+
+  function stopMobileScanner() {
+    if (mobileScannerInstance && mobileScannerInstance.isScanning) {
+      mobileScannerInstance.stop().catch(() => {});
+    }
+  }
+
+  function toggleMobileCamera() {
+    currentMobileFacingMode = (currentMobileFacingMode === 'environment') ? 'user' : 'environment';
+    if (mobileScannerInstance && mobileScannerInstance.isScanning) {
+      mobileScannerInstance.stop().then(() => startMobileScanner()).catch(() => startMobileScanner());
+    }
+  }
+
+  function onBarcodeScanned(scannedCode) {
+    const now = Date.now();
+    if (lastScannedItemCode === scannedCode && (now - lastScannedItemTime) < 2500) {
+      return;
+    }
+    lastScannedItemCode = scannedCode;
+    lastScannedItemTime = now;
+
+    const query = (scannedCode || '').trim().toLowerCase();
+    let product = SHALOM_PRODUCTS.find(p => p.code.toLowerCase() === query || p.id.toLowerCase() === query);
+    if (!product) {
+      product = SHALOM_PRODUCTS.find(p => p.name.toLowerCase().includes(query));
+    }
+
+    const feedback = document.getElementById('scannerDetectionFeedback');
+    if (product) {
+      shalomCart.addItem(product, 1);
+      showToast(`Added ${product.name} (₹${product.price}) to cart!`, 'success');
+      if (feedback) {
+        feedback.innerHTML = `✅ <strong>Scanned:</strong> ${product.name} (₹${product.price})`;
+      }
+    } else {
+      if (feedback) {
+        feedback.innerHTML = `⚠️ Code "<code>${scannedCode}</code>" not found in catalog.`;
+      }
+    }
+  }
+
+  /**
+   * Orders Modal (Reads from Queue & Shows Real-Time Store Status)
    */
   function openOrdersModal() {
-    const orders = shalomBilling.pastOrders;
+    const session = getCustomerSession();
+    let orders = [];
+    if (typeof shalomOrderQueue !== 'undefined') {
+      orders = session?.phone ? shalomOrderQueue.getCustomerOrders(session.phone) : shalomOrderQueue.getOrders();
+    } else {
+      orders = shalomBilling.pastOrders;
+    }
+
     if (orders.length === 0) {
       elements.ordersListContainer.innerHTML = `
         <div class="empty-orders-view">
           <div class="empty-box-icon">📦</div>
-          <h4>No previous orders yet</h4>
-          <p>Orders paid via UPI (7379325499@ybl) and official GST invoices will appear here.</p>
+          <h4>No orders found</h4>
+          <p>Orders placed on Shalom Kerala Stores will appear here with live store confirmation status.</p>
         </div>
       `;
     } else {
-      elements.ordersListContainer.innerHTML = orders.map(order => `
-        <div class="order-history-card">
-          <div class="order-hist-header">
-            <div>
-              <span class="order-hist-id">Order #${order.orderId}</span>
-              <span class="order-hist-date">${order.formattedDate} at ${order.formattedTime}</span>
-            </div>
-            <span class="order-hist-status">PAID ₹${order.totals.grandTotal}</span>
-          </div>
-          <div class="order-hist-items">
-            ${order.items.map(it => `
-              <div class="order-hist-item-row">
-                <span>${it.name} × ${it.quantity}</span>
-                <span>₹${it.unitPrice * it.quantity}</span>
+      elements.ordersListContainer.innerHTML = orders.map(order => {
+        const isPending = order.status === 'PENDING';
+        const isConfirmed = order.status === 'CONFIRMED';
+        const isRejected = order.status === 'REJECTED';
+
+        const statusTag = isPending
+          ? `<span style="background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 20px; font-weight: 800; font-size: 0.74rem;">⏳ Awaiting Store Confirmation</span>`
+          : (isConfirmed
+              ? `<span style="background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 20px; font-weight: 800; font-size: 0.74rem;">✅ Confirmed & Billed (${order.billNo || 'POS-Bill'})</span>`
+              : `<span style="background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 20px; font-weight: 800; font-size: 0.74rem;">❌ Cancelled</span>`);
+
+        return `
+          <div class="order-history-card">
+            <div class="order-hist-header">
+              <div>
+                <span class="order-hist-id">Order #${order.orderId}</span>
+                <span class="order-hist-date">${order.formattedDate || new Date(order.submittedAt || Date.now()).toLocaleDateString('en-IN')}</span>
               </div>
-            `).join('')}
+              <div>${statusTag}</div>
+            </div>
+            <div class="order-hist-items">
+              ${order.items.map(it => `
+                <div class="order-hist-item-row">
+                  <span>${it.name} × ${it.quantity}</span>
+                  <span>₹${it.unitPrice * it.quantity}</span>
+                </div>
+              `).join('')}
+            </div>
+            <div class="order-hist-footer">
+              <span class="order-hist-utr">UPI Ref: ${order.payment?.utr || '7379325499@ybl'}</span>
+              ${isConfirmed ? `
+                <button class="btn btn-outline btn-sm view-saved-invoice-btn" data-order-id="${order.orderId}">
+                  🖨️ View & Print Official Bill
+                </button>
+              ` : `
+                <span style="font-size: 0.76rem; color: #8ba99b;">Awaiting counter confirmation...</span>
+              `}
+            </div>
           </div>
-          <div class="order-hist-footer">
-            <span class="order-hist-utr">UPI Ref: ${order.payment.utr}</span>
-            <button class="btn btn-outline btn-sm view-saved-invoice-btn" data-order-id="${order.orderId}">
-              View & Print Bill
-            </button>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
       elements.ordersListContainer.querySelectorAll('.view-saved-invoice-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const oId = btn.getAttribute('data-order-id');
-          const found = shalomBilling.pastOrders.find(o => o.orderId === oId);
+          const found = (typeof shalomOrderQueue !== 'undefined') ? shalomOrderQueue.getOrderById(oId) : null;
           if (found) {
             closeOrdersModal();
             displayInvoice(found);
@@ -1026,22 +1229,87 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Finalize Payment & Display Invoice
+   * Finalize Payment: Dispatches Order directly to Inventory Page Queue
+   * (Per requirement: Stock is deducted and bill is created ONLY after Admin confirms)
    */
   function finalizePaymentAndShowInvoice(utrNumber = null) {
     shalomUpi.clearInterval();
-    const completedOrder = shalomBilling.completePayment(utrNumber);
-    if (!completedOrder) return;
+    const activeOrder = shalomBilling.activeOrder;
+    if (!activeOrder) return;
 
-    // Deduct stock in real-time
-    deductStockOnOrder(completedOrder);
+    const generatedUtr = utrNumber || `UPI${Math.floor(100000000000 + Math.random() * 900000000000)}`;
+    activeOrder.payment.status = "AWAITING_STORE_CONFIRMATION";
+    activeOrder.payment.utr = generatedUtr;
+    activeOrder.payment.paidAt = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    // Submit to store order queue!
+    const submittedOrder = (typeof shalomOrderQueue !== 'undefined')
+      ? shalomOrderQueue.submitCustomerOrder(activeOrder)
+      : activeOrder;
 
     shalomCart.clear();
-    shalomCart.removeCoupon();
     shalomUpi.playSuccessSound();
 
-    displayInvoice(completedOrder);
-    showToast(`Payment of ₹${completedOrder.totals.grandTotal} Verified to 7379325499@ybl!`, 'success');
+    displayOrderSubmittedConfirmation(submittedOrder);
+    showToast(`Order #${submittedOrder.orderId} placed! Sent to store counter.`, 'success');
+  }
+
+  function displayOrderSubmittedConfirmation(order) {
+    switchView('invoice');
+    const customer = order.customer || {};
+    const delivery = order.delivery || {};
+    const totals = order.totals || {};
+
+    elements.invoiceContainer.innerHTML = `
+      <div class="gst-tax-invoice" style="border: 2px solid #d4af37; border-radius: 16px; padding: 32px; background: #fff; max-width: 640px; margin: 0 auto; box-shadow: 0 10px 30px rgba(6, 40, 30, 0.08);">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="font-size: 3rem; margin-bottom: 8px;">⏳</div>
+          <h2 style="color: #0c3c2e; margin: 0 0 6px 0; font-family: var(--font-serif);">Order Sent to Store Counter!</h2>
+          <div style="display: inline-block; background: #fef3c7; color: #92400e; padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; margin-top: 6px;">
+            AWAITING STORE CONFIRMATION & PAYMENT VERIFICATION
+          </div>
+          <p style="color: #5b6f65; font-size: 0.88rem; margin: 12px 0 0 0;">
+            Thank you, <strong>${customer.name || 'Customer'}</strong>! Your order request has been received by <strong>Shalom Kerala Stores</strong>.
+          </p>
+        </div>
+
+        <div style="background: #f8faf9; border: 1px solid #e2ebe5; border-radius: 12px; padding: 18px; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
+            <span>Order Reference:</span>
+            <strong style="color: #0c3c2e;">${order.orderId}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
+            <span>Total Payable:</span>
+            <strong style="color: #0c3c2e; font-size: 1.15rem;">₹${(totals.grandTotal || 0).toLocaleString('en-IN')}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
+            <span>Delivery Option:</span>
+            <span>${delivery.type || 'In-Store Pickup'}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+            <span>UPI Reference:</span>
+            <code style="background: #e3f3ec; padding: 2px 6px; border-radius: 4px; color: #0c3c2e;">${order.payment?.utr || '7379325499@ybl'}</code>
+          </div>
+        </div>
+
+        <div style="background: #eef7f2; border: 1px solid #bce1ce; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; font-size: 0.84rem; color: #0c3c2e; line-height: 1.45;">
+          ℹ️ <strong>What happens next?</strong><br>
+          Store Manager (John Joyraj) will verify your payment of <strong>₹${(totals.grandTotal || 0).toLocaleString('en-IN')}</strong> on the store counter. Once confirmed, your bill and inventory items will be finalized!
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-primary" id="trackInOrdersBtn">
+            📦 Track in "My Orders"
+          </button>
+          <button type="button" class="btn btn-outline" id="returnCatalogBtn">
+            🏪 Continue Shopping
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('trackInOrdersBtn')?.addEventListener('click', openOrdersModal);
+    document.getElementById('returnCatalogBtn')?.addEventListener('click', () => switchView('catalog'));
   }
 
   function displayInvoice(order) {
@@ -1132,22 +1400,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    // Apply Coupon
-    elements.applyCouponBtn?.addEventListener('click', () => {
-      const code = elements.couponInput?.value;
-      const res = shalomCart.applyCouponCode(code);
-      if (elements.couponFeedback) {
-        elements.couponFeedback.textContent = res.message;
-        elements.couponFeedback.className = `coupon-feedback ${res.success ? 'text-success' : 'text-danger'}`;
-      }
-      if (res.success) {
-        showToast(res.message, 'success');
-        if (elements.couponInput) elements.couponInput.value = '';
-      } else {
-        showToast(res.message, 'error');
-      }
-    });
-
     // Proceed to Checkout
     elements.proceedToCheckoutBtn?.addEventListener('click', () => {
       if (shalomCart.items.length === 0) {
@@ -1156,6 +1408,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       closeCartDrawer();
       switchView('billing');
+      const session = getCustomerSession();
+      if (session) {
+        if (document.getElementById('billingName')) document.getElementById('billingName').value = session.name;
+        if (document.getElementById('billingPhone')) document.getElementById('billingPhone').value = session.phone;
+      }
     });
 
     // Back buttons
@@ -1242,6 +1499,40 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       openOrdersModal();
     });
+
+    // Customer Login Modal
+    elements.custLoginForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const phone = (elements.custPhoneInput?.value || '').trim().replace(/\D/g, '');
+      const name = (elements.custNameInput?.value || '').trim();
+
+      const phoneErr = document.getElementById('custPhoneError');
+      const nameErr = document.getElementById('custNameError');
+      if (phoneErr) phoneErr.textContent = '';
+      if (nameErr) nameErr.textContent = '';
+
+      if (phone.length < 10) {
+        if (phoneErr) phoneErr.textContent = 'Please enter a valid 10-digit mobile number.';
+        return;
+      }
+      if (name.length < 2) {
+        if (nameErr) nameErr.textContent = 'Please enter your name.';
+        return;
+      }
+
+      saveCustomerSession(name, phone);
+      closeCustomerLoginModal();
+      showToast(`Welcome, ${name}! Signed in successfully.`, 'success');
+    });
+
+    elements.closeCustLoginBtn?.addEventListener('click', closeCustomerLoginModal);
+    elements.custLoginBackdrop?.addEventListener('click', closeCustomerLoginModal);
+
+    // Mobile Camera Barcode Scanner
+    elements.btnMobileScan?.addEventListener('click', openMobileScanner);
+    elements.closeMobileScannerBtn?.addEventListener('click', closeMobileScanner);
+    elements.mobileScannerBackdrop?.addEventListener('click', closeMobileScanner);
+    elements.flipCameraBtn?.addEventListener('click', toggleMobileCamera);
 
     // Modal close events
     elements.closeQuickViewBtn?.addEventListener('click', closeQuickView);

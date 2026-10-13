@@ -14,7 +14,7 @@ const SHALOM_AUTH = {
   DEFAULT_PIN: "7379",
 
   // Google OAuth 2.0 Web Client ID
-  CLIENT_ID: localStorage.getItem("shalom_google_client_id") || "7379325499-shalom.apps.googleusercontent.com",
+  CLIENT_ID: localStorage.getItem("shalom_google_client_id") || "799568472830-4odid77nfbjb8ca1uac8ps97liccpi1r.apps.googleusercontent.com",
 
   STORAGE_KEY: "shalom_erp_auth_session",
 
