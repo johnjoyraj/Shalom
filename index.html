@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shalom Kerala Stores - Authentic Kerala Food, Church Articles & Stationery | Gorakhpur, UP</title>
+  <meta name="description" content="Shalom Kerala Stores in Gorakhpur, Uttar Pradesh. Shop authentic Kerala food items, Church devotional articles, and stationery. Doorstep delivery up to 5 Km (₹50), up to 10 Km (₹100), and free in-store pickup. Pay via UPI to 7379325499@ybl.">
+  <meta name="keywords" content="Shalom Kerala Stores, Gorakhpur, Kerala Store Gorakhpur, Banana Chips, Spices, Church Articles, Bibles Gorakhpur, 7379325499@ybl">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌴</text></svg>">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- QR Code Library CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <aside class="top-ticker-bar" aria-label="Store Announcements">
+    <div class="ticker-content">
+      <div class="ticker-left">
+        <span class="ticker-tag">GORAKHPUR, UP</span>
+        <span>🏬 Pick from Store: <strong>FREE</strong> • 🛵 Delivery Up to 5 Km: <strong>₹50</strong> • 🚚 Up to 10 Km: <strong>₹100</strong></span>
+      </div>
+      <div class="ticker-right">
+        <span class="ticker-link">⚡ UPI: <strong>7379325499@ybl</strong></span>
+        <span class="ticker-link">📞 Support: <strong>+91 73793 25499</strong></span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Site Header -->
+  <header class="site-header">
+    <div class="header-container">
+      
+      <!-- Brand Logo -->
+      <a href="#" class="brand-wrapper" id="brandLogoBtn" aria-label="Shalom Kerala Stores Home">
+        <div class="brand-icon-box" aria-hidden="true">🌴</div>
+        <div class="brand-text-box">
+          <span class="brand-name">SHALOM KERALA STORES</span>
+          <span class="brand-tagline">ശാലോം കേരള സ്റ്റോർസ് • Gorakhpur, UP</span>
+        </div>
+      </a>
+
+      <!-- Search Input -->
+      <div class="header-search">
+        <svg class="search-icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="searchInput" class="search-input-field" placeholder="Search from 1,281 items (chips, spices, bibles, cables)..." autocomplete="off">
+      </div>
+
+      <!-- Header Actions -->
+      <nav class="header-actions" aria-label="Customer Navigation">
+        <button type="button" class="nav-link-btn" id="navOrdersBtn">
+          <span>📦 My Orders & Bills</span>
+        </button>
+
+        <!-- Kart Trigger Button -->
+        <button type="button" class="kart-trigger-btn" id="cartTriggerBtn" aria-label="Open Shopping Kart">
+          <div class="kart-icon-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            <span class="kart-badge" id="cartBadgeCount">0</span>
+          </div>
+          <div class="kart-text-wrap">
+            <span class="kart-label">My Kart</span>
+            <span class="kart-sum" id="cartNavTotal">₹0</span>
+          </div>
+        </button>
+      </nav>
+
+    </div>
+
+    <!-- Main Category Navigation Bar with Dropdown Items & Pictures -->
+    <nav class="main-category-menu-bar" id="mainCategoryMenuBar" aria-label="Main Store Categories">
+      <div class="menu-bar-container">
+        
+        <!-- All Categories Trigger -->
+        <div class="main-menu-item all-cats-item" id="allCatsMenuTrigger">
+          <button type="button" class="main-menu-btn all-cats-btn" id="allCatsBtn" aria-haspopup="true" aria-expanded="false">
+            <span class="all-cats-icon">☰</span>
+            <span class="main-menu-text">All Categories</span>
+            <span class="menu-caret">▾</span>
+          </button>
+          <div class="all-cats-dropdown" id="allCatsDropdown">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Horizontal Track of Main Menus with Main Category Picture and Dropdown items -->
+        <div class="main-category-items-track" id="mainCategoryItemsTrack">
+          <!-- Rendered dynamically by JS -->
+        </div>
+
+      </div>
+    </nav>
+  </header>
+
+  <!-- =========================================================================
+       VIEW 1: CATALOG & SHOPPING
+       ========================================================================= -->
+  <main id="catalogView">
+    
+    <!-- Hero Banner -->
+    <div class="page-container" style="margin-top: 15px; margin-bottom: 20px;">
+      <section class="hero-section">
+        <div class="hero-bg-wrapper">
+          <img src="images/hero.jpg" alt="Shalom Kerala Stores Gorakhpur" class="hero-bg-img" />
+          <div class="hero-overlay"></div>
+        </div>
+        <div class="hero-content">
+          <div class="hero-badge-pill">
+            <span>📍 Gorakhpur, Uttar Pradesh</span>
+          </div>
+          <h1 class="hero-title">
+            Shalom Kerala Stores <span>Gorakhpur</span>
+          </h1>
+          <div class="hero-malayalam">ശാലോം കേരള സ്റ്റോർസ് • ഗോരഖ്പൂർ</div>
+          <p class="hero-desc">
+            Your destination in Gorakhpur for authentic Kerala food items, Church devotional articles, and quality stationery. Enjoy doorstep delivery across Gorakhpur or free store pickup.
+          </p>
+
+          <div class="hero-features-list">
+            <span class="hero-feat-item">🏬 Pick from Store: FREE</span>
+            <span class="hero-feat-item">🛵 Delivery &lt; 5 Km: ₹50</span>
+            <span class="hero-feat-item">🚚 Delivery &lt; 10 Km: ₹100</span>
+            <span class="hero-feat-item">⚡ Instant UPI: 7379325499@ybl</span>
+          </div>
+
+          <div class="hero-cta-group">
+            <a href="#productsCatalogSection" class="btn btn-primary btn-large">
+              Browse 1,281 Catalog Items
+            </a>
+            <button type="button" class="btn btn-emerald" onclick="document.getElementById('navOrdersBtn').click();">
+              Track Past Bills & Receipts
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Catalog Controls: Category Pills & Sub-pills -->
+    <section class="catalog-controls-container" id="productsCatalogSection">
+      <div class="controls-header-row">
+        <div class="section-title-wrap">
+          <h2>Store Catalog & Inventory</h2>
+          <div class="section-subtitle" id="productCount">Loading 1,281 Shalom items...</div>
+        </div>
+        
+        <div class="filter-controls-right">
+          <!-- In-Stock Only Toggle -->
+          <label class="stock-toggle-label">
+            <input type="checkbox" id="stockFilterToggle">
+            <span>In-Stock Ready Only</span>
+          </label>
+
+          <div class="sort-wrap">
+            <label for="sortSelect">Sort:</label>
+            <select id="sortSelect" class="sort-select">
+              <option value="featured">Featured / Catalog Order</option>
+              <option value="stock">Highest Stock in Gorakhpur</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="name">Product Name (A-Z)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Category Tabs -->
+      <nav class="category-pills-bar" id="categoryTabs" aria-label="Main Categories">
+        <!-- Rendered by JS -->
+      </nav>
+
+      <!-- Sub-Category Filter Pills -->
+      <div class="sub-category-bar" id="subCategoryPills">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+    <!-- Product Grid -->
+    <section class="products-grid-container">
+      <div class="products-grid" id="productsGrid">
+        <!-- Rendered by JS -->
+      </div>
+
+      <!-- Load More Container -->
+      <div class="load-more-wrap" id="loadMoreContainer" style="display: none;">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       VIEW 2: BILLING & CHECKOUT
+       ========================================================================= -->
+  <main id="billingView" style="display: none;">
+    <div class="page-container">
+      
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+        <a href="#" id="backToCatalogBtn">← Back to Shalom Store Catalog</a>
+        <span>/</span>
+        <span>Billing & Delivery Details</span>
+      </nav>
+
+      <div class="checkout-page-grid">
+        
+        <!-- Billing Details Form -->
+        <section class="checkout-form-card">
+          <div class="checkout-card-header">
+            <span class="checkout-step-badge">1</span>
+            <h2 class="checkout-card-title">Customer & Delivery Details</h2>
+          </div>
+
+          <form id="billingForm" novalidate>
+            
+            <!-- Delivery Mode Selector in Checkout -->
+            <div class="form-group">
+              <label class="form-label">Delivery / Pickup Preference <span class="req">*</span></label>
+              <div class="delivery-options-box" id="deliveryOptionsContainer">
+                
+                <label class="delivery-radio-label">
+                  <div class="radio-left">
+                    <input type="radio" name="checkoutDelivery" value="pickup" checked>
+                    <div>
+                      <div class="delivery-name">🏬 Pick from Store (Chargawan, Gorakhpur)</div>
+                      <div class="delivery-sub">Collect directly at Shalom Kerala Stores counter</div>
+                    </div>
+                  </div>
+                  <div class="delivery-price free-text">FREE</div>
+                </label>
+
+                <div style="height: 8px;"></div>
+
+                <label class="delivery-radio-label">
+                  <div class="radio-left">
+                    <input type="radio" name="checkoutDelivery" value="upto5km">
+                    <div>
+                      <div class="delivery-name">🛵 Local Express Delivery (Up to 5 Km in Gorakhpur)</div>
+                      <div class="delivery-sub">Doorstep delivery around Chargawan, Basharatpur, Medical College, Asuran</div>
+                    </div>
+                  </div>
+                  <div class="delivery-price">₹50</div>
+                </label>
+
+                <div style="height: 8px;"></div>
+
+                <label class="delivery-radio-label">
+                  <div class="radio-left">
+                    <input type="radio" name="checkoutDelivery" value="upto10km">
+                    <div>
+                      <div class="delivery-name">🚚 City Delivery (Up to 10 Km in Gorakhpur)</div>
+                      <div class="delivery-sub">Doorstep delivery to Golghar, Mohaddipur, Taramandal, Rapti Nagar, Rustampur</div>
+                    </div>
+                  </div>
+                  <div class="delivery-price">₹100</div>
+                </label>
+
+              </div>
+            </div>
+
+            <div class="form-row-2col">
+              <div class="form-group">
+                <label for="billingName" class="form-label">Customer Name <span class="req">*</span></label>
+                <input type="text" id="billingName" class="input-control" placeholder="e.g. Wilson / Akshay / Anjali" required>
+                <div class="field-error-msg" id="customerNameError"></div>
+              </div>
+
+              <div class="form-group">
+                <label for="billingPhone" class="form-label">Mobile Number <span class="req">*</span></label>
+                <input type="tel" id="billingPhone" class="input-control" placeholder="10-digit number for order & delivery" maxlength="10" required>
+                <div class="field-error-msg" id="phoneError"></div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="billingEmail" class="form-label">Email Address (for Digital Tax Invoice) <span class="req">*</span></label>
+              <input type="email" id="billingEmail" class="input-control" placeholder="name@example.com" required>
+              <div class="field-error-msg" id="emailError"></div>
+            </div>
+
+            <div id="addressGroup">
+              <div class="form-group">
+                <label for="billingAddress" class="form-label">Delivery Street Address / Flat <span class="req">*</span></label>
+                <textarea id="billingAddress" class="input-control" rows="2" placeholder="House/Flat No., Road name, Near landmark"></textarea>
+                <div class="field-error-msg" id="addressError"></div>
+              </div>
+
+              <div class="form-row-2col">
+                <div class="form-group">
+                  <label for="areaSelect" class="form-label">Gorakhpur Locality / Area <span class="req">*</span></label>
+                  <select id="areaSelect" class="input-control">
+                    <!-- Populated by JS -->
+                  </select>
+                  <div class="field-error-msg" id="areaError"></div>
+                </div>
+
+                <div class="form-group">
+                  <label for="billingLandmark" class="form-label">Landmark</label>
+                  <input type="text" id="billingLandmark" class="input-control" placeholder="e.g. Near Little Flower / Church / Chowk">
+                </div>
+              </div>
+
+              <div class="form-row-2col">
+                <div class="form-group">
+                  <label for="billingPincode" class="form-label">PIN Code</label>
+                  <input type="text" id="billingPincode" class="input-control" value="273013" maxlength="6">
+                </div>
+
+                <div class="form-group">
+                  <label for="billingNotes" class="form-label">Special Delivery / Order Notes</label>
+                  <input type="text" id="billingNotes" class="input-control" placeholder="e.g. Call before delivery">
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-large btn-block" id="payUpiBtn">
+              Proceed to UPI Payment (7379325499@ybl) →
+            </button>
+          </form>
+        </section>
+
+        <!-- Order Summary Card -->
+        <aside class="order-summary-card">
+          <h3 class="summary-heading">Order & Billing Summary</h3>
+
+          <div class="cart-totals-breakdown">
+            <div class="calc-row">
+              <span>Items Subtotal:</span>
+              <span id="billingSubtotal">₹0</span>
+            </div>
+            <div class="calc-row discount-line" id="billingDiscountRow" style="display: none;">
+              <span>Coupon Savings:</span>
+              <span id="billingDiscount">- ₹0</span>
+            </div>
+            <div class="calc-row">
+              <span>Delivery Setting:</span>
+              <span id="billingDelivery">₹0</span>
+            </div>
+            <div class="calc-row">
+              <span>GST (5%):</span>
+              <span id="billingGst">₹0</span>
+            </div>
+            <div class="grand-total-row">
+              <span>Total Amount:</span>
+              <span id="billingGrandTotal">₹0</span>
+            </div>
+          </div>
+
+          <div class="upi-security-note">
+            <span>🛡️</span>
+            <span>Official UPI Payment to Store VPA: <strong>7379325499@ybl</strong>. Zero transaction charges.</span>
+          </div>
+
+          <div class="store-address-box-sidebar">
+            <div class="store-pin-title">🏬 Store Address:</div>
+            <p>Shalom Kerala Stores, Chargawan, Near Little Flower School, Medical College Road, Gorakhpur, UP - 273013</p>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- =========================================================================
+       VIEW 3: UPI PAYMENT GATEWAY & SCANNER
+       ========================================================================= -->
+  <main id="upiPaymentView" style="display: none;">
+    <div class="upi-checkout-wrapper">
+      
+      <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+        <a href="#" id="backToBillingBtn">← Edit Customer & Delivery Details</a>
+        <span>/</span>
+        <span>UPI Payment Gateway</span>
+      </nav>
+
+      <div class="upi-main-card">
+        
+        <!-- Top UPI Banner -->
+        <div class="upi-header-banner">
+          <div class="upi-header-brand">
+            <span class="upi-npci-badge">UPI</span>
+            <div>
+              <h2 style="font-size: 1.25rem; font-weight: 700;">Shalom Kerala Stores UPI Gateway</h2>
+              <div style="font-size: 0.78rem; opacity: 0.85;">Pay directly to <strong>7379325499@ybl</strong> • Gorakhpur, UP</div>
+            </div>
+          </div>
+
+          <div class="upi-timer-box">
+            <span>Session expires:</span>
+            <span class="timer-clock" id="upiTimerDisplay">10:00</span>
+          </div>
+        </div>
+
+        <!-- Body Grid -->
+        <div class="upi-body-grid">
+          
+          <!-- Column 1: Dynamic QR Code -->
+          <div class="upi-qr-column">
+            <div class="upi-pay-amount-box">
+              <div class="amount-label">Amount Payable</div>
+              <div class="upi-grand-amount" id="upiAmountDisplay">₹0</div>
+              <div class="order-ref-text">Order: <span id="upiOrderIdDisplay">SKS-GKP-000000</span></div>
+            </div>
+
+            <!-- Dynamic QR Holder -->
+            <div id="upiQrContainer">
+              <!-- Rendered by upi.js -->
+            </div>
+          </div>
+
+          <!-- Column 2: UPI Apps & Verification -->
+          <div class="upi-actions-column">
+            
+            <div class="upi-section-heading">Pay Using Any Installed UPI App:</div>
+            
+            <div class="upi-apps-grid">
+              <button type="button" class="upi-app-button" id="appPhonepe">
+                <span class="app-icon phonepe-bg">पे</span>
+                <span>PhonePe</span>
+              </button>
+              <button type="button" class="upi-app-button" id="appGpay">
+                <span class="app-icon gpay-bg">G</span>
+                <span>Google Pay</span>
+              </button>
+              <button type="button" class="upi-app-button" id="appPaytm">
+                <span class="app-icon paytm-bg">P</span>
+                <span>Paytm</span>
+              </button>
+              <button type="button" class="upi-app-button" id="appBhim">
+                <span class="app-icon bhim-bg">BH</span>
+                <span>BHIM UPI</span>
+              </button>
+            </div>
+
+            <!-- VPA Details -->
+            <div class="vpa-info-card">
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">Store UPI ID / VPA:</div>
+              <div class="vpa-row">
+                <span class="vpa-text" id="upiVpaText">7379325499@ybl</span>
+                <button type="button" class="btn btn-outline btn-sm" id="copyUpiVpaBtn">Copy UPI</button>
+              </div>
+            </div>
+
+            <!-- Simulator & Verification -->
+            <div class="upi-verify-section">
+              <div style="font-size: 0.85rem; font-weight: 700; color: var(--emerald-950); margin-bottom: 8px;">
+                Instant Verification & Simulation
+              </div>
+
+              <!-- Quick One-Click Simulation Button -->
+              <button type="button" class="btn simulate-btn" id="simulatePaymentBtn">
+                <span>✓ Instant UPI Simulation (One Click)</span>
+              </button>
+
+              <div style="text-align: center; font-size: 0.72rem; color: var(--text-muted); margin: 6px 0;">
+                — OR enter 12-digit UTR / Ref Number from your bank app —
+              </div>
+
+              <div class="manual-utr-form">
+                <input type="text" id="utrInput" class="utr-input" placeholder="e.g. 429188491028" maxlength="16">
+                <button type="button" class="btn btn-emerald btn-sm" id="manualVerifyBtn">Verify Bill</button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- =========================================================================
+       VIEW 4: OFFICIAL GST TAX INVOICE & RECEIPT
+       ========================================================================= -->
+  <main id="invoiceView" style="display: none;">
+    <div class="invoice-view-wrapper">
+      
+      <div class="invoice-actions-bar">
+        <button type="button" class="btn btn-outline" id="backToShopBtn">
+          ← Continue Shopping (Shalom Store)
+        </button>
+
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn btn-primary" id="printInvoiceBtn">
+            🖨️ Print Tax Invoice / Save as PDF
+          </button>
+          <button type="button" class="btn btn-emerald" id="downloadInvoiceBtn">
+            📥 Download Receipt
+          </button>
+        </div>
+      </div>
+
+      <!-- Rendered Official GST Invoice -->
+      <div id="invoiceContainer">
+        <!-- Rendered by billing.js -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- =========================================================================
+       SLIDE-OUT CART DRAWER
+       ========================================================================= -->
+  <div class="cart-drawer-backdrop" id="cartDrawerBackdrop"></div>
+  <aside class="cart-drawer" id="cartDrawer" aria-label="Shopping Cart Drawer">
+    
+    <div class="cart-drawer-header">
+      <div class="drawer-title-box">
+        <h3>Shalom Kart (എന്റെ കാർട്ട്)</h3>
+        <p>Shalom Kerala Stores • Gorakhpur, UP</p>
+      </div>
+      <button type="button" class="drawer-close-btn" id="closeCartDrawerBtn" aria-label="Close Cart">✕</button>
+    </div>
+
+    <!-- Delivery Option Selector in Drawer -->
+    <div class="drawer-delivery-selector-card" id="deliverySelectDrawer">
+      <div class="delivery-picker-title">Delivery Method:</div>
+      <div class="drawer-radio-group">
+        <label class="drawer-radio-pill">
+          <input type="radio" name="drawerDelivery" value="pickup">
+          <span>🏬 Store Pick-up (Free)</span>
+        </label>
+        <label class="drawer-radio-pill">
+          <input type="radio" name="drawerDelivery" value="upto5km" checked>
+          <span>🛵 &lt; 5 Km (₹50)</span>
+        </label>
+        <label class="drawer-radio-pill">
+          <input type="radio" name="drawerDelivery" value="upto10km">
+          <span>🚚 &lt; 10 Km (₹100)</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Items List -->
+    <div class="cart-items-scrollable" id="cartDrawerItems">
+      <!-- Rendered by cart.js -->
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="cart-drawer-footer">
+      
+      <div class="coupon-box">
+        <div class="coupon-input-group">
+          <input type="text" id="couponInput" class="coupon-input" placeholder="Promo code (e.g. SHALOM50)">
+          <button type="button" class="btn btn-outline btn-sm" id="applyCouponBtn">Apply</button>
+        </div>
+        <div id="activeCouponTag"></div>
+        <div id="couponFeedback" class="coupon-feedback"></div>
+      </div>
+
+      <div class="cart-totals-breakdown">
+        <div class="calc-row">
+          <span>Subtotal:</span>
+          <span id="cartDrawerSubtotal">₹0</span>
+        </div>
+        <div class="calc-row discount-highlight" id="cartDrawerDiscountRow" style="display: none;">
+          <span>Coupon Savings:</span>
+          <span id="cartDrawerDiscount">- ₹0</span>
+        </div>
+        <div class="calc-row">
+          <span>Delivery Setting:</span>
+          <span id="cartDrawerDelivery">₹50</span>
+        </div>
+        <div class="calc-row">
+          <span>Estimated GST (5%):</span>
+          <span id="cartDrawerGst">₹0</span>
+        </div>
+        <div class="grand-total-row">
+          <span>Grand Total:</span>
+          <span id="cartDrawerGrandTotal">₹0</span>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-large btn-block checkout-btn" id="proceedToCheckoutBtn">
+        Proceed to Billing & UPI (ചെക്കൗട്ട്) →
+      </button>
+
+    </div>
+
+  </aside>
+
+  <!-- =========================================================================
+       MODAL: PRODUCT QUICK VIEW
+       ========================================================================= -->
+  <div class="modal-backdrop" id="quickViewBackdrop"></div>
+  <div class="modal-dialog" id="quickViewModal">
+    <button type="button" class="modal-close-icon" id="closeQuickViewBtn" aria-label="Close modal">✕</button>
+    <div id="quickViewBody">
+      <!-- Rendered by app.js -->
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: PAST ORDERS & BILLS HISTORY
+       ========================================================================= -->
+  <div class="modal-backdrop" id="ordersModalBackdrop"></div>
+  <div class="modal-dialog" id="ordersModal">
+    <button type="button" class="modal-close-icon" id="closeOrdersModalBtn" aria-label="Close modal">✕</button>
+    <div class="modal-header-padded">
+      <h3>Shalom Orders & Bills (എന്റെ ഓർഡറുകൾ)</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted);">View previous purchases and download GST tax receipts</p>
+    </div>
+    <div class="orders-list-scroll" id="ordersListContainer">
+      <!-- Rendered by app.js -->
+    </div>
+  </div>
+
+
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- =========================================================================
+       SITE FOOTER
+       ========================================================================= -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      
+      <div class="footer-top-grid">
+        
+        <div class="footer-col">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+            <span style="font-size: 1.8rem;">🌴</span>
+            <span style="font-family: var(--font-serif); font-size: 1.3rem; font-weight: 800; color: #ffffff;">SHALOM KERALA STORES</span>
+          </div>
+          <p>
+            Your trusted store in Gorakhpur, Uttar Pradesh for authentic Kerala food items, Church devotional articles, and stationery. Fast delivery across Gorakhpur city and free store pickup.
+          </p>
+          <div class="footer-upi-badges">
+            <span class="upi-tag-badge">UPI: 7379325499@ybl</span>
+            <span class="upi-tag-badge">PhonePe</span>
+            <span class="upi-tag-badge">Google Pay</span>
+            <span class="upi-tag-badge">Paytm</span>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Catalog Categories</h4>
+          <ul class="footer-links-list">
+            <li><a href="#" onclick="document.querySelector('[data-category=kerala-food]').click(); return false;">Kerala Food Items (969 items)</a></li>
+            <li><a href="#" onclick="document.querySelector('[data-category=church-articles]').click(); return false;">Church Articles & Bibles (195 items)</a></li>
+            <li><a href="#" onclick="document.querySelector('[data-category=stationery]').click(); return false;">Stationery & Tech (117 items)</a></li>
+            <li><a href="#" onclick="document.getElementById('stockFilterToggle').click(); return false;">In-Stock Ready Items</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Gorakhpur Delivery</h4>
+          <ul class="footer-links-list">
+            <li><a href="#">🏬 In-Store Pickup: FREE</a></li>
+            <li><a href="#">🛵 Up to 5 Km Local: ₹50</a></li>
+            <li><a href="#">🚚 Up to 10 Km City: ₹100</a></li>
+            <li><a href="#" onclick="document.getElementById('navOrdersBtn').click(); return false;">View Past Bills & Receipts</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Store Location</h4>
+          <p>
+            <strong>Shalom Kerala Stores</strong><br>
+            Chargawan, Near Little Flower School,<br>
+            Medical College Road, Gorakhpur,<br>
+            Uttar Pradesh - 273013, India.<br><br>
+            📞 Phone / UPI: <strong>+91 73793 25499</strong><br>
+            ✉️ Email: <strong>shalomkeralagkp@gmail.com</strong>
+          </p>
+        </div>
+
+      </div>
+
+      <div class="footer-bottom-row">
+        <div>© 2026 Shalom Kerala Stores, Gorakhpur, UP. All Rights Reserved.</div>
+        <div>ദൈവത്തിന്റെ സ്വന്തം നാട്ടിലെ വിഭവങ്ങൾ ഇനി ഗോരഖ്പൂരിലും • UPI: 7379325499@ybl</div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/products.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/upi.js"></script>
+  <script src="js/billing.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
