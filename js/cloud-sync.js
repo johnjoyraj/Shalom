@@ -4,6 +4,18 @@
  * Stores customer orders & POS billing data permanently in the cloud.
  */
 
+// Built-in Google Firebase Configuration for Shalom Kerala Stores
+const DEFAULT_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCDqiuu-mxG7jDrDt1CwFUhIe5kVpkaSSI",
+  authDomain: "adonaibroadcast-11095.firebaseapp.com",
+  databaseURL: "https://adonaibroadcast-11095.firebaseio.com",
+  projectId: "adonaibroadcast-11095",
+  storageBucket: "adonaibroadcast-11095.firebasestorage.app",
+  messagingSenderId: "701495282226",
+  appId: "1:701495282226:web:eb37af998fc93294f08a2b",
+  measurementId: "G-Q2P00PQPGC"
+};
+
 class ShalomCloudSyncService {
   constructor() {
     this.storageKey = 'shalom_firebase_config';
@@ -16,7 +28,7 @@ class ShalomCloudSyncService {
     this.isConfigured = false;
     this.lastSyncTime = null;
 
-    // Default configuration (loads from localStorage or embedded)
+    // Default configuration (loads from localStorage or embedded default)
     this.config = this.loadConfig();
     this.init();
   }
@@ -30,7 +42,7 @@ class ShalomCloudSyncService {
     } catch (e) {
       console.warn('Failed to parse saved Firebase config', e);
     }
-    return null;
+    return { ...DEFAULT_FIREBASE_CONFIG };
   }
 
   saveConfig(newConfig) {
@@ -62,11 +74,15 @@ class ShalomCloudSyncService {
   }
 
   init() {
-    if (!this.config || !this.config.apiKey || !this.config.databaseURL) {
+    if (!this.config || !this.config.apiKey) {
       this.isConfigured = false;
       this.isConnected = false;
       this.notifyStatus(false, 'Not configured. Enter Firebase keys in Cloud Settings.');
       return false;
+    }
+
+    if (!this.config.databaseURL) {
+      this.config.databaseURL = "https://adonaibroadcast-11095.firebaseio.com";
     }
 
     if (typeof firebase === 'undefined') {
