@@ -133,17 +133,19 @@ document.addEventListener('DOMContentLoaded', () => {
    * Initialize Application
    */
   function init() {
-    loadStockOverrides();
-    populateGorakhpurAreas();
-    renderMainMenu();
-    renderCategories();
-    renderProducts();
-    renderCustomerAuthUI();
-    bindEvents();
+    try { loadStockOverrides(); } catch (e) { console.warn('Stock overrides error', e); }
+    try { populateGorakhpurAreas(); } catch (e) { console.warn('Gorakhpur areas error', e); }
+    try { renderMainMenu(); } catch (e) { console.warn('Main menu error', e); }
+    try { renderCategories(); } catch (e) { console.warn('Categories error', e); }
+    try { renderProducts(); } catch (e) { console.warn('Products error', e); }
+    try { renderCustomerAuthUI(); } catch (e) { console.warn('Customer auth UI error', e); }
+    try { bindEvents(); } catch (e) { console.warn('Bind events error', e); }
     
     // Subscribe to cart
-    shalomCart.subscribe(updateCartUI);
-    updateCartUI(shalomCart);
+    try {
+      shalomCart.subscribe(updateCartUI);
+      updateCartUI(shalomCart);
+    } catch (e) { console.warn('Cart error', e); }
   }
 
   /**
@@ -958,26 +960,36 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('You have signed out.', 'info');
   }
 
+  function escapeHtml(text) {
+    if (!text) return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return String(text).replace(/[&<>"']/g, m => map[m]);
+  }
+
   function renderCustomerAuthUI() {
-    const container = document.getElementById('customerAuthContainer');
-    if (!container) return;
-    const session = getCustomerSession();
-    if (session && session.name) {
-      container.innerHTML = `
-        <div class="customer-logged-pill" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(212,175,55,0.4); border-radius: 20px; padding: 5px 12px; display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #fff;">
-          <span>👤 ${escapeHtml(session.name)}</span>
-          ${session.isVerified ? `<span style="background: #0284c7; color: #fff; font-size: 0.68rem; padding: 2px 7px; border-radius: 10px; font-weight: 800;">✓ Verified</span>` : ''}
-          <button type="button" class="customer-logout-btn" id="logoutCustBtn" title="Sign out" style="background: none; border: none; color: #fca5a5; font-size: 0.74rem; cursor: pointer; text-decoration: underline;">Logout</button>
-        </div>
-      `;
-      document.getElementById('logoutCustBtn')?.addEventListener('click', clearCustomerSession);
-    } else {
-      container.innerHTML = `
-        <button type="button" class="nav-link-btn" id="customerLoginBtn">
-          <span>👤 Sign In</span>
-        </button>
-      `;
-      document.getElementById('customerLoginBtn')?.addEventListener('click', openCustomerLoginModal);
+    try {
+      const container = document.getElementById('customerAuthContainer');
+      if (!container) return;
+      const session = getCustomerSession();
+      if (session && session.name) {
+        container.innerHTML = `
+          <div class="customer-logged-pill" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(212,175,55,0.4); border-radius: 20px; padding: 5px 12px; display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #fff;">
+            <span>👤 ${escapeHtml(session.name)}</span>
+            ${session.isVerified ? `<span style="background: #0284c7; color: #fff; font-size: 0.68rem; padding: 2px 7px; border-radius: 10px; font-weight: 800;">✓ Verified</span>` : ''}
+            <button type="button" class="customer-logout-btn" id="logoutCustBtn" title="Sign out" style="background: none; border: none; color: #fca5a5; font-size: 0.74rem; cursor: pointer; text-decoration: underline;">Logout</button>
+          </div>
+        `;
+        document.getElementById('logoutCustBtn')?.addEventListener('click', clearCustomerSession);
+      } else {
+        container.innerHTML = `
+          <button type="button" class="nav-link-btn" id="customerLoginBtn">
+            <span>👤 Sign In</span>
+          </button>
+        `;
+        document.getElementById('customerLoginBtn')?.addEventListener('click', openCustomerLoginModal);
+      }
+    } catch (e) {
+      console.warn('Error rendering customer auth UI:', e);
     }
   }
 
