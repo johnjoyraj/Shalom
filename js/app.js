@@ -943,8 +943,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function saveCustomerSession(name, phone) {
-    const session = { name: name.trim(), phone: phone.trim() };
+  function saveCustomerSession(name, phone, isVerified = false) {
+    const session = { name: name.trim(), phone: phone.trim(), isVerified: isVerified };
     localStorage.setItem(CUSTOMER_SESSION_KEY, JSON.stringify(session));
     renderCustomerAuthUI();
     if (document.getElementById('billingName')) document.getElementById('billingName').value = session.name;
@@ -964,9 +964,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const session = getCustomerSession();
     if (session && session.name) {
       container.innerHTML = `
-        <div class="customer-logged-pill">
-          <span>👤 ${session.name}</span>
-          <button type="button" class="customer-logout-btn" id="logoutCustBtn" title="Sign out">Logout</button>
+        <div class="customer-logged-pill" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(212,175,55,0.4); border-radius: 20px; padding: 5px 12px; display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #fff;">
+          <span>👤 ${escapeHtml(session.name)}</span>
+          ${session.isVerified ? `<span style="background: #22c55e; color: #fff; font-size: 0.68rem; padding: 2px 7px; border-radius: 10px; font-weight: 800;">✓ WhatsApp</span>` : ''}
+          <button type="button" class="customer-logout-btn" id="logoutCustBtn" title="Sign out" style="background: none; border: none; color: #fca5a5; font-size: 0.74rem; cursor: pointer; text-decoration: underline;">Logout</button>
         </div>
       `;
       document.getElementById('logoutCustBtn')?.addEventListener('click', clearCustomerSession);
@@ -980,12 +981,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Active WhatsApp OTP state
+  let activeOtpState = {
+    phone: '',
+    name: '',
+    otp: '',
+    expiresAt: 0,
+    timerInterval: null
+  };
+
   function openCustomerLoginModal() {
     const session = getCustomerSession();
     if (session) {
       if (elements.custPhoneInput) elements.custPhoneInput.value = session.phone || '';
       if (elements.custNameInput) elements.custNameInput.value = session.name || '';
     }
+
+    // Reset to Step 1
+    const s1 = document.getElementById('custLoginStep1');
+    const s2 = document.getElementById('custLoginStep2');
+    if (s1) s1.style.display = 'block';
+    if (s2) s2.style.display = 'none';
+
     elements.custLoginModal?.classList.add('open');
     elements.custLoginBackdrop?.classList.add('visible');
     document.body.style.overflow = 'hidden';
@@ -993,9 +1010,161 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function closeCustomerLoginModal() {
+    if (activeOtpState.timerInterval) clearInterval(activeOtpState.timerInterval);
     elements.custLoginModal?.classList.remove('open');
     elements.custLoginBackdrop?.classList.remove('visible');
     document.body.style.overflow = '';
+  }
+
+  async function handleCustRequestOtp(e) {
+    if (e) e.preventDefault();
+    const phone = (elements.custPhoneInput?.value || '').trim().replace(/\D/g, '').slice(-10);
+    const name = (elements.custNameInput?.value || '').trim();
+
+    const phoneErr = document.getElementById('custPhoneError');
+    const nameErr = document.getElementById('custNameError');
+    if (phoneErr) phoneErr.textContent = '';
+    if (nameErr) nameErr.textContent = '';
+
+    if (phone.length !== 10) {
+      if (phoneErr) phoneErr.textContent = 'Please enter a valid 10-digit Indian mobile number.';
+      return;
+    }
+    if (name.length < 2) {
+      if (nameErr) nameErr.textContent = 'Please enter your name.';
+      return;
+    }
+
+    const submitBtn = document.getElementById('custLoginSubmitBtn');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span>⏳ Generating WhatsApp Code...</span>';
+    }
+
+    try {
+      const res = (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.generateAndSaveOtp)
+        ? await ShalomCloudSync.generateAndSaveOtp(phone, name)
+        : {
+            success: true,
+            otp: Math.floor(100000 + Math.random() * 900000).toString(),
+            phone,
+            name,
+            expiresAt: Date.now() + 300000,
+            whatsappUri: `https://api.whatsapp.com/send?phone=917379325499&text=Hello%20Shalom%20Kerala%20Stores,%20my%20OTP%20is%20`
+          };
+
+      activeOtpState.phone = phone;
+      activeOtpState.name = name;
+      activeOtpState.otp = res.otp;
+      activeOtpState.expiresAt = res.expiresAt;
+
+      // Update UI for Step 2
+      const phoneDisp = document.getElementById('custOtpPhoneDisplay');
+      if (phoneDisp) phoneDisp.textContent = `+91 ${phone}`;
+
+      const otpDisp = document.getElementById('custGeneratedOtpDisplay');
+      if (otpDisp) otpDisp.textContent = res.otp;
+
+      const waLink = document.getElementById('openWhatsAppOtpLink');
+      if (waLink) waLink.href = res.whatsappUri;
+
+      // Switch to Step 2
+      const s1 = document.getElementById('custLoginStep1');
+      const s2 = document.getElementById('custLoginStep2');
+      if (s1) s1.style.display = 'none';
+      if (s2) s2.style.display = 'block';
+
+      // Start countdown timer
+      startOtpCountdown(res.expiresAt);
+
+      const otpInput = document.getElementById('custOtpInput');
+      if (otpInput) {
+        otpInput.value = '';
+        setTimeout(() => otpInput.focus(), 150);
+      }
+
+      showToast(`📲 Verification code generated for +91 ${phone}!`, 'success');
+    } catch (err) {
+      console.error('OTP request error:', err);
+      showToast('Could not generate verification code. Please retry.', 'error');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>💬 Get WhatsApp OTP →</span>';
+      }
+    }
+  }
+
+  function startOtpCountdown(expiresAt) {
+    if (activeOtpState.timerInterval) clearInterval(activeOtpState.timerInterval);
+    const timerDisp = document.getElementById('otpTimerDisplay');
+    const resendBtn = document.getElementById('resendOtpBtn');
+    if (resendBtn) resendBtn.disabled = true;
+
+    function update() {
+      const remainingMs = expiresAt - Date.now();
+      if (remainingMs <= 0) {
+        clearInterval(activeOtpState.timerInterval);
+        if (timerDisp) timerDisp.textContent = 'OTP Expired';
+        if (resendBtn) resendBtn.disabled = false;
+        return;
+      }
+      const totalSec = Math.floor(remainingMs / 1000);
+      const mins = String(Math.floor(totalSec / 60)).padStart(2, '0');
+      const secs = String(totalSec % 60).padStart(2, '0');
+      if (timerDisp) timerDisp.textContent = `Expires in ${mins}:${secs}`;
+
+      // Enable resend after 30 seconds
+      if (totalSec <= 270 && resendBtn) {
+        resendBtn.disabled = false;
+      }
+    }
+
+    update();
+    activeOtpState.timerInterval = setInterval(update, 1000);
+  }
+
+  async function handleCustVerifyOtp(e) {
+    if (e) e.preventDefault();
+    const otpInput = document.getElementById('custOtpInput');
+    const entered = (otpInput?.value || '').trim();
+    const errBox = document.getElementById('custOtpError');
+    if (errBox) errBox.textContent = '';
+
+    if (!entered || entered.length !== 6) {
+      if (errBox) errBox.textContent = 'Please enter the 6-digit verification code.';
+      otpInput?.focus();
+      return;
+    }
+
+    const verifyBtn = document.getElementById('verifyOtpSubmitBtn');
+    if (verifyBtn) {
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Verifying Code...';
+    }
+
+    try {
+      const res = (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.verifyOtp)
+        ? await ShalomCloudSync.verifyOtp(activeOtpState.phone, entered)
+        : (entered === activeOtpState.otp ? { success: true, customer: { name: activeOtpState.name, phone: activeOtpState.phone, isVerified: true } } : { success: false, error: 'Incorrect code' });
+
+      if (res.success) {
+        if (activeOtpState.timerInterval) clearInterval(activeOtpState.timerInterval);
+        saveCustomerSession(activeOtpState.name, activeOtpState.phone, true);
+        closeCustomerLoginModal();
+        showToast(`🎉 Welcome, ${activeOtpState.name}! Verified via WhatsApp.`, 'success');
+      } else {
+        if (errBox) errBox.textContent = res.error || 'Invalid verification code.';
+        otpInput?.focus();
+      }
+    } catch (err) {
+      if (errBox) errBox.textContent = 'Verification error. Please retry.';
+    } finally {
+      if (verifyBtn) {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = '✓ Verify & Complete Sign In';
+      }
+    }
   }
 
   /**
@@ -1500,29 +1669,25 @@ document.addEventListener('DOMContentLoaded', () => {
       openOrdersModal();
     });
 
-    // Customer Login Modal
-    elements.custLoginForm?.addEventListener('submit', (e) => {
+    // Customer WhatsApp Cloud OTP Login
+    elements.custLoginForm?.addEventListener('submit', handleCustRequestOtp);
+    document.getElementById('custOtpForm')?.addEventListener('submit', handleCustVerifyOtp);
+    document.getElementById('editCustPhoneBtn')?.addEventListener('click', () => {
+      if (activeOtpState.timerInterval) clearInterval(activeOtpState.timerInterval);
+      const s1 = document.getElementById('custLoginStep1');
+      const s2 = document.getElementById('custLoginStep2');
+      if (s1) s1.style.display = 'block';
+      if (s2) s2.style.display = 'none';
+      elements.custPhoneInput?.focus();
+    });
+    document.getElementById('resendOtpBtn')?.addEventListener('click', (e) => {
       e.preventDefault();
-      const phone = (elements.custPhoneInput?.value || '').trim().replace(/\D/g, '');
-      const name = (elements.custNameInput?.value || '').trim();
-
-      const phoneErr = document.getElementById('custPhoneError');
-      const nameErr = document.getElementById('custNameError');
-      if (phoneErr) phoneErr.textContent = '';
-      if (nameErr) nameErr.textContent = '';
-
-      if (phone.length < 10) {
-        if (phoneErr) phoneErr.textContent = 'Please enter a valid 10-digit mobile number.';
-        return;
+      handleCustRequestOtp();
+    });
+    document.getElementById('custOtpInput')?.addEventListener('input', (e) => {
+      if (e.target.value.trim().length === 6) {
+        handleCustVerifyOtp();
       }
-      if (name.length < 2) {
-        if (nameErr) nameErr.textContent = 'Please enter your name.';
-        return;
-      }
-
-      saveCustomerSession(name, phone);
-      closeCustomerLoginModal();
-      showToast(`Welcome, ${name}! Signed in successfully.`, 'success');
     });
 
     elements.closeCustLoginBtn?.addEventListener('click', closeCustomerLoginModal);

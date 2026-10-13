@@ -249,6 +249,121 @@ class ShalomCloudSyncService {
   }
 
   // =========================================================================
+  // WHATSAPP CLOUD OTP AUTHENTICATION
+  // =========================================================================
+
+  /**
+   * Generates a 6-digit OTP, saves in Firebase /otps/{phone}, and returns verification payload
+   */
+  async generateAndSaveOtp(phone, customerName = '') {
+    const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 mins
+
+    const payload = {
+      phone: cleanPhone,
+      name: customerName.trim(),
+      otp: otp,
+      createdAt: Date.now(),
+      expiresAt: expiresAt,
+      verified: false
+    };
+
+    // Store in SessionStorage for immediate fallback
+    try {
+      sessionStorage.setItem(`shalom_otp_${cleanPhone}`, JSON.stringify(payload));
+    } catch (e) {}
+
+    // Store in Google Firebase Cloud
+    if (this.isReady()) {
+      try {
+        await this.db.ref(`otps/${cleanPhone}`).set(payload);
+        console.log(`[CloudSync] OTP generated and saved to Firebase for +91${cleanPhone}`);
+      } catch (err) {
+        console.warn('[CloudSync] Firebase OTP write error, using fallback', err);
+      }
+    }
+
+    // Build direct WhatsApp Click-to-Chat URI
+    const waText = encodeURIComponent(`Hello Shalom Kerala Stores, my verification OTP code is: ${otp}`);
+    const whatsappUri = `https://api.whatsapp.com/send?phone=917379325499&text=${waText}`;
+
+    return {
+      success: true,
+      otp: otp,
+      phone: cleanPhone,
+      name: customerName,
+      expiresAt: expiresAt,
+      whatsappUri: whatsappUri
+    };
+  }
+
+  /**
+   * Verifies the 6-digit OTP against Cloud Storage
+   */
+  async verifyOtp(phone, enteredOtp) {
+    const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
+    const code = String(enteredOtp).trim();
+
+    let record = null;
+
+    // Check Firebase first if available
+    if (this.isReady()) {
+      try {
+        const snap = await this.db.ref(`otps/${cleanPhone}`).once('value');
+        record = snap.val();
+      } catch (err) {
+        console.warn('Firebase OTP read failed, falling back to local', err);
+      }
+    }
+
+    // Fallback to sessionStorage if not retrieved from cloud
+    if (!record) {
+      try {
+        const saved = sessionStorage.getItem(`shalom_otp_${cleanPhone}`);
+        if (saved) record = JSON.parse(saved);
+      } catch (e) {}
+    }
+
+    if (!record) {
+      return { success: false, error: 'No active OTP found. Please request a new code.' };
+    }
+
+    if (Date.now() > record.expiresAt) {
+      return { success: false, error: 'OTP has expired. Please request a new code.' };
+    }
+
+    if (record.otp !== code) {
+      return { success: false, error: 'Incorrect OTP. Please check your WhatsApp code.' };
+    }
+
+    // Mark as verified
+    record.verified = true;
+    if (this.isReady()) {
+      try {
+        await this.db.ref(`otps/${cleanPhone}`).update({ verified: true });
+        // Save verified customer record permanently in cloud!
+        await this.db.ref(`customers/${cleanPhone}`).update({
+          name: record.name || 'Customer',
+          phone: cleanPhone,
+          lastLoginAt: new Date().toISOString(),
+          isVerified: true
+        });
+      } catch (e) {}
+    }
+
+    return {
+      success: true,
+      customer: {
+        name: record.name || 'Customer',
+        phone: cleanPhone,
+        isVerified: true,
+        verifiedAt: new Date().toISOString()
+      }
+    };
+  }
+
+  // =========================================================================
   // SUBSCRIPTIONS
   // =========================================================================
 
