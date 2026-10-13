@@ -884,19 +884,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const divider = "--------------------------------";
     const doubleDivider = "================================";
 
-    const dateStr = bill.formattedDate || new Date(bill.timestamp).toLocaleDateString('en-IN') + ' ' + new Date(bill.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = bill.formattedDate || (bill.timestamp ? new Date(bill.timestamp).toLocaleDateString('en-IN') + ' ' + new Date(bill.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleString('en-IN'));
+    const items = Array.isArray(bill.items) ? bill.items : [];
 
-    let itemsRows = bill.items.map(it => {
-      const lineTotal = (it.unitPrice * it.quantity).toFixed(2);
-      const nameTruncated = it.name.length > 30 ? it.name.substring(0, 28) + '..' : it.name;
+    let itemsRows = items.map(it => {
+      const uPrice = Number(it.unitPrice || it.price || 0);
+      const qty = Number(it.quantity || 1);
+      const lineTotal = (uPrice * qty).toFixed(2);
+      const nameTruncated = (it.name || 'Item').length > 30 ? (it.name || 'Item').substring(0, 28) + '..' : (it.name || 'Item');
       return `
         <div style="font-weight: bold; margin-top: 4px;">${escapeHtml(nameTruncated)}</div>
         <div style="display: flex; justify-content: space-between; font-size: 10px;">
-          <span>  ${it.quantity} x Rs.${Number(it.unitPrice).toFixed(2)} (${escapeHtml(it.unit || '')})</span>
+          <span>  ${qty} x Rs.${uPrice.toFixed(2)} (${escapeHtml(it.unit || '')})</span>
           <span style="font-weight: bold;">Rs.${lineTotal}</span>
         </div>
       `;
     }).join('');
+
+    const totalQty = items.reduce((s, it) => s + (Number(it.quantity) || 1), 0);
+    const subtotal = Number(bill.subtotal || 0).toFixed(2);
+    const grandTotal = Number(bill.grandTotal || 0).toFixed(2);
+    const discount = Number(bill.discount || 0);
+    const gstAmt = Number(bill.gstAmount || 0);
 
     return `
       <div style="text-align: center; font-size: 11px; line-height: 1.25;">
@@ -908,7 +917,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         <div style="text-align: left; font-size: 10px;">
           <div style="display: flex; justify-content: space-between;">
-            <span><strong>BILL NO:</strong> ${bill.billNo}</span>
+            <span><strong>BILL NO:</strong> ${bill.billNo || 'DRAFT'}</span>
             <span><strong>${bill.status || 'PAID'}</strong></span>
           </div>
           <div>DATE: ${dateStr}</div>
@@ -931,19 +940,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <div style="font-size: 10px;">
           <div style="display: flex; justify-content: space-between;">
-            <span>Total Items: ${bill.items.reduce((s, it) => s + it.quantity, 0)}</span>
-            <span>Subtotal: Rs.${Number(bill.subtotal).toFixed(2)}</span>
+            <span>Total Items: ${totalQty}</span>
+            <span>Subtotal: Rs.${subtotal}</span>
           </div>
-          ${bill.discount > 0 ? `
+          ${discount > 0 ? `
             <div style="display: flex; justify-content: space-between; font-weight: bold;">
               <span>Discount:</span>
-              <span>- Rs.${Number(bill.discount).toFixed(2)}</span>
+              <span>- Rs.${discount.toFixed(2)}</span>
             </div>
           ` : ''}
-          ${bill.gstAmount > 0 ? `
+          ${gstAmt > 0 ? `
             <div style="display: flex; justify-content: space-between;">
               <span>GST (5%):</span>
-              <span>Rs.${Number(bill.gstAmount).toFixed(2)}</span>
+              <span>Rs.${gstAmt.toFixed(2)}</span>
             </div>
           ` : ''}
         </div>
@@ -952,7 +961,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 900; padding: 2px 0;">
           <span>NET AMOUNT:</span>
-          <span>Rs.${Number(bill.grandTotal).toFixed(2)}</span>
+          <span>Rs.${grandTotal}</span>
         </div>
 
         <div style="margin: 4px 0;">${doubleDivider}</div>
@@ -1811,15 +1820,18 @@ document.addEventListener('DOMContentLoaded', () => {
                   <th style="padding: 6px 10px; text-align: right;">Total</th>
                 </tr>
               </thead>
-              <tbody>
-                ${order.items.map(it => `
+                ${(order.items || []).map(it => {
+                  const uPrice = Number(it.unitPrice || it.price || 0);
+                  const qty = Number(it.quantity || 1);
+                  return `
                   <tr style="border-bottom: 1px solid #f0f4f2;">
-                    <td style="padding: 7px 10px;"><strong>${it.name}</strong> <span style="font-size: 0.74rem; color: #7d998d;">(${it.code || 'SK'})</span></td>
-                    <td style="padding: 7px 10px; text-align: center; font-weight: 700;">${it.quantity}</td>
-                    <td style="padding: 7px 10px; text-align: right;">₹${it.unitPrice}</td>
-                    <td style="padding: 7px 10px; text-align: right; font-weight: 800;">₹${it.unitPrice * it.quantity}</td>
+                    <td style="padding: 7px 10px;"><strong>${escapeHtml(it.name || 'Item')}</strong> <span style="font-size: 0.74rem; color: #7d998d;">(${escapeHtml(it.code || 'SK')})</span></td>
+                    <td style="padding: 7px 10px; text-align: center; font-weight: 700;">${qty}</td>
+                    <td style="padding: 7px 10px; text-align: right;">₹${uPrice.toLocaleString('en-IN')}</td>
+                    <td style="padding: 7px 10px; text-align: right; font-weight: 800;">₹${(uPrice * qty).toLocaleString('en-IN')}</td>
                   </tr>
-                `).join('')}
+                `;
+                }).join('')}
               </tbody>
             </table>
           </div>
@@ -1827,14 +1839,14 @@ document.addEventListener('DOMContentLoaded', () => {
           <!-- Actions -->
           <div style="display: flex; justify-content: flex-end; gap: 10px; align-items: center; border-top: 1px solid #edf3ef; padding-top: 14px;">
             ${isPending ? `
-              <button type="button" class="btn btn-outline btn-sm reject-online-order-btn" data-order-id="${order.orderId}" style="border-color: #ef4444; color: #ef4444;">
+              <button type="button" class="btn btn-outline btn-sm reject-online-order-btn" data-order-id="${order.orderId}" style="border-color: #ef4444; color: #ef4444; cursor: pointer;">
                 ✕ Reject Order
               </button>
-              <button type="button" class="btn btn-primary confirm-online-order-btn" data-order-id="${order.orderId}" style="background: linear-gradient(135deg, #1d7057, #0c3c2e); font-weight: 800; display: inline-flex; align-items: center; gap: 6px;">
+              <button type="button" class="btn btn-primary confirm-online-order-btn" data-order-id="${order.orderId}" style="background: linear-gradient(135deg, #1d7057, #0c3c2e); font-weight: 800; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
                 <span>✓ Confirm Order & Create Bill</span>
               </button>
             ` : (isConfirmed ? `
-              <button type="button" class="btn btn-outline btn-sm reprint-online-bill-btn" data-bill-no="${order.billNo}">
+              <button type="button" class="btn btn-outline btn-sm reprint-online-bill-btn" data-bill-no="${order.billNo}" style="cursor: pointer;">
                 🖨️ Re-Print Thermal Receipt (${order.billNo})
               </button>
             ` : '')}
@@ -1843,17 +1855,19 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     }).join('');
 
-    // Attach Confirm Click Handler
+    // Attach Confirm Click Handlers
     el.onlineOrdersListContainer.querySelectorAll('.confirm-online-order-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
         const oId = btn.getAttribute('data-order-id');
-        confirmAndBillOnlineOrder(oId);
+        if (oId) confirmAndBillOnlineOrder(oId);
       });
     });
 
-    // Attach Reject Click Handler
+    // Attach Reject Click Handlers
     el.onlineOrdersListContainer.querySelectorAll('.reject-online-order-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
         const oId = btn.getAttribute('data-order-id');
         const reason = prompt('Enter cancellation reason (e.g. Out of stock, Customer request):', 'Out of stock');
         if (reason && typeof shalomOrderQueue !== 'undefined') {
@@ -1864,14 +1878,15 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
-    // Attach Reprint Handler
+    // Attach Reprint Handlers
     el.onlineOrdersListContainer.querySelectorAll('.reprint-online-bill-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
         const bNo = btn.getAttribute('data-bill-no');
         const allBills = loadSavedBills();
         const found = allBills.find(b => b.billNo === bNo);
         if (found) {
-          print2InchThermalReceipt(found);
+          preview2InchThermalSlip(found);
         } else {
           showToast('Bill record not found.', 'error');
         }
@@ -1880,75 +1895,106 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function confirmAndBillOnlineOrder(orderId) {
-    if (typeof shalomOrderQueue === 'undefined') return;
+    if (typeof shalomOrderQueue === 'undefined') {
+      showToast('Order queue not found.', 'error');
+      return;
+    }
     const order = shalomOrderQueue.getOrderById(orderId);
     if (!order) {
-      showToast('Order not found.', 'error');
+      showToast('Order not found in queue.', 'error');
       return;
     }
 
-    // 1. Generate next POS Bill Number
-    const billNumber = generateNextBillNumber();
-    const totals = order.totals || {};
-
-    // 2. Create official Bill Record
-    const newBill = {
-      billNo: billNumber,
-      orderRefId: order.orderId,
-      timestamp: new Date().toISOString(),
-      formattedDate: new Date().toLocaleDateString('en-IN') + ' ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-      customerName: order.customer?.name || 'Online Customer',
-      customerPhone: order.customer?.phone || '',
-      paymentMode: 'UPI (Confirmed)',
-      utrRef: order.payment?.utr || `UPI-ORD-${order.orderId}`,
-      deliveryType: order.delivery?.type || 'Pickup',
-      deliveryFee: totals.deliveryFee || 0,
-      discount: 0,
-      gstMode: 'included',
-      subtotal: totals.subtotal || 0,
-      gstAmount: totals.gst || 0,
-      grandTotal: totals.grandTotal || 0,
-      items: order.items.map(it => ({
-        id: it.id || it.productId,
-        code: it.code || 'SK',
-        name: it.name,
-        unitPrice: it.unitPrice || it.price,
-        quantity: it.quantity,
-        subtotal: (it.unitPrice || it.price) * it.quantity,
-        unit: it.unit || 'Standard'
-      })),
-      status: 'Paid'
-    };
-
-    // 3. Save to Permanent POS Bills Storage
-    const allBills = loadSavedBills();
-    allBills.unshift(newBill);
-    saveBills(allBills);
-
-    // 4. Deduct Stock in Real-Time
-    order.items.forEach(it => {
-      const pid = it.id || it.productId;
-      const targetProd = liveStock.find(p => p.id === pid || p.code === it.code);
-      if (targetProd) {
-        targetProd.stock = Math.max(0, (targetProd.stock || 0) - it.quantity);
+    if (order.status === 'CONFIRMED') {
+      showToast(`Order #${orderId} is already confirmed! (Bill #${order.billNo || ''})`, 'info');
+      if (order.billNo) {
+        const allBills = loadSavedBills();
+        const found = allBills.find(b => b.billNo === order.billNo);
+        if (found) preview2InchThermalSlip(found);
       }
-    });
-    saveStockOverrides(false);
-    updateKpis();
+      return;
+    }
 
-    // 5. Update Status in Online Order Queue
-    shalomOrderQueue.confirmOrder(orderId, billNumber);
+    try {
+      // 1. Generate next POS Bill Number
+      const billNumber = generateNextBillNumber();
+      const totals = order.totals || {};
+      const grandTotal = Number(totals.grandTotal || totals.total || 0);
+      const subtotal = Number(totals.subtotal || (grandTotal - (totals.deliveryFee || 0)) || 0);
 
-    // 6. Sound & Toast Feedback
-    playScannerBeep();
-    showToast(`Order #${orderId} CONFIRMED! Generated Bill #${billNumber}`, 'success');
+      // 2. Normalize items array
+      const normalizedItems = (order.items || []).map(it => {
+        const uPrice = Number(it.unitPrice || it.price || 0);
+        const qty = Number(it.quantity || 1);
+        return {
+          id: it.id || it.productId || '',
+          code: it.code || 'SK',
+          name: it.name || 'Store Item',
+          unitPrice: uPrice,
+          quantity: qty,
+          subtotal: uPrice * qty,
+          unit: it.unit || 'Standard'
+        };
+      });
 
-    // 7. Preview/Print Thermal Receipt
-    preview2InchThermalSlip(newBill);
+      // 3. Create official Bill Record
+      const newBill = {
+        billNo: billNumber,
+        orderRefId: order.orderId,
+        timestamp: new Date().toISOString(),
+        formattedDate: new Date().toLocaleDateString('en-IN') + ' ' + new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+        customerName: order.customer?.name || 'Online Customer',
+        customerPhone: order.customer?.phone || '',
+        paymentMode: 'UPI (Confirmed)',
+        utrRef: order.payment?.utr || `UPI-ORD-${order.orderId}`,
+        deliveryType: order.delivery?.type || 'Pickup',
+        deliveryFee: Number(totals.deliveryFee || 0),
+        discount: 0,
+        gstMode: 'included',
+        subtotal: subtotal,
+        gstAmount: Number(totals.gst || 0),
+        grandTotal: grandTotal,
+        items: normalizedItems,
+        status: 'Paid'
+      };
 
-    // 8. Re-render views
-    renderOnlineOrders();
-    renderBillHistoryTable();
+      // 4. Save to Permanent POS Bills Storage (clean any duplicates first)
+      const allBills = loadSavedBills();
+      const filteredBills = allBills.filter(b => b.orderRefId !== order.orderId);
+      filteredBills.unshift(newBill);
+      saveBills(filteredBills);
+
+      // 5. Deduct Stock in Real-Time using SHALOM_PRODUCTS master list
+      if (typeof SHALOM_PRODUCTS !== 'undefined' && Array.isArray(SHALOM_PRODUCTS)) {
+        normalizedItems.forEach(it => {
+          const targetProd = SHALOM_PRODUCTS.find(p => p.id === it.id || (p.code && it.code && p.code === it.code));
+          if (targetProd) {
+            targetProd.stock = Math.max(0, (Number(targetProd.stock) || 0) - it.quantity);
+            targetProd.inStock = targetProd.stock > 0;
+          }
+        });
+        saveStockOverrides(false);
+        updateKpis();
+        renderStockTable();
+      }
+
+      // 6. Update Status in Online Order Queue
+      shalomOrderQueue.confirmOrder(order.orderId, billNumber);
+
+      // 7. Sound & Toast Feedback
+      playScannerBeep();
+      showToast(`✓ Order #${order.orderId} CONFIRMED! Generated Bill #${billNumber}`, 'success');
+
+      // 8. Re-render views
+      renderOnlineOrders();
+      renderBillHistoryTable();
+
+      // 9. Preview/Print Thermal Receipt
+      preview2InchThermalSlip(newBill);
+    } catch (err) {
+      console.error('Error in confirmAndBillOnlineOrder:', err);
+      showToast(`Confirmation error: ${err.message}`, 'error');
+    }
   }
 
   // =========================================================================
@@ -1988,6 +2034,44 @@ document.addEventListener('DOMContentLoaded', () => {
     el.tabOnlineOrders?.addEventListener('click', () => switchTab('onlineOrdersView'));
     el.refreshOnlineOrdersBtn?.addEventListener('click', renderOnlineOrders);
     el.onlineOrdersFilter?.addEventListener('change', renderOnlineOrders);
+
+    // Online Orders Event Delegation (guarantees click capture on dynamically rendered cards)
+    el.onlineOrdersListContainer?.addEventListener('click', (e) => {
+      const confirmBtn = e.target.closest('.confirm-online-order-btn');
+      if (confirmBtn) {
+        e.preventDefault();
+        const oId = confirmBtn.getAttribute('data-order-id');
+        if (oId) confirmAndBillOnlineOrder(oId);
+        return;
+      }
+
+      const rejectBtn = e.target.closest('.reject-online-order-btn');
+      if (rejectBtn) {
+        e.preventDefault();
+        const oId = rejectBtn.getAttribute('data-order-id');
+        const reason = prompt('Enter cancellation reason (e.g. Out of stock, Customer request):', 'Out of stock');
+        if (reason && typeof shalomOrderQueue !== 'undefined') {
+          shalomOrderQueue.rejectOrder(oId, reason);
+          showToast(`Order #${oId} marked as Cancelled.`, 'info');
+          renderOnlineOrders();
+        }
+        return;
+      }
+
+      const reprintBtn = e.target.closest('.reprint-online-bill-btn');
+      if (reprintBtn) {
+        e.preventDefault();
+        const bNo = reprintBtn.getAttribute('data-bill-no');
+        const allBills = loadSavedBills();
+        const found = allBills.find(b => b.billNo === bNo);
+        if (found) {
+          preview2InchThermalSlip(found);
+        } else {
+          showToast('Bill record not found.', 'error');
+        }
+        return;
+      }
+    });
 
     // Barcode Scanner input
     el.posBarcodeInput?.addEventListener('keydown', (e) => {

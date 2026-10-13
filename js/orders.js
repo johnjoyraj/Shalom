@@ -67,7 +67,9 @@ class ShalomOrderQueue {
   }
 
   getOrderById(orderId) {
-    return this.getOrders().find(o => o.orderId === orderId);
+    if (!orderId) return null;
+    const cleanId = String(orderId).trim();
+    return this.getOrders().find(o => String(o.orderId).trim() === cleanId);
   }
 
   /**
@@ -95,7 +97,8 @@ class ShalomOrderQueue {
    */
   confirmOrder(orderId, billNo) {
     const orders = this.getOrders();
-    const target = orders.find(o => o.orderId === orderId);
+    const cleanId = String(orderId).trim();
+    const target = orders.find(o => String(o.orderId).trim() === cleanId);
     if (!target) return null;
 
     target.status = 'CONFIRMED';
@@ -111,7 +114,8 @@ class ShalomOrderQueue {
    */
   rejectOrder(orderId, reason = 'Out of stock or payment unverified') {
     const orders = this.getOrders();
-    const target = orders.find(o => o.orderId === orderId);
+    const cleanId = String(orderId).trim();
+    const target = orders.find(o => String(o.orderId).trim() === cleanId);
     if (!target) return null;
 
     target.status = 'REJECTED';
