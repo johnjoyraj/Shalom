@@ -966,7 +966,7 @@ document.addEventListener('DOMContentLoaded', () => {
       container.innerHTML = `
         <div class="customer-logged-pill" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(212,175,55,0.4); border-radius: 20px; padding: 5px 12px; display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #fff;">
           <span>👤 ${escapeHtml(session.name)}</span>
-          ${session.isVerified ? `<span style="background: #22c55e; color: #fff; font-size: 0.68rem; padding: 2px 7px; border-radius: 10px; font-weight: 800;">✓ WhatsApp</span>` : ''}
+          ${session.isVerified ? `<span style="background: #0284c7; color: #fff; font-size: 0.68rem; padding: 2px 7px; border-radius: 10px; font-weight: 800;">✓ Verified</span>` : ''}
           <button type="button" class="customer-logout-btn" id="logoutCustBtn" title="Sign out" style="background: none; border: none; color: #fca5a5; font-size: 0.74rem; cursor: pointer; text-decoration: underline;">Logout</button>
         </div>
       `;
@@ -981,11 +981,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Active WhatsApp OTP state
+  // Active Google SMS OTP state
   let activeOtpState = {
     phone: '',
     name: '',
     otp: '',
+    method: 'GOOGLE_SMS',
     expiresAt: 0,
     timerInterval: null
   };
@@ -1038,35 +1039,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitBtn = document.getElementById('custLoginSubmitBtn');
     if (submitBtn) {
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span>⏳ Generating WhatsApp Code...</span>';
+      submitBtn.innerHTML = '<span>⏳ Requesting Google SMS...</span>';
     }
 
     try {
-      const res = (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.generateAndSaveOtp)
-        ? await ShalomCloudSync.generateAndSaveOtp(phone, name)
-        : {
-            success: true,
-            otp: Math.floor(100000 + Math.random() * 900000).toString(),
-            phone,
-            name,
-            expiresAt: Date.now() + 300000,
-            whatsappUri: `https://api.whatsapp.com/send?phone=917379325499&text=Hello%20Shalom%20Kerala%20Stores,%20my%20OTP%20is%20`
-          };
+      const res = (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.sendGooglePhoneOtp)
+        ? await ShalomCloudSync.sendGooglePhoneOtp(phone, name, 'recaptcha-container')
+        : (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.generateAndSaveOtp)
+          ? await ShalomCloudSync.generateAndSaveOtp(phone, name)
+          : {
+              success: true,
+              method: 'FALLBACK_OTP',
+              fallbackOtp: Math.floor(100000 + Math.random() * 900000).toString(),
+              phone,
+              name,
+              expiresAt: Date.now() + 300000
+            };
+
+      if (!res.success && !res.fallbackOtp) {
+        if (phoneErr) phoneErr.textContent = res.error || 'Failed to send SMS. Please try again.';
+        return;
+      }
 
       activeOtpState.phone = phone;
       activeOtpState.name = name;
-      activeOtpState.otp = res.otp;
-      activeOtpState.expiresAt = res.expiresAt;
+      activeOtpState.method = res.method || 'GOOGLE_SMS';
+      activeOtpState.otp = res.fallbackOtp || '';
 
       // Update UI for Step 2
       const phoneDisp = document.getElementById('custOtpPhoneDisplay');
       if (phoneDisp) phoneDisp.textContent = `+91 ${phone}`;
 
-      const otpDisp = document.getElementById('custGeneratedOtpDisplay');
-      if (otpDisp) otpDisp.textContent = res.otp;
+      const smsNotice = document.getElementById('smsDeliveryNotice');
+      const smsSubtitle = document.getElementById('smsDeliverySubtitle');
+      const fallbackBox = document.getElementById('custFallbackOtpContainer');
+      const fallbackOtpDisp = document.getElementById('custGeneratedOtpDisplay');
 
-      const waLink = document.getElementById('openWhatsAppOtpLink');
-      if (waLink) waLink.href = res.whatsappUri;
+      if (res.method === 'GOOGLE_SMS') {
+        if (smsSubtitle) smsSubtitle.textContent = `Google has dispatched a 6-digit telecom SMS directly to your phone.`;
+        if (fallbackBox) fallbackBox.style.display = 'none';
+      } else if (res.fallbackOtp) {
+        if (smsSubtitle) smsSubtitle.textContent = res.requiresConsoleEnable
+          ? 'Firebase Phone provider pending activation. Use this test verification code:'
+          : 'Testing verification code generated for instant access:';
+        if (fallbackBox) fallbackBox.style.display = 'block';
+        if (fallbackOtpDisp) fallbackOtpDisp.textContent = res.fallbackOtp;
+      }
 
       // Switch to Step 2
       const s1 = document.getElementById('custLoginStep1');
@@ -1074,8 +1092,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (s1) s1.style.display = 'none';
       if (s2) s2.style.display = 'block';
 
-      // Start countdown timer
-      startOtpCountdown(res.expiresAt);
+      // Start 30-second resend countdown timer
+      startOtpCountdown(Date.now() + 30000);
 
       const otpInput = document.getElementById('custOtpInput');
       if (otpInput) {
@@ -1083,14 +1101,20 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => otpInput.focus(), 150);
       }
 
-      showToast(`📲 Verification code generated for +91 ${phone}!`, 'success');
+      if (res.method === 'GOOGLE_SMS') {
+        showToast(`📲 Google SMS dispatched to +91 ${phone}! Check your SMS inbox.`, 'success');
+      } else if (res.requiresConsoleEnable) {
+        showToast('Google Phone Auth not enabled in Firebase Console yet. Test code displayed.', 'info');
+      } else {
+        showToast(`Verification code ready for +91 ${phone}!`, 'info');
+      }
     } catch (err) {
-      console.error('OTP request error:', err);
-      showToast('Could not generate verification code. Please retry.', 'error');
+      console.error('SMS request error:', err);
+      showToast('Could not dispatch verification SMS. Please retry.', 'error');
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<span>💬 Get WhatsApp OTP →</span>';
+        submitBtn.innerHTML = '<span>📲 Send Google SMS Code →</span>';
       }
     }
   }
@@ -1105,19 +1129,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const remainingMs = expiresAt - Date.now();
       if (remainingMs <= 0) {
         clearInterval(activeOtpState.timerInterval);
-        if (timerDisp) timerDisp.textContent = 'OTP Expired';
+        if (timerDisp) timerDisp.textContent = 'Resend available';
         if (resendBtn) resendBtn.disabled = false;
         return;
       }
-      const totalSec = Math.floor(remainingMs / 1000);
-      const mins = String(Math.floor(totalSec / 60)).padStart(2, '0');
-      const secs = String(totalSec % 60).padStart(2, '0');
-      if (timerDisp) timerDisp.textContent = `Expires in ${mins}:${secs}`;
-
-      // Enable resend after 30 seconds
-      if (totalSec <= 270 && resendBtn) {
-        resendBtn.disabled = false;
-      }
+      const totalSec = Math.ceil(remainingMs / 1000);
+      if (timerDisp) timerDisp.textContent = `Resend in ${totalSec}s`;
     }
 
     update();
@@ -1140,19 +1157,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const verifyBtn = document.getElementById('verifyOtpSubmitBtn');
     if (verifyBtn) {
       verifyBtn.disabled = true;
-      verifyBtn.textContent = 'Verifying Code...';
+      verifyBtn.textContent = 'Verifying SMS Code...';
     }
 
     try {
-      const res = (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.verifyOtp)
-        ? await ShalomCloudSync.verifyOtp(activeOtpState.phone, entered)
-        : (entered === activeOtpState.otp ? { success: true, customer: { name: activeOtpState.name, phone: activeOtpState.phone, isVerified: true } } : { success: false, error: 'Incorrect code' });
+      const res = (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.verifyGooglePhoneOtp)
+        ? await ShalomCloudSync.verifyGooglePhoneOtp(activeOtpState.phone, entered)
+        : (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.verifyOtp)
+          ? await ShalomCloudSync.verifyOtp(activeOtpState.phone, entered)
+          : (entered === activeOtpState.otp ? { success: true, customer: { name: activeOtpState.name, phone: activeOtpState.phone, isVerified: true } } : { success: false, error: 'Incorrect code' });
 
       if (res.success) {
         if (activeOtpState.timerInterval) clearInterval(activeOtpState.timerInterval);
-        saveCustomerSession(activeOtpState.name, activeOtpState.phone, true);
+        const verifiedName = (res.customer && res.customer.name) ? res.customer.name : activeOtpState.name;
+        saveCustomerSession(verifiedName, activeOtpState.phone, true);
         closeCustomerLoginModal();
-        showToast(`🎉 Welcome, ${activeOtpState.name}! Verified via WhatsApp.`, 'success');
+        showToast(`🎉 Welcome, ${verifiedName}! Mobile verified via Google SMS.`, 'success');
       } else {
         if (errBox) errBox.textContent = res.error || 'Invalid verification code.';
         otpInput?.focus();
@@ -1162,7 +1182,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } finally {
       if (verifyBtn) {
         verifyBtn.disabled = false;
-        verifyBtn.textContent = '✓ Verify & Complete Sign In';
+        verifyBtn.textContent = '✓ Verify Code & Sign In';
       }
     }
   }

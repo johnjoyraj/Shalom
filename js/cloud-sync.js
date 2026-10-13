@@ -26,7 +26,9 @@ class ShalomCloudSyncService {
     this.app = null;
     this.isConnected = false;
     this.isConfigured = false;
-    this.lastSyncTime = null;
+    this.recaptchaVerifier = null;
+    this.confirmationResult = null;
+    this.currentPendingAuth = null;
 
     // Default configuration (loads from localStorage or embedded default)
     this.config = this.loadConfig();
@@ -249,57 +251,233 @@ class ShalomCloudSyncService {
   }
 
   // =========================================================================
-  // WHATSAPP CLOUD OTP AUTHENTICATION
+  // GOOGLE FIREBASE PHONE SMS AUTHENTICATION
   // =========================================================================
 
   /**
-   * Generates a 6-digit OTP, saves in Firebase /otps/{phone}, and returns verification payload
+   * Cleans any active reCAPTCHA instance to prevent stale widget errors
    */
-  async generateAndSaveOtp(phone, customerName = '') {
-    const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 mins
+  resetRecaptcha(containerId = 'recaptcha-container') {
+    if (this.recaptchaVerifier) {
+      try {
+        this.recaptchaVerifier.clear();
+      } catch (e) {}
+      this.recaptchaVerifier = null;
+    }
+    if (window.recaptchaVerifier) {
+      try {
+        window.recaptchaVerifier.clear();
+      } catch (e) {}
+      window.recaptchaVerifier = null;
+    }
+    const container = document.getElementById(containerId);
+    if (container) container.innerHTML = '';
+  }
 
+  /**
+   * Internal helper: Generates fallback OTP saved to Firebase RTDB and session
+   */
+  async _generateFallbackOtp(cleanPhone, customerName, reason) {
+    const fallbackOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 5 * 60 * 1000;
     const payload = {
       phone: cleanPhone,
-      name: customerName.trim(),
-      otp: otp,
+      name: (customerName || '').trim(),
+      otp: fallbackOtp,
       createdAt: Date.now(),
       expiresAt: expiresAt,
+      isFallback: true,
+      reason: reason,
       verified: false
     };
 
-    // Store in SessionStorage for immediate fallback
     try {
       sessionStorage.setItem(`shalom_otp_${cleanPhone}`, JSON.stringify(payload));
     } catch (e) {}
 
-    // Store in Google Firebase Cloud
     if (this.isReady()) {
       try {
         await this.db.ref(`otps/${cleanPhone}`).set(payload);
-        console.log(`[CloudSync] OTP generated and saved to Firebase for +91${cleanPhone}`);
-      } catch (err) {
-        console.warn('[CloudSync] Firebase OTP write error, using fallback', err);
-      }
+      } catch (e) {}
     }
-
-    // Build direct WhatsApp Click-to-Chat URI
-    const waText = encodeURIComponent(`Hello Shalom Kerala Stores, my verification OTP code is: ${otp}`);
-    const whatsappUri = `https://api.whatsapp.com/send?phone=917379325499&text=${waText}`;
 
     return {
       success: true,
-      otp: otp,
+      method: 'FALLBACK_OTP',
+      fallbackOtp: fallbackOtp,
       phone: cleanPhone,
       name: customerName,
-      expiresAt: expiresAt,
-      whatsappUri: whatsappUri
+      expiresAt: expiresAt
     };
   }
 
   /**
-   * Verifies the 6-digit OTP against Cloud Storage
+   * Sends authentic telecom SMS via Google Firebase Phone Auth
+   */
+  async sendGooglePhoneOtp(phone, customerName = '', containerId = 'recaptcha-container') {
+    const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
+    if (cleanPhone.length !== 10) {
+      return { success: false, error: 'Please enter a valid 10-digit Indian mobile number.' };
+    }
+
+    const intlPhone = `+91${cleanPhone}`;
+    this.currentPendingAuth = {
+      phone: cleanPhone,
+      name: (customerName || '').trim(),
+      intlPhone: intlPhone
+    };
+
+    // Ensure Firebase app is initialized
+    if (!this.app) {
+      this.init();
+    }
+
+    if (typeof firebase === 'undefined' || !firebase.auth) {
+      console.warn('[CloudSync] firebase.auth compat not available. Using fallback.');
+      return this._generateFallbackOtp(cleanPhone, customerName, 'Firebase Auth SDK not loaded');
+    }
+
+    try {
+      // Clean previous reCAPTCHA widgets
+      this.resetRecaptcha(containerId);
+
+      // Create new invisible reCAPTCHA verifier
+      this.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(containerId, {
+        size: 'invisible',
+        callback: () => {
+          console.log('[CloudSync] Google reCAPTCHA passed');
+        },
+        'expired-callback': () => {
+          console.warn('[CloudSync] Google reCAPTCHA expired, resetting');
+          this.resetRecaptcha(containerId);
+        }
+      });
+
+      console.log(`[CloudSync] Requesting Google SMS OTP for ${intlPhone}...`);
+      const confirmationResult = await firebase.auth().signInWithPhoneNumber(intlPhone, this.recaptchaVerifier);
+      this.confirmationResult = confirmationResult;
+
+      return {
+        success: true,
+        method: 'GOOGLE_SMS',
+        phone: cleanPhone,
+        intlPhone: intlPhone,
+        name: customerName,
+        message: `Google has dispatched a 6-digit SMS verification code to ${intlPhone}`
+      };
+    } catch (err) {
+      console.error('[CloudSync] Google Phone Auth error:', err);
+      this.resetRecaptcha(containerId);
+
+      // Handle specific Firebase configuration scenarios
+      if (err.code === 'auth/operation-not-allowed') {
+        const fallback = await this._generateFallbackOtp(cleanPhone, customerName, 'Phone Auth disabled in Console');
+        return {
+          ...fallback,
+          requiresConsoleEnable: true,
+          consoleUrl: 'https://console.firebase.google.com/project/adonaibroadcast-11095/authentication/providers',
+          error: 'Google Phone SMS is not enabled in Firebase Console yet. Please enable "Phone" under Sign-in method.'
+        };
+      } else if (err.code === 'auth/unauthorized-domain') {
+        const fallback = await this._generateFallbackOtp(cleanPhone, customerName, 'Domain unauthorized in Firebase');
+        return {
+          ...fallback,
+          unauthorizedDomain: true,
+          consoleUrl: 'https://console.firebase.google.com/project/adonaibroadcast-11095/authentication/settings',
+          error: 'Current domain is not authorized in Firebase Console Authentication settings.'
+        };
+      } else if (err.code === 'auth/quota-exceeded') {
+        const fallback = await this._generateFallbackOtp(cleanPhone, customerName, 'SMS Quota Exceeded');
+        return {
+          ...fallback,
+          error: 'Google SMS quota limit reached for this hour. Fallback verification code generated.'
+        };
+      } else if (err.code === 'auth/invalid-phone-number') {
+        return {
+          success: false,
+          error: 'Invalid phone number format. Please check the 10-digit number.'
+        };
+      } else {
+        const fallback = await this._generateFallbackOtp(cleanPhone, customerName, err.message || 'SMS Error');
+        return {
+          ...fallback,
+          error: err.message || 'Failed to dispatch Google SMS. Fallback code generated.'
+        };
+      }
+    }
+  }
+
+  /**
+   * Verifies the 6-digit SMS OTP via Google Firebase Auth or Fallback
+   */
+  async verifyGooglePhoneOtp(phone, enteredOtp) {
+    const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
+    const code = String(enteredOtp).trim();
+
+    if (!code || code.length !== 6) {
+      return { success: false, error: 'Please enter the 6-digit verification code.' };
+    }
+
+    // 1. If we have an active Google confirmationResult, authenticate with Google
+    if (this.confirmationResult) {
+      try {
+        const userCredential = await this.confirmationResult.confirm(code);
+        const user = userCredential.user;
+        const custName = (this.currentPendingAuth && this.currentPendingAuth.name) || 'Customer';
+
+        // Save verified customer record permanently in Firebase Database
+        if (this.isReady()) {
+          try {
+            await this.db.ref(`customers/${cleanPhone}`).update({
+              name: custName,
+              phone: cleanPhone,
+              authUid: user.uid,
+              isVerified: true,
+              verifiedVia: 'GOOGLE_SMS',
+              verifiedAt: new Date().toISOString(),
+              lastLoginAt: new Date().toISOString()
+            });
+          } catch (dbErr) {
+            console.warn('[CloudSync] Failed to update customer in RTDB', dbErr);
+          }
+        }
+
+        this.confirmationResult = null; // Reset once consumed
+        return {
+          success: true,
+          method: 'GOOGLE_SMS',
+          customer: {
+            name: custName,
+            phone: cleanPhone,
+            authUid: user.uid,
+            isVerified: true,
+            verifiedVia: 'GOOGLE_SMS',
+            verifiedAt: new Date().toISOString()
+          }
+        };
+      } catch (authErr) {
+        console.error('[CloudSync] Firebase confirmationResult.confirm failed:', authErr);
+        if (authErr.code === 'auth/invalid-verification-code') {
+          return { success: false, error: 'Incorrect 6-digit SMS code. Please recheck your SMS and try again.' };
+        } else if (authErr.code === 'auth/code-expired') {
+          return { success: false, error: 'SMS code has expired. Please click "Resend SMS".' };
+        }
+      }
+    }
+
+    // 2. Fallback check (from DB or sessionStorage)
+    return this.verifyOtp(cleanPhone, code);
+  }
+
+  /**
+   * Generates a 6-digit OTP, saves in Firebase /otps/{phone}, and returns verification payload (legacy fallback)
+   */
+  async generateAndSaveOtp(phone, customerName = '') {
+    return this._generateFallbackOtp(phone, customerName, 'Manual generation');
+  }
+
+  /**
+   * Verifies the 6-digit OTP against Cloud Storage (fallback)
    */
   async verifyOtp(phone, enteredOtp) {
     const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
@@ -326,15 +504,15 @@ class ShalomCloudSyncService {
     }
 
     if (!record) {
-      return { success: false, error: 'No active OTP found. Please request a new code.' };
+      return { success: false, error: 'No active code found. Please request a new SMS code.' };
     }
 
     if (Date.now() > record.expiresAt) {
-      return { success: false, error: 'OTP has expired. Please request a new code.' };
+      return { success: false, error: 'Verification code has expired. Please request a new SMS code.' };
     }
 
     if (record.otp !== code) {
-      return { success: false, error: 'Incorrect OTP. Please check your WhatsApp code.' };
+      return { success: false, error: 'Incorrect verification code. Please check your SMS messages.' };
     }
 
     // Mark as verified
@@ -342,12 +520,12 @@ class ShalomCloudSyncService {
     if (this.isReady()) {
       try {
         await this.db.ref(`otps/${cleanPhone}`).update({ verified: true });
-        // Save verified customer record permanently in cloud!
         await this.db.ref(`customers/${cleanPhone}`).update({
           name: record.name || 'Customer',
           phone: cleanPhone,
           lastLoginAt: new Date().toISOString(),
-          isVerified: true
+          isVerified: true,
+          verifiedVia: 'VERIFIED'
         });
       } catch (e) {}
     }
