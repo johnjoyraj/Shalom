@@ -174,7 +174,19 @@ document.addEventListener('DOMContentLoaded', () => {
     printBarcodeWrapper: document.getElementById('printBarcodeWrapper'),
 
     // Toast Container
-    erpToastContainer: document.getElementById('erpToastContainer')
+    erpToastContainer: document.getElementById('erpToastContainer'),
+
+    // Cloud Sync Elements
+    btnCloudSyncSettings: document.getElementById('btnCloudSyncSettings'),
+    cloudStatusDot: document.getElementById('cloudStatusDot'),
+    cloudStatusText: document.getElementById('cloudStatusText'),
+    cloudSyncModalBackdrop: document.getElementById('cloudSyncModalBackdrop'),
+    closeCloudSyncModalBtn: document.getElementById('closeCloudSyncModalBtn'),
+    cloudModalStatusLabel: document.getElementById('cloudModalStatusLabel'),
+    cloudFirebaseConfigTextarea: document.getElementById('cloudFirebaseConfigTextarea'),
+    btnSaveCloudConfig: document.getElementById('btnSaveCloudConfig'),
+    btnClearCloudConfig: document.getElementById('btnClearCloudConfig'),
+    btnTestCloudConnection: document.getElementById('btnTestCloudConnection')
   };
 
   // =========================================================================
@@ -1978,8 +1990,8 @@ document.addEventListener('DOMContentLoaded', () => {
         renderStockTable();
       }
 
-      // 6. Update Status in Online Order Queue
-      shalomOrderQueue.confirmOrder(order.orderId, billNumber);
+      // 6. Update Status in Online Order Queue & Cloud Sync
+      shalomOrderQueue.confirmOrder(order.orderId, billNumber, newBill);
 
       // 7. Sound & Toast Feedback
       playScannerBeep();
@@ -2362,6 +2374,128 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================================================================
+  // GOOGLE FIREBASE CLOUD SYNC CONTROLLER
+  // =========================================================================
+
+  function initCloudSyncUI() {
+    if (typeof ShalomCloudSync === 'undefined') return;
+
+    // Listen to Connection Status
+    ShalomCloudSync.onStatusChange((connected, msg) => {
+      if (el.cloudStatusDot) {
+        el.cloudStatusDot.style.background = connected ? '#22c55e' : (ShalomCloudSync.isConfigured ? '#eab308' : '#94a3b8');
+      }
+      if (el.cloudStatusText) {
+        el.cloudStatusText.textContent = connected ? '🟢 Cloud: Live' : (ShalomCloudSync.isConfigured ? '🟡 Connecting...' : '☁️ Setup Cloud');
+      }
+      if (el.cloudModalStatusLabel) {
+        el.cloudModalStatusLabel.textContent = msg;
+        el.cloudModalStatusLabel.style.color = connected ? '#15803d' : '#92400e';
+      }
+    });
+
+    // Open Modal
+    el.btnCloudSyncSettings?.addEventListener('click', () => {
+      if (el.cloudFirebaseConfigTextarea) {
+        const cur = ShalomCloudSync.loadConfig();
+        el.cloudFirebaseConfigTextarea.value = cur ? JSON.stringify(cur, null, 2) : '';
+      }
+      el.cloudSyncModalBackdrop?.classList.add('open');
+    });
+
+    // Close Modal
+    el.closeCloudSyncModalBtn?.addEventListener('click', () => {
+      el.cloudSyncModalBackdrop?.classList.remove('open');
+    });
+    el.cloudSyncModalBackdrop?.addEventListener('click', (e) => {
+      if (e.target === el.cloudSyncModalBackdrop) {
+        el.cloudSyncModalBackdrop?.classList.remove('open');
+      }
+    });
+
+    // Save Config
+    el.btnSaveCloudConfig?.addEventListener('click', () => {
+      const text = el.cloudFirebaseConfigTextarea?.value.trim();
+      if (!text) {
+        showToast('Please paste your Firebase configuration first.', 'error');
+        return;
+      }
+      try {
+        let parsed;
+        let cleanText = text;
+        if (cleanText.includes('=')) {
+          cleanText = cleanText.substring(cleanText.indexOf('=') + 1).trim();
+          if (cleanText.endsWith(';')) cleanText = cleanText.slice(0, -1).trim();
+        }
+        try {
+          parsed = JSON.parse(cleanText);
+        } catch (e) {
+          parsed = (new Function(`return ${cleanText};`))();
+        }
+
+        const res = ShalomCloudSync.saveConfig(parsed);
+        if (res.success) {
+          showToast('✓ Cloud configuration saved! Connecting...', 'success');
+          setTimeout(() => {
+            if (ShalomCloudSync.isConnected) {
+              showToast('🟢 Real-time Cloud Sync is LIVE!', 'success');
+              el.cloudSyncModalBackdrop?.classList.remove('open');
+            }
+          }, 1200);
+        } else {
+          showToast(`Invalid config: ${res.error}`, 'error');
+        }
+      } catch (err) {
+        showToast(`Could not parse config: ${err.message}`, 'error');
+      }
+    });
+
+    // Disconnect Config
+    el.btnClearCloudConfig?.addEventListener('click', () => {
+      if (confirm('Disconnect Firebase cloud sync and return to local browser storage?')) {
+        ShalomCloudSync.clearConfig();
+        if (el.cloudFirebaseConfigTextarea) el.cloudFirebaseConfigTextarea.value = '';
+        showToast('Cloud Sync disconnected.', 'info');
+      }
+    });
+
+    // Test Connection
+    el.btnTestCloudConnection?.addEventListener('click', () => {
+      if (!ShalomCloudSync.isReady()) {
+        showToast('Please enter and save your Firebase configuration first.', 'info');
+        return;
+      }
+      showToast('Testing cloud connection...', 'info');
+      ShalomCloudSync.db.ref('.info/connected').once('value').then(snap => {
+        if (snap.val() === true) {
+          showToast('🟢 Cloud Database is ONLINE and ready!', 'success');
+        } else {
+          showToast('🟡 Database contacted, awaiting connection confirmation...', 'info');
+        }
+      }).catch(err => {
+        showToast(`Connection error: ${err.message}`, 'error');
+      });
+    });
+
+    // Listen to Cloud Bills Sync
+    ShalomCloudSync.onBills((cloudBills) => {
+      if (Array.isArray(cloudBills) && cloudBills.length > 0) {
+        const localBills = loadSavedBills();
+        const map = new Map();
+        cloudBills.forEach(b => { if (b && b.billNo) map.set(b.billNo, b); });
+        localBills.forEach(b => {
+          if (b && b.billNo && !map.has(b.billNo)) map.set(b.billNo, b);
+        });
+        const merged = Array.from(map.values());
+        merged.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+        saveBills(merged);
+        renderBillHistoryTable();
+        updateKpis();
+      }
+    });
+  }
+
+  // =========================================================================
   // INIT
   // =========================================================================
 
@@ -2381,6 +2515,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     initRemoteScanListeners();
     bindGlobalEvents();
+    initCloudSyncUI();
 
     // Auto-focus barcode input
     setTimeout(() => {

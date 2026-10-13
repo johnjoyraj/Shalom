@@ -1128,6 +1128,10 @@
       </nav>
 
       <div class="erp-header-right">
+        <button type="button" class="btn btn-outline btn-sm" id="btnCloudSyncSettings" style="background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(212,175,55,0.4); border-radius: 20px; padding: 6px 14px; font-weight: 700; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+          <span id="cloudStatusDot" style="width: 8px; height: 8px; border-radius: 50%; background: #eab308; display: inline-block;"></span>
+          <span id="cloudStatusText">☁️ Cloud Sync</span>
+        </button>
         <a href="index.html" class="erp-back-btn" title="Open Customer Online Catalog">
           <span>🏪 Customer Store Catalog →</span>
         </a>
@@ -1718,6 +1722,72 @@
     </div>
   </div>
 
+  <!-- =========================================================================
+       MODAL: GOOGLE FIREBASE CLOUD SYNC CONFIGURATION
+       ========================================================================= -->
+  <div class="receipt-modal-backdrop" id="cloudSyncModalBackdrop">
+    <div class="receipt-modal-window" style="max-width: 580px;">
+      <div class="receipt-modal-header" style="background: #03140e; color: #fff; border-bottom: 1px solid #163628;">
+        <div>
+          <h4 style="margin: 0; font-size: 1.05rem; color: #fff; display: flex; align-items: center; gap: 8px;">
+            <span>☁️</span> Google Firebase Real-Time Cloud Sync
+          </h4>
+          <div style="font-size: 0.76rem; color: #a4beaf; margin-top: 3px;">
+            Enables instant customer mobile orders across different devices and cloud bill storage
+          </div>
+        </div>
+        <button type="button" id="closeCloudSyncModalBtn" style="background: none; border: none; font-size: 1.3rem; color: #fff; cursor: pointer;">✕</button>
+      </div>
+
+      <div style="padding: 20px 24px;">
+        <!-- Status Card -->
+        <div id="cloudModalStatusBox" style="background: #fbfdfc; border: 1.5px solid #d4e5dc; border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 0.72rem; text-transform: uppercase; color: #5b6f65; font-weight: 800;">Sync Status</div>
+            <div id="cloudModalStatusLabel" style="font-size: 0.95rem; font-weight: 800; color: #0c3c2e; margin-top: 2px;">
+              🟡 Checking Cloud Connection...
+            </div>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" id="btnTestCloudConnection" style="font-size: 0.78rem;">
+            🔌 Test Connection
+          </button>
+        </div>
+
+        <!-- Firebase Config Inputs -->
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 0.8rem; font-weight: 800; color: #0c3c2e; margin-bottom: 4px;">
+            Paste Firebase Configuration JSON or Object:
+          </label>
+          <textarea id="cloudFirebaseConfigTextarea" rows="6" style="width: 100%; font-family: monospace; font-size: 0.78rem; padding: 10px; border: 1.5px solid #d4e5dc; border-radius: 8px; box-sizing: border-box;" placeholder='{
+  "apiKey": "AIzaSy...",
+  "databaseURL": "https://your-project-default-rtdb.firebaseio.com",
+  "projectId": "your-project-id"
+}'></textarea>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+          <button type="button" class="btn btn-primary" id="btnSaveCloudConfig" style="flex: 1; font-weight: 800; background: linear-gradient(135deg, #1d7057, #0c3c2e);">
+            💾 Save & Connect Cloud
+          </button>
+          <button type="button" class="btn btn-outline" id="btnClearCloudConfig" style="color: #ef4444; border-color: #ef4444;">
+            Disconnect
+          </button>
+        </div>
+
+        <!-- 3-Step Setup Instructions -->
+        <div style="background: #f4f8f6; border: 1px solid #d7e8de; border-radius: 10px; padding: 14px 16px; font-size: 0.8rem; color: #16231d;">
+          <strong style="color: #0c3c2e; font-size: 0.86rem; display: block; margin-bottom: 6px;">📖 Quick 2-Minute Google Firebase Setup:</strong>
+          <ol style="margin: 0; padding-left: 20px; line-height: 1.6;">
+            <li>Go to <a href="https://console.firebase.google.com/" target="_blank" style="color: #059669; font-weight: 700;">console.firebase.google.com</a> and sign in with <strong>johnjoyraj@gmail.com</strong>.</li>
+            <li>Select your existing Google Cloud project (or click <em>Add Project</em>).</li>
+            <li>In the left menu, click <strong>Build &gt; Realtime Database</strong> &gt; click <strong>Create Database</strong> (choose <em>Start in Test mode</em>).</li>
+            <li>Click <strong>⚙️ Project Settings &gt; General &gt; Your apps &gt; &lt;/&gt; (Web)</strong>, copy the <code>firebaseConfig</code> code, and paste it in the box above!</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
   </div>
   <!-- End of #erpMainAppWrapper -->
 
@@ -1730,8 +1800,13 @@
   <!-- Toast Notification Container -->
   <div class="toast-container" id="erpToastContainer"></div>
 
+  <!-- Firebase SDK (v9 Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
   <!-- Scripts -->
   <script src="js/auth.js"></script>
+  <script src="js/cloud-sync.js"></script>
   <script src="js/orders.js"></script>
   <script src="js/html5-qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>

@@ -30,6 +30,45 @@ class ShalomOrderQueue {
     }
 
     this.listeners = [];
+
+    // Connect to Google Firebase Real-Time Cloud Sync
+    if (typeof ShalomCloudSync !== 'undefined') {
+      ShalomCloudSync.onOrders((cloudOrders) => {
+        this.mergeCloudOrders(cloudOrders);
+      });
+    }
+  }
+
+  mergeCloudOrders(cloudOrders) {
+    if (!Array.isArray(cloudOrders)) return;
+    const local = this.getOrders();
+    const map = new Map();
+
+    // Prioritize cloud orders
+    cloudOrders.forEach(o => {
+      if (o && o.orderId) map.set(String(o.orderId).trim(), o);
+    });
+
+    // Keep any local un-synced orders
+    local.forEach(o => {
+      const id = String(o.orderId).trim();
+      if (!map.has(id)) {
+        map.set(id, o);
+        // Also push to cloud if cloud is connected
+        if (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.isReady()) {
+          ShalomCloudSync.pushCustomerOrder(o);
+        }
+      }
+    });
+
+    const merged = Array.from(map.values());
+    merged.sort((a, b) => new Date(b.submittedAt || 0) - new Date(a.submittedAt || 0));
+
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(merged));
+    } catch (e) {}
+
+    this.notifyListeners({ type: 'CLOUD_SYNC_UPDATED' });
   }
 
   getOrders() {
@@ -41,10 +80,10 @@ class ShalomOrderQueue {
     }
   }
 
-  saveOrders(orders) {
+  saveOrders(orders, broadcast = true) {
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(orders));
-      if (this.broadcastChannel) {
+      if (broadcast && this.broadcastChannel) {
         this.broadcastChannel.postMessage({ type: 'ORDER_UPDATED', timestamp: Date.now() });
       }
       this.notifyListeners({ type: 'ORDER_UPDATED' });
@@ -75,6 +114,7 @@ class ShalomOrderQueue {
   /**
    * Customer submits an order from index.html
    * Status is set to PENDING (Awaiting Store Admin Confirmation)
+   * Synced to Google Cloud Realtime Database instantly
    */
   submitCustomerOrder(orderPayload) {
     const orders = this.getOrders();
@@ -88,14 +128,20 @@ class ShalomOrderQueue {
 
     orders.unshift(newOrder);
     this.saveOrders(orders);
+
+    // Sync to Cloud
+    if (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.isReady()) {
+      ShalomCloudSync.pushCustomerOrder(newOrder);
+    }
+
     return newOrder;
   }
 
   /**
    * Admin confirms order in inventory.html
-   * Status is set to CONFIRMED and linked to permanent POS Bill number
+   * Status is set to CONFIRMED, linked to permanent POS Bill number, and synced to Cloud
    */
-  confirmOrder(orderId, billNo) {
+  confirmOrder(orderId, billNo, billRecord = null) {
     const orders = this.getOrders();
     const cleanId = String(orderId).trim();
     const target = orders.find(o => String(o.orderId).trim() === cleanId);
@@ -106,6 +152,12 @@ class ShalomOrderQueue {
     target.billNo = billNo;
 
     this.saveOrders(orders);
+
+    // Sync confirmation & permanent bill to Cloud
+    if (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.isReady()) {
+      ShalomCloudSync.confirmOrder(cleanId, billNo, billRecord);
+    }
+
     return target;
   }
 
@@ -123,6 +175,12 @@ class ShalomOrderQueue {
     target.rejectReason = reason;
 
     this.saveOrders(orders);
+
+    // Sync rejection to Cloud
+    if (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.isReady()) {
+      ShalomCloudSync.rejectOrder(cleanId, reason);
+    }
+
     return target;
   }
 
