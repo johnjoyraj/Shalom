@@ -1,18 +1,34 @@
 /**
- * Shalom Kerala Stores - Google OAuth Security Guard
+ * Shalom Kerala Stores - Authentication & Security Guard
  * Restricts access to ERP Inventory Console strictly to: johnjoyraj@gmail.com
+ * Supports:
+ *  1. Google Sign-In OAuth (Google Identity Services)
+ *  2. Master Admin PIN (Default: 7379 - Instant zero-setup unlock)
  */
 
 const SHALOM_AUTH = {
-  // Only this email address is permitted
+  // Only this email address is authorized
   AUTHORIZED_EMAIL: "johnjoyraj@gmail.com",
 
+  // Default Master PIN (store phone prefix: 7379)
+  DEFAULT_PIN: "7379",
+
   // Google OAuth 2.0 Web Client ID
-  // Can be configured in Google Cloud Console (APIs & Services -> Credentials)
-  // Authorized Javascript Origins: https://johnjoyraj.github.io, http://localhost:8000
   CLIENT_ID: localStorage.getItem("shalom_google_client_id") || "7379325499-shalom.apps.googleusercontent.com",
 
   STORAGE_KEY: "shalom_erp_auth_session",
+
+  getMasterPin() {
+    return localStorage.getItem("shalom_master_pin") || this.DEFAULT_PIN;
+  },
+
+  setMasterPin(newPin) {
+    if (newPin && newPin.trim().length >= 4) {
+      localStorage.setItem("shalom_master_pin", newPin.trim());
+      return true;
+    }
+    return false;
+  },
 
   init() {
     this.injectStyles();
@@ -45,14 +61,14 @@ const SHALOM_AUTH = {
         pointer-events: none;
       }
       .auth-card {
-        background: rgba(12, 45, 33, 0.9);
+        background: rgba(12, 45, 33, 0.94);
         border: 1.5px solid rgba(212, 175, 55, 0.5);
         border-radius: 20px;
-        padding: 36px 32px;
+        padding: 34px 30px;
         max-width: 460px;
         width: 100%;
         text-align: center;
-        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 35px rgba(212, 175, 55, 0.15);
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 35px rgba(212, 175, 55, 0.15);
         animation: authFadeUp 0.35s ease;
       }
       @keyframes authFadeUp {
@@ -60,30 +76,30 @@ const SHALOM_AUTH = {
         to { opacity: 1; transform: translateY(0) scale(1); }
       }
       .auth-shield-icon {
-        width: 68px;
-        height: 68px;
+        width: 64px;
+        height: 64px;
         background: linear-gradient(135deg, #d4af37, #997c1f);
         color: #03140e;
         border-radius: 50%;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 32px;
-        margin-bottom: 16px;
+        font-size: 30px;
+        margin-bottom: 14px;
         box-shadow: 0 8px 24px rgba(212, 175, 55, 0.35);
       }
       .auth-title {
-        font-size: 1.35rem;
+        font-size: 1.3rem;
         font-weight: 800;
         letter-spacing: 0.5px;
-        margin: 0 0 6px 0;
+        margin: 0 0 4px 0;
         color: #ffffff;
       }
       .auth-subtitle {
-        font-size: 0.88rem;
+        font-size: 0.86rem;
         color: #b3c9be;
-        margin: 0 0 20px 0;
-        line-height: 1.45;
+        margin: 0 0 16px 0;
+        line-height: 1.4;
       }
       .auth-restriction-pill {
         display: inline-flex;
@@ -92,10 +108,10 @@ const SHALOM_AUTH = {
         background: rgba(212, 175, 55, 0.15);
         border: 1px solid rgba(212, 175, 55, 0.4);
         color: #f7e7a9;
-        font-size: 0.82rem;
-        padding: 6px 14px;
+        font-size: 0.8rem;
+        padding: 5px 14px;
         border-radius: 20px;
-        margin-bottom: 24px;
+        margin-bottom: 20px;
         font-weight: 600;
       }
       .auth-btn-wrapper {
@@ -103,7 +119,58 @@ const SHALOM_AUTH = {
         justify-content: center;
         align-items: center;
         min-height: 44px;
-        margin-bottom: 18px;
+        margin-bottom: 12px;
+      }
+      .auth-divider-row {
+        margin: 18px 0;
+        display: flex;
+        align-items: center;
+        color: #648a79;
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+      }
+      .auth-divider-line {
+        flex: 1;
+        height: 1px;
+        background: rgba(212, 175, 55, 0.25);
+      }
+      .auth-pin-form {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+      }
+      .auth-pin-input {
+        flex: 1;
+        max-width: 250px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1.5px solid rgba(212, 175, 55, 0.4);
+        background: #031810;
+        color: #ffffff;
+        font-size: 1rem;
+        text-align: center;
+        letter-spacing: 2px;
+        outline: none;
+        transition: border-color 0.2s ease;
+      }
+      .auth-pin-input:focus {
+        border-color: #d4af37;
+        box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+      }
+      .auth-pin-btn {
+        background: linear-gradient(135deg, #d4af37, #aa8520);
+        color: #03140e;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-weight: 800;
+        cursor: pointer;
+        font-size: 0.88rem;
+        transition: transform 0.15s ease;
+      }
+      .auth-pin-btn:hover {
+        transform: translateY(-1px);
       }
       .auth-alert-box {
         background: rgba(239, 68, 68, 0.18);
@@ -112,14 +179,14 @@ const SHALOM_AUTH = {
         border-radius: 10px;
         padding: 12px 14px;
         font-size: 0.84rem;
-        margin-top: 16px;
+        margin-top: 14px;
         text-align: left;
         line-height: 1.4;
         display: none;
       }
       .auth-config-toggle {
-        margin-top: 18px;
-        font-size: 0.78rem;
+        margin-top: 14px;
+        font-size: 0.76rem;
         color: #7d998d;
         cursor: pointer;
         text-decoration: underline;
@@ -128,7 +195,7 @@ const SHALOM_AUTH = {
         padding: 0;
       }
       .auth-config-box {
-        margin-top: 14px;
+        margin-top: 12px;
         padding: 14px;
         background: rgba(0, 0, 0, 0.35);
         border-radius: 10px;
@@ -230,22 +297,40 @@ const SHALOM_AUTH = {
           <span>🔒 Authorized: <strong>${this.AUTHORIZED_EMAIL}</strong></span>
         </div>
 
-        <!-- Google Sign-In Container -->
+        <!-- Method 1: Instant Admin PIN Unlock (Hassle-free) -->
+        <form class="auth-pin-form" id="authPinForm" onsubmit="return false;">
+          <input type="password" id="authPinInput" class="auth-pin-input" placeholder="Admin PIN (Default: 7379)" maxlength="16" autofocus autocomplete="current-password">
+          <button type="submit" id="authPinSubmitBtn" class="auth-pin-btn">
+            Unlock 🔓
+          </button>
+        </form>
+        <div style="font-size: 0.72rem; color: #8ba99b; margin-top: 6px;">
+          🔑 Default Master PIN: <strong>7379</strong>
+        </div>
+
+        <!-- Divider -->
+        <div class="auth-divider-row">
+          <span class="auth-divider-line"></span>
+          <span style="padding: 0 10px;">OR SIGN IN WITH GOOGLE</span>
+          <span class="auth-divider-line"></span>
+        </div>
+
+        <!-- Method 2: Google Sign-In Container -->
         <div id="googleSignInButtonBox" class="auth-btn-wrapper">
-          <div style="font-size: 0.85rem; color: #a4beaf;">Loading Google Sign-In...</div>
+          <div style="font-size: 0.82rem; color: #a4beaf;">Loading Google Sign-In...</div>
         </div>
 
         <div id="authAlertBox" class="auth-alert-box"></div>
 
         <div>
           <button type="button" class="auth-config-toggle" id="authConfigToggleBtn">
-            ⚙️ Google Client ID Settings
+            ⚙️ Google OAuth Client ID Settings
           </button>
         </div>
 
         <div id="authConfigBox" class="auth-config-box">
           <div style="font-size: 0.76rem; color: #a2b8ad; margin-bottom: 4px;">
-            To connect your Google Sign-In, enter your Google OAuth 2.0 Web Client ID from Google Cloud Console:
+            If you get <code>401: invalid_client</code>, enter your Web Client ID from Google Cloud Console:
           </div>
           <input type="text" id="authClientIdInput" placeholder="xxxx.apps.googleusercontent.com" value="${this.CLIENT_ID.startsWith('7379325499') ? '' : this.CLIENT_ID}">
           <div style="display: flex; gap: 8px;">
@@ -256,11 +341,43 @@ const SHALOM_AUTH = {
           </div>
         </div>
 
-        <div style="margin-top: 24px; font-size: 0.76rem; color: #6f8f80;">
+        <div style="margin-top: 20px; font-size: 0.75rem; color: #6f8f80;">
           <a href="index.html" style="color: #d4af37; text-decoration: none;">← Return to Customer Store</a>
         </div>
       </div>
     `;
+
+    // Handle PIN Unlock
+    const pinForm = document.getElementById("authPinForm");
+    const pinInput = document.getElementById("authPinInput");
+    const alertBox = document.getElementById("authAlertBox");
+
+    const handlePinSubmit = () => {
+      const entered = pinInput.value.trim();
+      const correctPin = this.getMasterPin();
+
+      if (entered === correctPin) {
+        // PIN Verified!
+        const userSession = {
+          email: this.AUTHORIZED_EMAIL,
+          name: "John Joyraj (Admin PIN)",
+          picture: "",
+          loginTime: Date.now()
+        };
+        sessionStorage.setItem(this.STORAGE_KEY, JSON.stringify(userSession));
+        this.unlockInterface(userSession);
+      } else {
+        alertBox.innerHTML = `<strong>❌ Incorrect PIN</strong><br>Default master PIN is <code>7379</code>. Please try again.`;
+        alertBox.style.display = "block";
+        pinInput.value = "";
+        pinInput.focus();
+      }
+    };
+
+    pinForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      handlePinSubmit();
+    });
 
     document.getElementById("authConfigToggleBtn").addEventListener("click", () => {
       const box = document.getElementById("authConfigBox");
@@ -398,17 +515,20 @@ const SHALOM_AUTH = {
 
     const badgeWrapper = document.createElement("div");
     badgeWrapper.id = "erpUserAuthBadge";
-    badgeWrapper.style.cssText = "display: flex; align-items: center; gap: 10px;";
+    badgeWrapper.style.cssText = "display: flex; align-items: center; gap: 8px;";
 
     const avatarHtml = user.picture
       ? `<img src="${user.picture}" class="auth-user-avatar" alt="${user.name}" referrerpolicy="no-referrer">`
-      : `<span style="font-size: 1rem;">👤</span>`;
+      : `<span style="font-size: 1rem;">🛡️</span>`;
 
     badgeWrapper.innerHTML = `
       <div class="auth-user-badge">
         ${avatarHtml}
         <span style="font-weight: 600;">${user.email}</span>
       </div>
+      <button type="button" class="auth-config-toggle" id="changePinHeaderBtn" style="color: #d4af37; font-size: 0.74rem;" title="Change Master PIN">
+        Change PIN
+      </button>
       <button type="button" class="auth-logout-btn" id="erpSignOutBtn" title="Lock Inventory ERP">
         🔒 Sign Out
       </button>
@@ -418,6 +538,17 @@ const SHALOM_AUTH = {
 
     document.getElementById("erpSignOutBtn").addEventListener("click", () => {
       this.signOut();
+    });
+
+    document.getElementById("changePinHeaderBtn").addEventListener("click", () => {
+      const newPin = prompt("Enter new Admin PIN (minimum 4 digits):");
+      if (newPin) {
+        if (this.setMasterPin(newPin)) {
+          alert("Admin PIN updated successfully!");
+        } else {
+          alert("PIN must be at least 4 digits.");
+        }
+      }
     });
   },
 
