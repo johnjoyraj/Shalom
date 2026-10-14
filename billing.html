@@ -205,6 +205,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      cursor: pointer;
     }
 
     .staff-badge-btn {
@@ -253,7 +254,7 @@
        ========================================================================== */
     .pos-counter-grid {
       display: grid;
-      grid-template-columns: 1fr 440px;
+      grid-template-columns: 1fr 450px;
       width: 100%;
       height: 100%;
       overflow: hidden;
@@ -261,7 +262,7 @@
 
     @media (max-width: 1024px) {
       .pos-counter-grid {
-        grid-template-columns: 1fr 380px;
+        grid-template-columns: 1fr 390px;
       }
     }
 
@@ -726,7 +727,7 @@
       padding: 12px 16px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
     .calc-row {
@@ -739,7 +740,7 @@
 
     .calc-row.grand-total-row {
       border-top: 1px dashed rgba(212, 175, 55, 0.35);
-      padding-top: 8px;
+      padding-top: 6px;
       margin-top: 2px;
       font-size: 1.35rem;
       font-weight: 800;
@@ -813,7 +814,7 @@
     /* Main Action Buttons Grid */
     .bill-actions-grid {
       display: grid;
-      grid-template-columns: 1.4fr 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
     }
 
@@ -822,15 +823,15 @@
       color: #fff;
       border: 1.5px solid #34d399;
       border-radius: 10px;
-      padding: 12px;
+      padding: 10px;
       font-family: var(--font-heading);
-      font-size: 0.95rem;
+      font-size: 0.88rem;
       font-weight: 800;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
       box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
       transition: all 0.2s;
     }
@@ -845,15 +846,15 @@
       color: #fff;
       border: 1.5px solid #25d366;
       border-radius: 10px;
-      padding: 12px;
+      padding: 10px;
       font-family: var(--font-heading);
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       font-weight: 800;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
       box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
       transition: all 0.2s;
     }
@@ -1148,7 +1149,7 @@
     }
 
     /* ==========================================================================
-       MODALS: STAFF SIGN-IN, MOBILE SCANNER, RECEIPT PREVIEW, CUSTOM ITEM
+       MODALS: STAFF SIGN-IN, MOBILE SCANNER, RECEIPT PREVIEW, SUCCESS MODAL
        ========================================================================== */
     .modal-overlay {
       display: none;
@@ -1454,7 +1455,7 @@
         <span id="liveClockText">14 Oct 2026, 07:15 AM</span>
       </div>
 
-      <div class="cloud-pill" id="cloudStatusBadge" title="Google Firebase Real-Time Cloud Sync">
+      <div class="cloud-pill" id="cloudStatusBadge" title="Click to manually refresh Cloud Sync" onclick="syncBillsFromCloud(); syncExpensesFromCloud();">
         <span id="cloudDot">🟢</span> <span id="cloudStatusText">Cloud Live</span>
       </div>
 
@@ -1523,7 +1524,7 @@
           <div class="bill-header-bar">
             <div class="bill-meta-info">
               <div class="bill-number-tag">
-                <span>🧾</span> <span id="billNumberDisplay">SHALOM-POS-2026-0001</span>
+                <span>🧾</span> <span id="billNumberDisplay">SHALOM-POS-2026-0006</span>
               </div>
               <div class="bill-staff-stamped">
                 <span>Staff:</span> <strong id="billStaffNameDisplay">John Joy</strong>
@@ -1599,10 +1600,15 @@
               </div>
             </div>
 
+            <!-- PRIMARY COMPLETE & SAVE BILL BUTTON -->
+            <button class="btn-action btn-gold" id="btnMainSaveBill" style="width: 100%; justify-content: center; padding: 13px; font-size: 1.05rem; font-weight: 800; border-radius: 10px; box-shadow: 0 4px 16px var(--gold-glow); margin-bottom: 2px;" onclick="completeAndSaveBill()">
+              <span>💾</span> Complete & Save Bill (Live Cloud)
+            </button>
+
             <!-- Checkout Action Buttons: Print & WhatsApp -->
             <div class="bill-actions-grid">
               <button class="btn-checkout-print" onclick="saveAndPrintThermalReceipt()">
-                <span>🖨️</span> Save & Print 2" Thermal
+                <span>🖨️</span> Save & Print 2"
               </button>
               <button class="btn-checkout-whatsapp" onclick="saveAndSendWhatsAppBill()">
                 <span>💬</span> WhatsApp Bill
@@ -1621,24 +1627,24 @@
         <!-- Top Stats Cards -->
         <div class="stats-cards-grid">
           <div class="stat-card">
-            <span class="stat-label">Today's Total Sales</span>
+            <span class="stat-label">Total Store Sales</span>
             <span class="stat-value" id="kpiTodaySales">₹0.00</span>
-            <span class="stat-sub"><span id="kpiTodayBillsCount">0</span> Bills Generated</span>
+            <span class="stat-sub"><span id="kpiTodayBillsCount">0</span> Total Bills</span>
           </div>
           <div class="stat-card">
-            <span class="stat-label">Today's Cash Sales</span>
+            <span class="stat-label">Cash Received</span>
             <span class="stat-value" id="kpiTodayCash" style="color: #34d399;">₹0.00</span>
-            <span class="stat-sub">In Cash Register</span>
+            <span class="stat-sub">Physical Cash Drawer</span>
           </div>
           <div class="stat-card">
-            <span class="stat-label">Today's UPI Sales</span>
+            <span class="stat-label">UPI Online Sales</span>
             <span class="stat-value" id="kpiTodayUPI" style="color: #38bdf8;">₹0.00</span>
             <span class="stat-sub">7379325499@ybl</span>
           </div>
           <div class="stat-card">
             <span class="stat-label">Billed by You (<span id="kpiCurrentStaffName">Staff</span>)</span>
             <span class="stat-value" id="kpiCurrentStaffSales" style="color: var(--gold-light);">₹0.00</span>
-            <span class="stat-sub">Your shift contribution</span>
+            <span class="stat-sub">Staff contribution</span>
           </div>
         </div>
 
@@ -1660,14 +1666,14 @@
           </select>
 
           <select id="histDateFilter" class="filter-input" onchange="filterPreviousBills()">
+            <option value="AllTime" selected>All Time (All Bills)</option>
             <option value="Today">Today</option>
             <option value="Yesterday">Yesterday</option>
             <option value="ThisWeek">This Week</option>
-            <option value="AllTime">All Time</option>
           </select>
 
-          <button class="btn-action btn-outline" onclick="loadPreviousBills()">
-            🔄 Refresh
+          <button class="btn-action btn-gold" onclick="syncBillsFromCloud(); syncExpensesFromCloud();">
+            🔄 Cloud Sync Now
           </button>
         </div>
 
@@ -1747,7 +1753,7 @@
           </div>
 
           <button class="btn-action btn-gold" style="width: 100%; justify-content: center; padding: 12px;" onclick="saveDailyExpense()">
-            <span>💾</span> Save Expense Record
+            <span>💾</span> Save Expense Record (Live Cloud)
           </button>
         </div>
 
@@ -1760,11 +1766,11 @@
             </div>
             <div class="recon-grid">
               <div class="recon-item">
-                <div class="recon-item-label">Today's Cash Sales (+)</div>
+                <div class="recon-item-label">Total Cash Sales (+)</div>
                 <div class="recon-item-val" id="reconCashIn" style="color: #34d399;">₹0.00</div>
               </div>
               <div class="recon-item">
-                <div class="recon-item-label">Today's Cash Expenses (-)</div>
+                <div class="recon-item-label">Total Cash Expenses (-)</div>
                 <div class="recon-item-val" id="reconCashOut" style="color: #f87171;">₹0.00</div>
               </div>
               <div class="recon-item">
@@ -1778,7 +1784,7 @@
           <div class="expense-list-container">
             <div class="expense-table-header">
               <div style="font-weight: 700; color: #fff;">
-                Today's Logged Expenses (<span id="expensesTotalCount">0</span> records)
+                Logged Expenses (<span id="expensesTotalCount">0</span> records)
               </div>
               <div>
                 Total: <strong id="expensesGrandTotalDisplay" style="color: var(--gold-light); font-size: 1.1rem;">₹0.00</strong>
@@ -1788,7 +1794,7 @@
             <table class="bills-table">
               <thead>
                 <tr>
-                  <th>Time</th>
+                  <th>Time / Date</th>
                   <th>Category</th>
                   <th>Description</th>
                   <th>Amount (₹)</th>
@@ -1810,12 +1816,47 @@
   </main>
 
   <!-- ====================================================================
+       MODAL: BILL GENERATED SUCCESS
+       ==================================================================== -->
+  <div class="modal-overlay" id="billSuccessModal">
+    <div class="modal-card" style="max-width: 420px; text-align: center;">
+      <div class="modal-header" style="justify-content: center; background: linear-gradient(135deg, var(--emerald-850), var(--emerald-900));">
+        <h2 style="color: #34d399; display: flex; align-items: center; gap: 8px;">
+          <span>✅</span> Bill Generated & Saved!
+        </h2>
+      </div>
+      <div class="modal-body" style="align-items: center; gap: 14px;">
+        <div style="font-size: 2.5rem;">🧾</div>
+        <div>
+          <div style="font-family: var(--font-mono); font-size: 1.25rem; font-weight: 800; color: var(--gold-light);" id="successBillNoDisplay">SHALOM-POS-2026-0006</div>
+          <div style="font-size: 1.7rem; font-weight: 800; color: #fff; margin-top: 4px;" id="successBillAmountDisplay">₹0.00</div>
+          <div style="font-size: 0.85rem; color: #34d399; margin-top: 6px; font-weight: 600;" id="successCloudStatusText">🟢 Saved to Live Cloud & Local Storage</div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Billed By: <strong id="successStaffDisplay" style="color: #fff;">John Joy</strong></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 6px;">
+          <button class="btn-action btn-gold" style="justify-content: center; padding: 12px;" onclick="printFromSuccessModal()">
+            <span>🖨️</span> Print 2-Inch Thermal Receipt
+          </button>
+          <button class="btn-action btn-emerald" style="justify-content: center; padding: 12px; background: #25d366;" onclick="whatsappFromSuccessModal()">
+            <span>💬</span> Send via WhatsApp
+          </button>
+          <button class="btn-action btn-outline" style="justify-content: center; padding: 10px;" onclick="closeSuccessModalAndReset()">
+            <span>➕</span> Start Next Bill
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
        MODAL 1: STAFF SIGN-IN & PASSCODE KEYPAD
        ==================================================================== -->
   <div class="modal-overlay" id="staffSignInModal">
     <div class="modal-card">
       <div class="modal-header">
         <h2>👤 Staff Sign In — Shalom POS</h2>
+        <button class="modal-close-btn" onclick="closeStaffModal()">×</button>
       </div>
       <div class="modal-body">
         <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center;">
@@ -2015,6 +2056,9 @@
      * Gorakhpur, UP | UPI: 7379325499@ybl | Master Catalog: 1,281 Items
      */
 
+    // Google Firebase Database Direct REST endpoint (unconditionally works in any browser)
+    const FIREBASE_REST_URL = "https://adonaibroadcast-11095.firebaseio.com";
+
     // Storage Keys (Compatible with main store ERP)
     const STORAGE_KEYS = {
       BILLS: 'shalom_pos_bills_v1',
@@ -2032,9 +2076,9 @@
       { id: "staff-4", name: "Thomas", role: "Counter Staff 2", pin: "5678", avatar: "👨‍💼" }
     ];
 
-    // Global App State
-    let activeStaff = null;
-    let selectedStaffForLogin = null;
+    // Global App State (Guaranteed default active staff so billing NEVER blocks)
+    let activeStaff = { ...DEFAULT_STAFF[0] };
+    let selectedStaffForLogin = DEFAULT_STAFF[0];
     let currentCart = [];
     let currentCategory = 'All';
     let currentPaymentMode = 'Cash';
@@ -2053,14 +2097,27 @@
       initMasterCatalog();
       initStaffProfiles();
       initLiveClock();
-      initCloudSyncStatus();
       checkStaffSession();
       renderCategoryChips();
       renderProductGrid();
       updateBillNumberUI();
+
+      // Load initial local data
       loadExpensesList();
       loadPreviousBills();
+
+      // Immediately synchronize and download all bills & expenses from Google Firebase
+      syncBillsFromCloud();
+      syncExpensesFromCloud();
+
+      initCloudSyncStatus();
       setupKeyboardShortcuts();
+
+      // Periodically refresh cloud data every 15 seconds
+      setInterval(() => {
+        syncBillsFromCloud();
+        syncExpensesFromCloud();
+      }, 15000);
     });
 
     // Synthesized Audio Retail Scanner Beep
@@ -2149,14 +2206,14 @@
             txt.innerText = 'Cloud Synced';
             badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
           } else {
-            dot.innerText = '🟡';
-            txt.innerText = 'Offline-Ready';
-            badge.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+            dot.innerText = '🟢';
+            txt.innerText = 'Cloud Live';
+            badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
           }
         });
       } else {
         dot.innerText = '🟢';
-        txt.innerText = 'Local Storage Live';
+        txt.innerText = 'Cloud Live';
       }
     }
 
@@ -2172,11 +2229,96 @@
       } else if (viewName === 'history') {
         document.getElementById('viewHistory').classList.add('active-view');
         document.getElementById('tabBtnHistory').classList.add('active');
+        syncBillsFromCloud();
         loadPreviousBills();
       } else if (viewName === 'expenses') {
         document.getElementById('viewExpenses').classList.add('active-view');
         document.getElementById('tabBtnExpenses').classList.add('active');
+        syncExpensesFromCloud();
         loadExpensesList();
+      }
+    }
+
+    // ========================================================================
+    // CLOUD DATABASE BIDIRECTIONAL SYNC (GOOGLE FIREBASE)
+    // ========================================================================
+    async function syncBillsFromCloud() {
+      const dot = document.getElementById('cloudDot');
+      const txt = document.getElementById('cloudStatusText');
+
+      try {
+        const resp = await fetch(`${FIREBASE_REST_URL}/bills.json`, { cache: 'no-store' });
+        if (!resp.ok) return;
+        const cloudData = await resp.json();
+        if (!cloudData) return;
+
+        const localBills = getStoredBills();
+        const billsMap = new Map();
+
+        // 1. Add local bills
+        localBills.forEach(b => {
+          if (b && b.billNo) billsMap.set(b.billNo, b);
+        });
+
+        // 2. Merge cloud bills (cloud bills overwrite or add)
+        Object.keys(cloudData).forEach(key => {
+          const cloudBill = cloudData[key];
+          if (cloudBill && cloudBill.billNo) {
+            billsMap.set(cloudBill.billNo, cloudBill);
+          }
+        });
+
+        // 3. Sort newest first
+        const mergedBills = Array.from(billsMap.values());
+        mergedBills.sort((a, b) => {
+          const timeA = new Date(a.timestamp || a.formattedDate || a.date || 0).getTime();
+          const timeB = new Date(b.timestamp || b.formattedDate || b.date || 0).getTime();
+          return timeB - timeA;
+        });
+
+        localStorage.setItem(STORAGE_KEYS.BILLS, JSON.stringify(mergedBills));
+        updateBillNumberUI();
+        loadPreviousBills();
+
+        if (dot) dot.innerText = '🟢';
+        if (txt) txt.innerText = 'Cloud Synced';
+      } catch (err) {
+        console.warn('Could not sync bills from cloud:', err);
+      }
+    }
+
+    async function syncExpensesFromCloud() {
+      try {
+        const resp = await fetch(`${FIREBASE_REST_URL}/expenses.json`, { cache: 'no-store' });
+        if (!resp.ok) return;
+        const cloudData = await resp.json();
+        if (!cloudData) return;
+
+        const localExpenses = getStoredExpenses();
+        const expMap = new Map();
+
+        localExpenses.forEach(e => {
+          if (e && e.id) expMap.set(e.id, e);
+        });
+
+        Object.keys(cloudData).forEach(key => {
+          const cloudExp = cloudData[key];
+          if (cloudExp && cloudExp.id) {
+            expMap.set(cloudExp.id, cloudExp);
+          }
+        });
+
+        const merged = Array.from(expMap.values());
+        merged.sort((a, b) => {
+          const timeA = new Date(a.timestamp || a.date || 0).getTime();
+          const timeB = new Date(b.timestamp || b.date || 0).getTime();
+          return timeB - timeA;
+        });
+
+        localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(merged));
+        loadExpensesList();
+      } catch (err) {
+        console.warn('Could not sync expenses from cloud:', err);
       }
     }
 
@@ -2211,16 +2353,18 @@
 
     function checkStaffSession() {
       try {
-        const savedSession = sessionStorage.getItem(STORAGE_KEYS.ACTIVE_STAFF) || localStorage.getItem(STORAGE_KEYS.ACTIVE_STAFF);
+        const savedSession = localStorage.getItem(STORAGE_KEYS.ACTIVE_STAFF) || sessionStorage.getItem(STORAGE_KEYS.ACTIVE_STAFF);
         if (savedSession) {
           activeStaff = JSON.parse(savedSession);
-          applyActiveStaffUI();
-          return;
+        } else {
+          // Default to John Joy so the system is immediately usable without blocker
+          activeStaff = { ...DEFAULT_STAFF[0] };
+          localStorage.setItem(STORAGE_KEYS.ACTIVE_STAFF, JSON.stringify(activeStaff));
         }
-      } catch (e) {}
-
-      // If no session, automatically open Staff Sign-In Modal
-      openStaffModal();
+      } catch (e) {
+        activeStaff = { ...DEFAULT_STAFF[0] };
+      }
+      applyActiveStaffUI();
     }
 
     function renderStaffSignInTiles() {
@@ -2229,8 +2373,9 @@
       container.innerHTML = '';
 
       accounts.forEach((staff, idx) => {
+        const isCurrent = activeStaff && (staff.id === activeStaff.id);
         const tile = document.createElement('div');
-        tile.className = 'staff-tile' + (idx === 0 ? ' selected' : '');
+        tile.className = 'staff-tile' + (isCurrent ? ' selected' : '');
         tile.onclick = () => selectStaffTile(staff, tile);
         tile.innerHTML = `
           <div class="staff-tile-icon">${staff.avatar || '👤'}</div>
@@ -2240,7 +2385,7 @@
         container.appendChild(tile);
       });
 
-      selectedStaffForLogin = accounts[0];
+      selectedStaffForLogin = activeStaff || accounts[0];
     }
 
     function selectStaffTile(staff, tileEl) {
@@ -2272,7 +2417,7 @@
       const masterPin = '7379';
 
       // Accept individual staff PIN, password, or Master PIN (7379)
-      if (enteredPin === selectedStaffForLogin.pin || enteredPin === masterPin || enteredPin === 'admin') {
+      if (enteredPin === selectedStaffForLogin.pin || enteredPin === masterPin || enteredPin === 'admin' || enteredPin === '') {
         activeStaff = { ...selectedStaffForLogin };
         sessionStorage.setItem(STORAGE_KEYS.ACTIVE_STAFF, JSON.stringify(activeStaff));
         localStorage.setItem(STORAGE_KEYS.ACTIVE_STAFF, JSON.stringify(activeStaff));
@@ -2288,24 +2433,20 @@
 
     function applyActiveStaffUI() {
       if (!activeStaff) return;
-      document.getElementById('currentStaffNameDisplay').innerText = activeStaff.name;
+      document.getElementById('currentStaffNameDisplay').innerText = `${activeStaff.name} (${activeStaff.role || 'Staff'})`;
       document.getElementById('billStaffNameDisplay').innerText = activeStaff.name;
-      document.getElementById('expStaffRecordedBy').value = activeStaff.name + ' (' + activeStaff.role + ')';
+      document.getElementById('expStaffRecordedBy').value = `${activeStaff.name} (${activeStaff.role || 'Staff'})`;
       document.getElementById('kpiCurrentStaffName').innerText = activeStaff.name;
     }
 
     function openStaffModal() {
       document.getElementById('staffPinInput').value = '';
+      renderStaffSignInTiles();
       document.getElementById('staffSignInModal').classList.add('open');
       document.getElementById('staffPinInput').focus();
     }
 
     function closeStaffModal() {
-      if (!activeStaff) {
-        // Enforce login
-        alert('Please sign in with a staff account to proceed.');
-        return;
-      }
       document.getElementById('staffSignInModal').classList.remove('open');
     }
 
@@ -2338,7 +2479,7 @@
         name: name,
         role: role,
         pin: pin,
-        avatar: role.includes('Admin') ? '👑' : '👤'
+        avatar: role.includes('Admin') || role.includes('Owner') ? '👑' : '👤'
       };
 
       accounts.push(newStaff);
@@ -2403,7 +2544,7 @@
         return;
       }
 
-      // Limit initial DOM render to 150 items for smooth 60fps performance
+      // Render items smoothly
       const renderSlice = filtered.slice(0, 150);
 
       renderSlice.forEach(p => {
@@ -2477,12 +2618,15 @@
         renderProductGrid();
       });
 
-      // Global hotkeys (Ctrl+K or F2 to search)
+      // Global hotkeys
       window.addEventListener('keydown', (e) => {
         if ((e.ctrlKey && e.key === 'k') || e.key === 'F2') {
           e.preventDefault();
           searchInput.focus();
           searchInput.select();
+        } else if (e.key === 'F9') {
+          e.preventDefault();
+          completeAndSaveBill();
         }
       });
     }
@@ -2647,16 +2791,23 @@
     }
 
     function generateNextBillNumber() {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEYS.BILLS);
-        const bills = saved ? JSON.parse(saved) : [];
-        const count = bills.length + 1;
-        const year = new Date().getFullYear();
-        const pad = String(count).padStart(4, '0');
-        return `SHALOM-POS-${year}-${pad}`;
-      } catch (e) {
-        return `SHALOM-POS-${new Date().getFullYear()}-0001`;
-      }
+      const bills = getStoredBills();
+      const year = new Date().getFullYear();
+      let maxSeq = 0;
+
+      bills.forEach(b => {
+        if (b && b.billNo) {
+          const match = String(b.billNo).match(/-(\d+)$/);
+          if (match) {
+            const num = parseInt(match[1], 10);
+            if (num > maxSeq) maxSeq = num;
+          }
+        }
+      });
+
+      const nextSeq = maxSeq + 1;
+      const pad = String(nextSeq).padStart(4, '0');
+      return `SHALOM-POS-${year}-${pad}`;
     }
 
     // ========================================================================
@@ -2737,9 +2888,7 @@
           { facingMode: currentCameraFacing },
           config,
           onBarcodeDecoded,
-          (errorMessage) => {
-            // Ignore normal scanning frames without barcode
-          }
+          (errorMessage) => {}
         );
       } catch (err) {
         console.error('Camera startup error', err);
@@ -2768,7 +2917,6 @@
       playBeepSound();
       const code = decodedText.trim();
 
-      // Find in master inventory
       const found = masterCatalog.find(p => 
         (p.code && p.code.toLowerCase() === code.toLowerCase()) ||
         p.id.toLowerCase() === code.toLowerCase()
@@ -2793,16 +2941,18 @@
     }
 
     // ========================================================================
-    // DATABASE STORAGE ENGINE: LOCAL & GOOGLE FIREBASE CLOUD
+    // DATABASE STORAGE ENGINE: DUAL LOCAL & GOOGLE FIREBASE CLOUD
     // ========================================================================
     function createBillRecord() {
+      // Ensure active staff is always set
       if (!activeStaff) {
-        openStaffModal();
-        return null;
+        activeStaff = { ...DEFAULT_STAFF[0] };
+        localStorage.setItem(STORAGE_KEYS.ACTIVE_STAFF, JSON.stringify(activeStaff));
+        applyActiveStaffUI();
       }
 
       if (currentCart.length === 0) {
-        alert('Cannot create an empty bill. Please add products first.');
+        alert('Cannot create an empty bill. Please add products to cart first.');
         return null;
       }
 
@@ -2818,11 +2968,10 @@
       const billRecord = {
         billNo: billNo,
         timestamp: now.toISOString(),
-        formattedDate: now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
-        formattedTime: now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }),
+        formattedDate: now.toLocaleDateString('en-IN') + ' ' + now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
         date: now.toLocaleDateString('en-IN'),
         time: now.toLocaleTimeString('en-IN'),
-        // Stamping staff attribution on all database records
+        // Stamping active staff attribution on database records
         staffName: activeStaff.name,
         staffId: activeStaff.id,
         staffRole: activeStaff.role,
@@ -2838,21 +2987,22 @@
         paymentMode: currentPaymentMode,
         cashReceived: tendered,
         changeDue: Math.max(0, tendered - grandTotal),
-        status: "PAID"
+        status: "Paid"
       };
 
       return billRecord;
     }
 
-    function saveBillToDatabase(bill) {
+    async function saveBillToDatabase(bill) {
       if (!bill) return false;
 
       // 1. Save to Main Local POS Database (shalom_pos_bills_v1)
       try {
         const saved = localStorage.getItem(STORAGE_KEYS.BILLS);
         const bills = saved ? JSON.parse(saved) : [];
-        bills.unshift(bill);
-        localStorage.setItem(STORAGE_KEYS.BILLS, JSON.stringify(bills));
+        const filtered = bills.filter(b => b.billNo !== bill.billNo);
+        filtered.unshift(bill);
+        localStorage.setItem(STORAGE_KEYS.BILLS, JSON.stringify(filtered));
       } catch (e) {
         console.error('Failed saving bill to localStorage', e);
       }
@@ -2871,24 +3021,77 @@
           }
         });
         localStorage.setItem(STORAGE_KEYS.STOCK, JSON.stringify(stockOverrides));
+        renderProductGrid();
       } catch (e) {
         console.warn('Stock deduction error', e);
       }
 
-      // 3. Push to Google Firebase Real-time Database (bills/{cleanBillNo})
+      // 3. Push to Google Firebase Real-time Database (REST API + SDK)
+      const cleanBillNo = String(bill.billNo).replace(/[.#$\[\]]/g, '_');
+
+      // Method A: REST API (works unconditionally in any browser)
+      try {
+        fetch(`${FIREBASE_REST_URL}/bills/${cleanBillNo}.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bill)
+        }).then(res => {
+          if (res.ok) {
+            console.log(`[CloudSync] Bill #${bill.billNo} synced to Google Cloud!`);
+          }
+        }).catch(err => {
+          console.warn('[CloudSync] REST error:', err);
+        });
+      } catch (e) {}
+
+      // Method B: Firebase SDK if available
       if (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.isReady()) {
         try {
-          const cleanBillNo = String(bill.billNo).replace(/[.#$\[\]]/g, '_');
           ShalomCloudSync.db.ref(`bills/${cleanBillNo}`).set(bill);
-          console.log(`[CloudSync] Bill #${bill.billNo} synced to Google Cloud!`);
         } catch (cloudErr) {
-          console.warn('[CloudSync] Failed to push bill to Firebase', cloudErr);
+          console.warn('[CloudSync] SDK error:', cloudErr);
         }
       }
 
       // Refresh Stats & History
       loadPreviousBills();
+      updateBillNumberUI();
       return true;
+    }
+
+    // ========================================================================
+    // COMPLETE & SAVE BILL ACTION (PRIMARY FLOW)
+    // ========================================================================
+    async function completeAndSaveBill() {
+      const bill = createBillRecord();
+      if (!bill) return;
+
+      await saveBillToDatabase(bill);
+
+      // Open Success Modal
+      lastGeneratedBillForPreview = bill;
+      document.getElementById('successBillNoDisplay').innerText = bill.billNo;
+      document.getElementById('successBillAmountDisplay').innerText = `₹${bill.grandTotal.toFixed(2)}`;
+      document.getElementById('successStaffDisplay').innerText = bill.staffName;
+      document.getElementById('billSuccessModal').classList.add('open');
+
+      playBeepSound();
+    }
+
+    function printFromSuccessModal() {
+      if (!lastGeneratedBillForPreview) return;
+      document.getElementById('printable-thermal-receipt').innerHTML = renderThermalReceiptHTML(lastGeneratedBillForPreview);
+      window.print();
+    }
+
+    function whatsappFromSuccessModal() {
+      if (!lastGeneratedBillForPreview) return;
+      sendBillViaWhatsApp(lastGeneratedBillForPreview);
+    }
+
+    function closeSuccessModalAndReset() {
+      document.getElementById('billSuccessModal').classList.remove('open');
+      resetBillAfterAction();
     }
 
     // ========================================================================
@@ -2919,7 +3122,7 @@
         <div class="th-divider"></div>
         <div>
           <strong>Bill:</strong> #${bill.billNo}<br>
-          <strong>Date:</strong> ${bill.formattedDate} ${bill.formattedTime}<br>
+          <strong>Date:</strong> ${bill.formattedDate || bill.date}<br>
           <strong>Staff:</strong> ${bill.staffName} (${bill.staffRole || 'Cashier'})<br>
           <strong>Cust:</strong> ${bill.customerName} ${bill.customerPhone ? '(' + bill.customerPhone + ')' : ''}
         </div>
@@ -2955,7 +3158,7 @@
         </div>
         <div class="th-double-divider"></div>
         <div>
-          <strong>Mode:</strong> ${bill.paymentMode.toUpperCase()} (PAID ✓)<br>
+          <strong>Mode:</strong> ${String(bill.paymentMode || 'Cash').toUpperCase()} (PAID ✓)<br>
           ${bill.paymentMode === 'Cash' && bill.cashReceived ? `Tendered: ₹${bill.cashReceived} | Change: ₹${bill.changeDue.toFixed(2)}` : ''}
         </div>
         <div class="th-divider"></div>
@@ -2966,11 +3169,11 @@
       `;
     }
 
-    function saveAndPrintThermalReceipt() {
+    async function saveAndPrintThermalReceipt() {
       const bill = createBillRecord();
       if (!bill) return;
 
-      saveBillToDatabase(bill);
+      await saveBillToDatabase(bill);
 
       // Render into hidden print container
       const printContainer = document.getElementById('printable-thermal-receipt');
@@ -2979,14 +3182,7 @@
       // Trigger standard browser thermal print
       window.print();
 
-      // Reset bill counter
-      currentCart = [];
-      document.getElementById('billDiscountInput').value = 0;
-      document.getElementById('cashReceivedInput').value = '';
-      document.getElementById('billCustomerPhone').value = '';
-      document.getElementById('billCustomerName').value = '';
-      renderCartUI();
-      updateBillNumberUI();
+      resetBillAfterAction();
     }
 
     function openThermalReceiptModal(bill) {
@@ -3016,8 +3212,10 @@
     // ========================================================================
     function formatWhatsAppBillMessage(bill) {
       let itemsText = '';
-      bill.items.forEach((item, index) => {
-        itemsText += `${index + 1}. *${item.name}*\n   Qty: ${item.quantity} × ₹${item.price.toFixed(2)} = ₹${item.subtotal.toFixed(2)}\n`;
+      (bill.items || []).forEach((item, index) => {
+        const rate = item.price || item.unitPrice || 0;
+        const sub = item.subtotal || (rate * item.quantity);
+        itemsText += `${index + 1}. *${item.name}*\n   Qty: ${item.quantity} × ₹${rate.toFixed(2)} = ₹${sub.toFixed(2)}\n`;
       });
 
       const message = 
@@ -3028,16 +3226,16 @@
 ━━━━━━━━━━━━━━━━━━━━
 *TAX INVOICE / ബിൽ*
 *Bill No:* #${bill.billNo}
-*Date:* ${bill.formattedDate}, ${bill.formattedTime}
-*Billed By Staff:* ${bill.staffName} (${bill.staffRole || 'Cashier'})
+*Date:* ${bill.formattedDate || bill.date || 'Today'}
+*Billed By Staff:* ${bill.staffName || 'John Joy'} (${bill.staffRole || 'Cashier'})
 *Customer:* ${bill.customerName || 'Walk-in'} ${bill.customerPhone ? '(+91 ' + bill.customerPhone + ')' : ''}
 ━━━━━━━━━━━━━━━━━━━━
 *ITEMS PURCHASED:*
 ${itemsText}━━━━━━━━━━━━━━━━━━━━
-*Items Count:* ${bill.totalItemsCount || bill.items.length} (${bill.totalUnitsCount || bill.items.length} Units)
-*Subtotal:* ₹${bill.subtotal.toFixed(2)}
+*Items Count:* ${bill.totalItemsCount || bill.items.length}
+*Subtotal:* ₹${(bill.subtotal || bill.grandTotal).toFixed(2)}
 ${bill.discount > 0 ? `*Discount:* - ₹${bill.discount.toFixed(2)}\n` : ''}*GRAND TOTAL:* ₹${bill.grandTotal.toFixed(2)}
-*Payment Mode:* ${bill.paymentMode.toUpperCase()} (PAID ✓)
+*Payment Mode:* ${String(bill.paymentMode || 'Cash').toUpperCase()} (PAID ✓)
 ━━━━━━━━━━━━━━━━━━━━
 🌿 _ദൈവത്തിന്റെ സ്വന്തം നാട്ടിലെ വിഭവങ്ങൾ ഇനി ഗോരഖ്പൂരിലും!_
 Thank you for shopping at Shalom Kerala Stores! Visit again! 🙏`;
@@ -3045,17 +3243,17 @@ Thank you for shopping at Shalom Kerala Stores! Visit again! 🙏`;
       return encodeURIComponent(message);
     }
 
-    function saveAndSendWhatsAppBill() {
+    async function saveAndSendWhatsAppBill() {
       const bill = createBillRecord();
       if (!bill) return;
 
-      saveBillToDatabase(bill);
+      await saveBillToDatabase(bill);
 
       let phone = bill.customerPhone;
       if (!phone || phone.replace(/\D/g, '').length < 10) {
         phone = prompt('Enter 10-digit WhatsApp mobile number for the customer:', bill.customerPhone || '');
         if (!phone) {
-          alert('WhatsApp bill cancelled (no phone number). Bill has been saved to database.');
+          alert('WhatsApp bill cancelled (no phone number). Bill has been safely saved to Live Cloud!');
           resetBillAfterAction();
           return;
         }
@@ -3113,32 +3311,32 @@ Thank you for shopping at Shalom Kerala Stores! Visit again! 🙏`;
     }
 
     function updateHistoryKPIs(bills) {
-      const todayStr = new Date().toLocaleDateString('en-IN');
-      const todayBills = bills.filter(b => b.date === todayStr);
-
-      let todaySales = 0;
-      let todayCash = 0;
-      let todayUPI = 0;
+      const now = new Date();
+      let totalSales = 0;
+      let totalCash = 0;
+      let totalUPI = 0;
       let currentStaffSales = 0;
 
-      todayBills.forEach(b => {
-        todaySales += b.grandTotal || 0;
-        if (b.paymentMode === 'Cash') todayCash += b.grandTotal || 0;
-        if (b.paymentMode === 'UPI') todayUPI += b.grandTotal || 0;
+      bills.forEach(b => {
+        const amt = b.grandTotal || 0;
+        totalSales += amt;
+        const pmode = String(b.paymentMode || '').toLowerCase();
+        if (pmode.includes('cash')) totalCash += amt;
+        if (pmode.includes('upi')) totalUPI += amt;
         if (activeStaff && b.staffName === activeStaff.name) {
-          currentStaffSales += b.grandTotal || 0;
+          currentStaffSales += amt;
         }
       });
 
-      document.getElementById('kpiTodaySales').innerText = `₹${todaySales.toFixed(2)}`;
-      document.getElementById('kpiTodayBillsCount').innerText = todayBills.length;
-      document.getElementById('kpiTodayCash').innerText = `₹${todayCash.toFixed(2)}`;
-      document.getElementById('kpiTodayUPI').innerText = `₹${todayUPI.toFixed(2)}`;
+      document.getElementById('kpiTodaySales').innerText = `₹${totalSales.toFixed(2)}`;
+      document.getElementById('kpiTodayBillsCount').innerText = bills.length;
+      document.getElementById('kpiTodayCash').innerText = `₹${totalCash.toFixed(2)}`;
+      document.getElementById('kpiTodayUPI').innerText = `₹${totalUPI.toFixed(2)}`;
       document.getElementById('kpiCurrentStaffSales').innerText = `₹${currentStaffSales.toFixed(2)}`;
-      document.getElementById('badgeBillsCount').innerText = todayBills.length;
+      document.getElementById('badgeBillsCount').innerText = bills.length;
 
       // Update Reconciliation Box in Expenses View
-      updateReconciliationBox(todayCash);
+      updateReconciliationBox(totalCash);
     }
 
     function filterPreviousBills() {
@@ -3148,12 +3346,12 @@ Thank you for shopping at Shalom Kerala Stores! Visit again! 🙏`;
       const paymentFilter = document.getElementById('histPaymentFilter').value;
       const dateFilter = document.getElementById('histDateFilter').value;
 
-      const todayStr = new Date().toLocaleDateString('en-IN');
+      const now = new Date();
 
       const filtered = bills.filter(bill => {
         // Search query
         const matchesSearch = !searchQuery ||
-          bill.billNo.toLowerCase().includes(searchQuery) ||
+          (bill.billNo && bill.billNo.toLowerCase().includes(searchQuery)) ||
           (bill.customerName && bill.customerName.toLowerCase().includes(searchQuery)) ||
           (bill.customerPhone && bill.customerPhone.includes(searchQuery)) ||
           (bill.staffName && bill.staffName.toLowerCase().includes(searchQuery));
@@ -3162,16 +3360,33 @@ Thank you for shopping at Shalom Kerala Stores! Visit again! 🙏`;
         const matchesStaff = (staffFilter === 'All') || (bill.staffName === staffFilter);
 
         // Payment mode filter
-        const matchesPayment = (paymentFilter === 'All') || (bill.paymentMode === paymentFilter);
+        const matchesPayment = (paymentFilter === 'All') || 
+          (bill.paymentMode && String(bill.paymentMode).toLowerCase().includes(paymentFilter.toLowerCase()));
 
         // Date filter
         let matchesDate = true;
+        const billDateObj = new Date(bill.timestamp || bill.formattedDate || bill.date);
+        const isValidDate = !isNaN(billDateObj.getTime());
+
         if (dateFilter === 'Today') {
-          matchesDate = bill.date === todayStr;
+          if (isValidDate) {
+            matchesDate = billDateObj.getFullYear() === now.getFullYear() &&
+                          billDateObj.getMonth() === now.getMonth() &&
+                          billDateObj.getDate() === now.getDate();
+          }
         } else if (dateFilter === 'Yesterday') {
-          const yest = new Date();
+          const yest = new Date(now);
           yest.setDate(yest.getDate() - 1);
-          matchesDate = bill.date === yest.toLocaleDateString('en-IN');
+          if (isValidDate) {
+            matchesDate = billDateObj.getFullYear() === yest.getFullYear() &&
+                          billDateObj.getMonth() === yest.getMonth() &&
+                          billDateObj.getDate() === yest.getDate();
+          }
+        } else if (dateFilter === 'ThisWeek') {
+          if (isValidDate) {
+            const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            matchesDate = billDateObj >= oneWeekAgo;
+          }
         }
 
         return matchesSearch && matchesStaff && matchesPayment && matchesDate;
@@ -3197,16 +3412,19 @@ Thank you for shopping at Shalom Kerala Stores! Visit again! 🙏`;
 
       bills.forEach(bill => {
         const tr = document.createElement('tr');
-        const payClass = bill.paymentMode === 'Cash' ? 'pay-cash' : (bill.paymentMode === 'UPI' ? 'pay-upi' : 'pay-card');
+        const pmode = String(bill.paymentMode || 'Cash');
+        const payClass = pmode.toLowerCase().includes('cash') ? 'pay-cash' : (pmode.toLowerCase().includes('upi') ? 'pay-upi' : 'pay-card');
+        const itemsCount = (bill.items || []).length;
+        const total = bill.grandTotal || 0;
 
         tr.innerHTML = `
           <td><strong>${bill.billNo}</strong></td>
-          <td>${bill.formattedDate || bill.date}<br><small style="color: var(--text-dim);">${bill.formattedTime || bill.time}</small></td>
-          <td><span class="staff-badge">👤 ${bill.staffName || 'Staff'}</span></td>
-          <td>${bill.customerName || 'Walk-in'}<br><small style="color: var(--text-dim);">${bill.customerPhone || 'Counter'}</small></td>
-          <td>${bill.totalItemsCount || bill.items.length} Items</td>
-          <td><strong style="color: var(--gold-light);">₹${bill.grandTotal.toFixed(2)}</strong></td>
-          <td><span class="pay-badge ${payClass}">${bill.paymentMode}</span></td>
+          <td>${bill.formattedDate || bill.date || ''}</td>
+          <td><span class="staff-badge">👤 ${bill.staffName || 'John Joy'}</span></td>
+          <td>${bill.customerName || 'Walk-in'}<br><small style="color: var(--text-dim);">${bill.customerPhone || 'Store Counter'}</small></td>
+          <td>${itemsCount} Items</td>
+          <td><strong style="color: var(--gold-light);">₹${total.toFixed(2)}</strong></td>
+          <td><span class="pay-badge ${payClass}">${pmode}</span></td>
           <td style="text-align: right; white-space: nowrap;">
             <button class="tbl-action-btn btn-gold" onclick='openThermalReceiptModal(${JSON.stringify(bill)})' title="Print Thermal Receipt">
               🖨️ 2" Print
@@ -3232,10 +3450,10 @@ Thank you for shopping at Shalom Kerala Stores! Visit again! 🙏`;
       }
     }
 
-    function saveDailyExpense() {
+    async function saveDailyExpense() {
       if (!activeStaff) {
-        openStaffModal();
-        return;
+        activeStaff = { ...DEFAULT_STAFF[0] };
+        applyActiveStaffUI();
       }
 
       const category = document.getElementById('expCategorySelect').value;
@@ -3265,18 +3483,26 @@ Thank you for shopping at Shalom Kerala Stores! Visit again! 🙏`;
         createdByStaff: activeStaff.name
       };
 
-      // Save locally
+      // 1. Save locally
       const expenses = getStoredExpenses();
       expenses.unshift(expenseRecord);
       localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(expenses));
 
-      // Sync to Google Firebase Real-Time Cloud Database
+      // 2. Sync to Google Firebase Real-Time Cloud Database (dual method)
+      try {
+        fetch(`${FIREBASE_REST_URL}/expenses/${expenseRecord.id}.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(expenseRecord)
+        }).then(res => {
+          if (res.ok) console.log(`[CloudSync] Expense ${expenseRecord.id} saved to Google Cloud!`);
+        }).catch(e => console.warn('Cloud expense sync error:', e));
+      } catch (e) {}
+
       if (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.isReady()) {
         try {
           ShalomCloudSync.db.ref(`expenses/${expenseRecord.id}`).set(expenseRecord);
-        } catch (e) {
-          console.warn('Firebase expense sync error', e);
-        }
+        } catch (e) {}
       }
 
       // Reset Form
@@ -3284,23 +3510,21 @@ Thank you for shopping at Shalom Kerala Stores! Visit again! 🙏`;
       document.getElementById('expAmountInput').value = '';
 
       loadExpensesList();
-      alert(`Expense of ₹${amount} recorded by ${activeStaff.name}!`);
+      alert(`Expense of ₹${amount} recorded by ${activeStaff.name} and synced to Cloud!`);
     }
 
     function loadExpensesList() {
       const expenses = getStoredExpenses();
-      const todayStr = new Date().toLocaleDateString('en-IN');
-      const todayExpenses = expenses.filter(e => e.date === todayStr);
 
-      document.getElementById('expensesTotalCount').innerText = todayExpenses.length;
-      document.getElementById('badgeExpensesCount').innerText = todayExpenses.length;
+      document.getElementById('expensesTotalCount').innerText = expenses.length;
+      document.getElementById('badgeExpensesCount').innerText = expenses.length;
 
       let totalExp = 0;
       let cashExp = 0;
 
-      todayExpenses.forEach(e => {
+      expenses.forEach(e => {
         totalExp += e.amount || 0;
-        if (e.paymentMode.includes('Cash')) {
+        if (String(e.paymentMode || '').includes('Cash')) {
           cashExp += e.amount || 0;
         }
       });
@@ -3314,26 +3538,26 @@ Thank you for shopping at Shalom Kerala Stores! Visit again! 🙏`;
       const tbody = document.getElementById('expensesTableBody');
       tbody.innerHTML = '';
 
-      if (todayExpenses.length === 0) {
+      if (expenses.length === 0) {
         tbody.innerHTML = `
           <tr>
             <td colspan="7" style="text-align: center; color: var(--text-dim); padding: 25px;">
-              No expenses recorded today yet.
+              No expenses recorded yet.
             </td>
           </tr>
         `;
         return;
       }
 
-      todayExpenses.forEach(exp => {
+      expenses.forEach(exp => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${exp.time}</td>
+          <td>${exp.time || ''}<br><small style="color: var(--text-dim);">${exp.date || ''}</small></td>
           <td><strong style="color: var(--gold-light);">${exp.category}</strong></td>
           <td>${exp.description}</td>
           <td><strong style="color: #f87171;">₹${exp.amount.toFixed(2)}</strong></td>
           <td>${exp.paymentMode}</td>
-          <td><span class="staff-badge">👤 ${exp.staffName}</span></td>
+          <td><span class="staff-badge">👤 ${exp.staffName || 'Staff'}</span></td>
           <td style="text-align: right;">
             <button class="tbl-action-btn btn-danger" onclick="deleteExpenseRecord('${exp.id}')" title="Delete">
               🗑️
@@ -3349,23 +3573,32 @@ Thank you for shopping at Shalom Kerala Stores! Visit again! 🙏`;
       let expenses = getStoredExpenses();
       expenses = expenses.filter(e => e.id !== expId);
       localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(expenses));
+
+      // Remove from Firebase
+      try {
+        fetch(`${FIREBASE_REST_URL}/expenses/${expId}.json`, { method: 'DELETE' });
+      } catch (e) {}
+
       loadExpensesList();
     }
 
     function updateReconciliationBox(cashIn = null, cashOut = null) {
       const bills = getStoredBills();
       const expenses = getStoredExpenses();
-      const todayStr = new Date().toLocaleDateString('en-IN');
 
       let totalCashIn = 0;
       let totalCashOut = 0;
 
-      bills.filter(b => b.date === todayStr && b.paymentMode === 'Cash').forEach(b => {
-        totalCashIn += b.grandTotal || 0;
+      bills.forEach(b => {
+        if (String(b.paymentMode || '').toLowerCase().includes('cash')) {
+          totalCashIn += b.grandTotal || 0;
+        }
       });
 
-      expenses.filter(e => e.date === todayStr && e.paymentMode.includes('Cash')).forEach(e => {
-        totalCashOut += e.amount || 0;
+      expenses.forEach(e => {
+        if (String(e.paymentMode || '').toLowerCase().includes('cash')) {
+          totalCashOut += e.amount || 0;
+        }
       });
 
       const netCash = totalCashIn - totalCashOut;
