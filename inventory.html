@@ -146,6 +146,30 @@
       color: #03140e;
     }
 
+    .erp-billing-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #d4af37, #b89223);
+      border: 1.5px solid #f4df91;
+      color: #03140e;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.35);
+      transition: all var(--transition-fast, 0.18s ease);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .erp-billing-btn:hover {
+      background: linear-gradient(135deg, #f4df91, #d4af37);
+      color: #03140e;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5);
+    }
+
     .erp-main-container {
       max-width: 1440px;
       margin: 20px auto 60px;
@@ -1113,6 +1137,9 @@
 
       <!-- Master Tabs -->
       <nav class="erp-nav-tabs" aria-label="ERP Modules">
+        <a href="billing.html" class="erp-nav-tab" style="background: rgba(212, 175, 55, 0.2); border: 1px solid #d4af37; color: #f4df91; text-decoration: none;" title="Open Dedicated POS Billing Counter (billing.html)">
+          <span>⚡ Live POS Counter</span>
+        </a>
         <button type="button" class="erp-nav-tab active" id="tabPosBilling" data-tab="posBillingView">
           <span>🧾 POS Bill Book & Counter</span>
         </button>
@@ -1128,6 +1155,9 @@
       </nav>
 
       <div class="erp-header-right">
+        <a href="billing.html" class="erp-billing-btn" title="Open Fullscreen POS Billing Counter with Staff Sign-In, Mobile Barcode Scanner & Daily Expenses">
+          <span>⚡ POS Billing Counter (billing.html) →</span>
+        </a>
         <button type="button" class="btn btn-outline btn-sm" id="btnCloudSyncSettings" style="background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(212,175,55,0.4); border-radius: 20px; padding: 6px 14px; font-weight: 700; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
           <span id="cloudStatusDot" style="width: 8px; height: 8px; border-radius: 50%; background: #eab308; display: inline-block;"></span>
           <span id="cloudStatusText">☁️ Cloud Sync</span>
@@ -1176,7 +1206,10 @@
             </form>
 
             <!-- Mobile Scan Options Row -->
-            <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center;">
+              <a href="billing.html" class="btn btn-sm" style="background: linear-gradient(135deg, #d4af37, #b89223); color: #03140e; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; box-shadow: 0 2px 8px rgba(212, 175, 55, 0.35);" title="Open Dedicated POS Billing Counter">
+                <span>⚡ Open POS Billing (billing.html) →</span>
+              </a>
               <button type="button" class="btn btn-primary btn-sm" id="posOpenMobileScannerBtn" style="background: linear-gradient(135deg, #1d7057, #0c3c2e); color: #ffffff; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
                 <span>📱 Scan with Mobile Camera</span>
               </button>
