@@ -1,0 +1,11 @@
+create a dashboard.html
+sign in with admin user and password
+include these finctions
+
+pending bills total
+pending payments total
+stock value total
+sales totals ( this week, this month, today, yesterday, this year)
+Total Cash , bank total balance
+Total Sales in this week, day, month, whole year
+Party wise reports (only pending amounts)
