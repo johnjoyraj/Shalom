@@ -814,8 +814,8 @@
     /* Main Action Buttons Grid */
     .bill-actions-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
     }
 
     .btn-checkout-print {
@@ -823,15 +823,15 @@
       color: #fff;
       border: 1.5px solid #34d399;
       border-radius: 10px;
-      padding: 10px;
+      padding: 10px 4px;
       font-family: var(--font-heading);
-      font-size: 0.88rem;
+      font-size: 0.8rem;
       font-weight: 800;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 4px;
       box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
       transition: all 0.2s;
     }
@@ -841,20 +841,43 @@
       transform: translateY(-1px);
     }
 
-    .btn-checkout-whatsapp {
-      background: linear-gradient(135deg, #128c7e, var(--whatsapp));
+    .btn-checkout-rawbt {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
       color: #fff;
-      border: 1.5px solid #25d366;
+      border: 1.5px solid #60a5fa;
       border-radius: 10px;
-      padding: 10px;
+      padding: 10px 4px;
       font-family: var(--font-heading);
-      font-size: 0.88rem;
+      font-size: 0.8rem;
       font-weight: 800;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 4px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+      transition: all 0.2s;
+    }
+
+    .btn-checkout-rawbt:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-checkout-whatsapp {
+      background: linear-gradient(135deg, #128c7e, var(--whatsapp));
+      color: #fff;
+      border: 1.5px solid #25d366;
+      border-radius: 10px;
+      padding: 10px 4px;
+      font-family: var(--font-heading);
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
       box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
       transition: all 0.2s;
     }
@@ -1611,13 +1634,16 @@
               <span>💾</span> Complete & Save Bill (Live Cloud)
             </button>
 
-            <!-- Checkout Action Buttons: Print & WhatsApp -->
+            <!-- Checkout Action Buttons: Print, RawBT & WhatsApp -->
             <div class="bill-actions-grid">
-              <button class="btn-checkout-print" onclick="saveAndPrintThermalReceipt()">
-                <span>🖨️</span> Save & Print 2"
+              <button class="btn-checkout-print" onclick="saveAndPrintThermalReceipt()" title="Print via standard browser print dialog">
+                <span>🖨️</span> Print (58mm)
               </button>
-              <button class="btn-checkout-whatsapp" onclick="saveAndSendWhatsAppBill()">
-                <span>💬</span> WhatsApp Bill
+              <button class="btn-checkout-rawbt" onclick="saveAndPrintRawBTThermal()" title="Print directly to RawBT Bluetooth/USB thermal printer app">
+                <span>📲</span> RawBT Print
+              </button>
+              <button class="btn-checkout-whatsapp" onclick="saveAndSendWhatsAppBill()" title="Send bill receipt via WhatsApp">
+                <span>💬</span> WhatsApp
               </button>
             </div>
           </div>
@@ -2013,15 +2039,18 @@
       <div class="modal-body" style="background: #1e293b; align-items: center;">
         
         <!-- Physical 58mm Thermal Preview Container -->
-        <div class="thermal-paper-slip" id="thermalSlipPreviewContainer">
+        <div class="thermal-paper-slip" id="thermal-slip-preview" data-alt-id="thermalSlipPreviewContainer">
           <!-- Populated from Active Bill or Previous Bill -->
         </div>
 
-        <div style="display: flex; gap: 8px; width: 100%; margin-top: 10px;">
-          <button class="btn-action btn-gold" style="flex: 1; justify-content: center;" onclick="triggerThermalPrint()">
-            🖨️ Print (58mm)
+        <div style="display: flex; gap: 6px; width: 100%; margin-top: 10px; flex-wrap: wrap;">
+          <button class="btn-action btn-gold" style="flex: 1; justify-content: center; font-size: 0.82rem; padding: 10px 4px;" onclick="triggerThermalPrint()" title="Standard browser thermal print">
+            🖨️ Browser (58mm)
           </button>
-          <button class="btn-action btn-emerald" style="flex: 1; justify-content: center; background: #25d366;" onclick="triggerWhatsAppFromPreview()">
+          <button class="btn-action" style="flex: 1; justify-content: center; background: #2563eb; color: #fff; font-size: 0.82rem; padding: 10px 4px;" onclick="printToRawBT()" title="Send directly to RawBT ESC/POS Bluetooth thermal printer">
+            📲 RawBT (Bluetooth)
+          </button>
+          <button class="btn-action btn-emerald" style="flex: 1; justify-content: center; background: #25d366; font-size: 0.82rem; padding: 10px 4px;" onclick="triggerWhatsAppFromPreview()" title="Share bill on WhatsApp">
             💬 WhatsApp
           </button>
         </div>
@@ -2090,6 +2119,9 @@
     let currentPaymentMode = 'Cash';
     let html5QrScannerInstance = null;
     let currentCameraFacing = 'environment';
+    let lastScanTimestamp = 0;
+    let scanCooldownTimer = null;
+    let isScanCooldown = false;
     let audioCtx = null;
     let lastGeneratedBillForPreview = null;
 
@@ -2872,6 +2904,11 @@
     }
 
     function closeCameraScannerModal() {
+      if (scanCooldownTimer) {
+        clearInterval(scanCooldownTimer);
+        scanCooldownTimer = null;
+      }
+      isScanCooldown = false;
       stopCameraScanning();
       document.getElementById('cameraScannerModal').classList.remove('open');
     }
@@ -2920,8 +2957,15 @@
     }
 
     function onBarcodeDecoded(decodedText) {
-      playBeepSound();
+      const now = Date.now();
+
+      // Enforce 4-second break between barcode scans
+      if (now - lastScanTimestamp < 4000 || isScanCooldown) {
+        return;
+      }
+
       const code = decodedText.trim();
+      if (!code) return;
 
       const found = masterCatalog.find(p => 
         (p.code && p.code.toLowerCase() === code.toLowerCase()) ||
@@ -2931,18 +2975,63 @@
       const feedback = document.getElementById('scanFeedbackContainer');
 
       if (found) {
+        lastScanTimestamp = now;
+        isScanCooldown = true;
+        playBeepSound();
         addItemToCart(found);
-        feedback.innerHTML = `
-          <div class="scan-toast">
-            <span>✅</span> Added: ${found.name} (₹${found.price})
-          </div>
-        `;
+
+        // Flash video container border
+        const videoBox = document.getElementById('interactive-video-container');
+        if (videoBox) {
+          videoBox.style.borderColor = '#10b981';
+          videoBox.style.boxShadow = '0 0 16px rgba(16, 185, 129, 0.5)';
+        }
+
+        // Live 4-second cooldown countdown
+        let remaining = 4;
+        const updateCooldownText = () => {
+          if (remaining > 0) {
+            feedback.innerHTML = `
+              <div class="scan-toast" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; width: 100%;">
+                <div style="font-size: 0.95rem;">✅ Added: <strong>${found.name}</strong> (₹${found.price})</div>
+                <div style="font-size: 0.8rem; color: #fef08a; font-weight: 600;">
+                  ⏳ 4s Break: Next scan ready in <strong>${remaining}s</strong>...
+                </div>
+              </div>
+            `;
+            remaining--;
+          } else {
+            clearInterval(scanCooldownTimer);
+            scanCooldownTimer = null;
+            isScanCooldown = false;
+            if (videoBox) {
+              videoBox.style.borderColor = 'var(--gold-border)';
+              videoBox.style.boxShadow = 'none';
+            }
+            feedback.innerHTML = `
+              <div style="color: #10b981; font-size: 0.88rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                <span>🟢</span> Scanner armed — Aim at next barcode
+              </div>
+            `;
+          }
+        };
+
+        if (scanCooldownTimer) clearInterval(scanCooldownTimer);
+        updateCooldownText();
+        scanCooldownTimer = setInterval(updateCooldownText, 1000);
+
       } else {
+        lastScanTimestamp = now;
+        isScanCooldown = true;
         feedback.innerHTML = `
-          <div style="background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #fbbf24; padding: 6px 12px; border-radius: 8px; font-size: 0.84rem;">
+          <div style="background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #fbbf24; padding: 6px 12px; border-radius: 8px; font-size: 0.84rem; text-align: center;">
             ⚠️ Barcode <strong>${code}</strong> not found in master stock.
           </div>
         `;
+        setTimeout(() => {
+          isScanCooldown = false;
+          feedback.innerHTML = `<span style="font-size: 0.85rem; color: var(--text-gold);">Align barcode or QR code within the camera box</span>`;
+        }, 2000);
       }
     }
 
@@ -3175,6 +3264,116 @@
       `;
     }
 
+    /**
+     * Generates clean 32-column monospace plain text formatted for 58mm ESC/POS Thermal Printers
+     */
+    function generateThermalReceiptPlainText(bill) {
+      const padCenter = (str, width = 32) => {
+        str = String(str || '').trim();
+        if (str.length >= width) return str.substring(0, width);
+        const pad = Math.floor((width - str.length) / 2);
+        return ' '.repeat(pad) + str;
+      };
+
+      const padCols = (name, qty, rate, amt, width = 32) => {
+        let n = String(name || '').substring(0, 14).padEnd(14, ' ');
+        let q = String(qty).padStart(3, ' ');
+        let r = String(rate).padStart(5, ' ');
+        let a = String(amt).padStart(7, ' ');
+        return `${n} ${q} ${r} ${a}`;
+      };
+
+      const padTwo = (left, right, width = 32) => {
+        left = String(left || '');
+        right = String(right || '');
+        const spaces = Math.max(1, width - left.length - right.length);
+        return left + ' '.repeat(spaces) + right;
+      };
+
+      const divLine = '-'.repeat(32);
+      const dblLine = '='.repeat(32);
+
+      let lines = [];
+      lines.push(dblLine);
+      lines.push(padCenter("SHALOM KERALA STORES"));
+      lines.push(padCenter("Chargawan, Medical College Rd"));
+      lines.push(padCenter("Gorakhpur, UP - 273013"));
+      lines.push(padCenter("Ph: 7379325499 | UPI-YBL"));
+      lines.push(padCenter("GSTIN: 09AABCS7379R1ZM"));
+      lines.push(divLine);
+      lines.push(`Bill: #${bill.billNo}`);
+      lines.push(`Date: ${bill.formattedDate || bill.date}`);
+      lines.push(`Staff: ${bill.staffName} (${bill.staffRole || 'Cashier'})`);
+      if (bill.customerName) {
+        lines.push(`Cust: ${bill.customerName} ${bill.customerPhone ? '(' + bill.customerPhone + ')' : ''}`);
+      }
+      lines.push(divLine);
+      lines.push(padCols("Item", "Qty", "Rate", "Amt"));
+      lines.push(divLine);
+
+      (bill.items || []).forEach(item => {
+        const total = (item.price * item.quantity).toFixed(2);
+        lines.push(padCols(item.name, item.quantity, Math.round(item.price), total));
+      });
+
+      lines.push(divLine);
+      lines.push(padTwo("Subtotal:", "₹" + bill.subtotal.toFixed(2)));
+      if (bill.discount > 0) {
+        lines.push(padTwo("Discount:", "-₹" + bill.discount.toFixed(2)));
+      }
+      lines.push(dblLine);
+      lines.push(padTwo("NET TOTAL:", "₹" + bill.grandTotal.toFixed(2)));
+      lines.push(dblLine);
+      lines.push(`Mode: ${String(bill.paymentMode || 'Cash').toUpperCase()} (PAID ✓)`);
+      if (bill.paymentMode === 'Cash' && bill.cashReceived) {
+        lines.push(`Tendered: ₹${bill.cashReceived} | Change: ₹${bill.changeDue.toFixed(2)}`);
+      }
+      lines.push(divLine);
+      lines.push(padCenter("🌿 ദൈവത്തിന്റെ സ്വന്തം നാട് 🌿"));
+      lines.push(padCenter("Thank you! Visit Again!"));
+      lines.push(dblLine);
+      lines.push("\n\n"); // Feed paper
+
+      return lines.join("\n");
+    }
+
+    /**
+     * Send receipt directly to the RawBT Android ESC/POS Thermal Printer App
+     */
+    function printToRawBT() {
+      // 1. Prioritize clean 32-column formatted plain text from active/preview bill
+      let receiptText = '';
+      if (lastGeneratedBillForPreview) {
+        receiptText = generateThermalReceiptPlainText(lastGeneratedBillForPreview);
+      }
+
+      // 2. Fallback to extracting receipt HTML or plain text from your slip element
+      if (!receiptText) {
+        const slipEl = document.getElementById("thermal-slip-preview") || 
+                       document.getElementById("thermalSlipPreviewContainer") ||
+                       document.getElementById("printable-thermal-receipt");
+        if (slipEl) {
+          receiptText = slipEl.innerText;
+        }
+      }
+
+      if (!receiptText || !receiptText.trim()) {
+        alert("No receipt preview available to print. Please generate or select a bill first.");
+        return;
+      }
+
+      // Send directly to the RawBT app
+      try {
+        window.location.href = "rawbt:data:text/plain;base64," + btoa(unescape(encodeURIComponent(receiptText)));
+      } catch (err) {
+        console.error("RawBT Base64 encoding error:", err);
+        const bytes = new TextEncoder().encode(receiptText);
+        let bin = '';
+        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        window.location.href = "rawbt:data:text/plain;base64," + btoa(bin);
+      }
+    }
+
     async function saveAndPrintThermalReceipt() {
       const bill = createBillRecord();
       if (!bill) return;
@@ -3191,10 +3390,28 @@
       resetBillAfterAction();
     }
 
+    async function saveAndPrintRawBTThermal() {
+      const bill = createBillRecord();
+      if (!bill) return;
+
+      await saveBillToDatabase(bill);
+
+      lastGeneratedBillForPreview = bill;
+      const previewContainer = document.getElementById('thermal-slip-preview') || document.getElementById('thermalSlipPreviewContainer');
+      if (previewContainer) {
+        previewContainer.innerHTML = renderThermalReceiptHTML(bill);
+      }
+
+      printToRawBT();
+      resetBillAfterAction();
+    }
+
     function openThermalReceiptModal(bill) {
       lastGeneratedBillForPreview = bill;
-      const previewContainer = document.getElementById('thermalSlipPreviewContainer');
-      previewContainer.innerHTML = renderThermalReceiptHTML(bill);
+      const previewContainer = document.getElementById('thermal-slip-preview') || document.getElementById('thermalSlipPreviewContainer');
+      if (previewContainer) {
+        previewContainer.innerHTML = renderThermalReceiptHTML(bill);
+      }
       document.getElementById('receiptPreviewModal').classList.add('open');
     }
 

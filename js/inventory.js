@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2-Inch Thermal Modal & Print
     receiptModalBackdrop: document.getElementById('receiptModalBackdrop'),
     closeReceiptModalBtn: document.getElementById('closeReceiptModalBtn'),
-    thermalSlipPreview: document.getElementById('thermalSlipPreview'),
+    thermalSlipPreview: document.getElementById('thermal-slip-preview') || document.getElementById('thermalSlipPreview'),
     modalPrintTriggerBtn: document.getElementById('modalPrintTriggerBtn'),
     printThermalWrapper: document.getElementById('printThermalWrapper'),
 
@@ -410,12 +410,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  let invScanCooldownTimer = null;
+  let isInvScanCooldown = false;
+
   function onCameraScanSuccess(decodedText) {
     if (!decodedText) return;
     const now = Date.now();
 
-    // Debounce identical scans within 1.4s
-    if (decodedText === lastScannedCode && (now - lastScannedTime) < 1400) {
+    // Enforce 4-second break between barcode scans
+    if ((now - lastScannedTime) < 4000 || isInvScanCooldown) {
       return;
     }
 
@@ -443,7 +446,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (el.mobileScanCountBadge) el.mobileScanCountBadge.textContent = `${scannedSessionCount} Scanned`;
       if (el.lastScannedItemText) el.lastScannedItemText.textContent = `✓ Added: ${product.name}`;
       if (el.lastScannedItemPrice) el.lastScannedItemPrice.textContent = `₹${product.price}`;
-      if (el.mobileScannerStatusText) el.mobileScannerStatusText.textContent = `✓ Scanned: ${product.name} (₹${product.price})`;
 
       // Reticle pulse
       const reticle = document.querySelector('.scanner-reticle-box');
@@ -452,12 +454,40 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => reticle.style.borderColor = 'rgba(212, 175, 55, 0.85)', 450);
       }
 
+      // Live 4-second cooldown countdown
+      isInvScanCooldown = true;
+      let remaining = 4;
+      const updateInvCooldown = () => {
+        if (remaining > 0) {
+          if (el.mobileScannerStatusText) {
+            el.mobileScannerStatusText.textContent = `✓ ${product.name} (₹${product.price}) — Next scan in ${remaining}s...`;
+          }
+          remaining--;
+        } else {
+          clearInterval(invScanCooldownTimer);
+          invScanCooldownTimer = null;
+          isInvScanCooldown = false;
+          if (el.mobileScannerStatusText) {
+            el.mobileScannerStatusText.textContent = '📷 Camera Active — Aim at barcode';
+          }
+        }
+      };
+
+      if (invScanCooldownTimer) clearInterval(invScanCooldownTimer);
+      updateInvCooldown();
+      invScanCooldownTimer = setInterval(updateInvCooldown, 1000);
+
       if (el.continuousScanToggle && !el.continuousScanToggle.checked) {
         stopMobileScanner();
       }
     } else {
+      isInvScanCooldown = true;
       if (el.mobileScannerStatusText) el.mobileScannerStatusText.textContent = `⚠️ Unrecognized code: ${decodedText}`;
       showToast(`Scanned "${decodedText}", but not found in Shalom catalog.`, 'error');
+      setTimeout(() => {
+        isInvScanCooldown = false;
+        if (el.mobileScannerStatusText) el.mobileScannerStatusText.textContent = '📷 Camera Active — Aim at barcode';
+      }, 2000);
     }
   }
 
@@ -466,6 +496,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function stopMobileScanner() {
+    if (invScanCooldownTimer) {
+      clearInterval(invScanCooldownTimer);
+      invScanCooldownTimer = null;
+    }
+    isInvScanCooldown = false;
+
     if (html5QrScanner && isCameraScanning) {
       try {
         await html5QrScanner.stop();
@@ -1012,6 +1048,111 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
+   * Generates clean 32-column monospace plain text formatted for 58mm ESC/POS Thermal Printers
+   */
+  function generate2InchThermalPlainText(bill) {
+    const padCenter = (str, width = 32) => {
+      str = String(str || '').trim();
+      if (str.length >= width) return str.substring(0, width);
+      const pad = Math.floor((width - str.length) / 2);
+      return ' '.repeat(pad) + str;
+    };
+
+    const padCols = (name, qty, rate, amt, width = 32) => {
+      let n = String(name || '').substring(0, 14).padEnd(14, ' ');
+      let q = String(qty).padStart(3, ' ');
+      let r = String(rate).padStart(5, ' ');
+      let a = String(amt).padStart(7, ' ');
+      return `${n} ${q} ${r} ${a}`;
+    };
+
+    const padTwo = (left, right, width = 32) => {
+      left = String(left || '');
+      right = String(right || '');
+      const spaces = Math.max(1, width - left.length - right.length);
+      return left + ' '.repeat(spaces) + right;
+    };
+
+    const divLine = '-'.repeat(32);
+    const dblLine = '='.repeat(32);
+
+    let lines = [];
+    lines.push(dblLine);
+    lines.push(padCenter("SHALOM KERALA STORES"));
+    lines.push(padCenter("Gorakhpur, UP - 273013"));
+    lines.push(padCenter("Ph: 7379325499 | UPI-YBL"));
+    lines.push(divLine);
+    lines.push(`Bill: #${bill.billNo}`);
+    lines.push(`Date: ${bill.date || ''}`);
+    if (bill.customerName) {
+      lines.push(`Cust: ${bill.customerName}`);
+    }
+    lines.push(divLine);
+    lines.push(padCols("Item", "Qty", "Rate", "Amt"));
+    lines.push(divLine);
+
+    (bill.items || []).forEach(item => {
+      const total = (item.price * item.quantity).toFixed(2);
+      lines.push(padCols(item.name, item.quantity, Math.round(item.price), total));
+    });
+
+    lines.push(divLine);
+    lines.push(padTwo("Subtotal:", "₹" + Number(bill.subtotal || 0).toFixed(2)));
+    if (Number(bill.discount || 0) > 0) {
+      lines.push(padTwo("Discount:", "-₹" + Number(bill.discount).toFixed(2)));
+    }
+    lines.push(dblLine);
+    lines.push(padTwo("NET TOTAL:", "₹" + Number(bill.grandTotal || 0).toFixed(2)));
+    lines.push(dblLine);
+    lines.push(`Mode: ${String(bill.paymentMode || 'Cash').toUpperCase()} (PAID ✓)`);
+    lines.push(divLine);
+    lines.push(padCenter("🌿 ദൈവത്തിന്റെ സ്വന്തം നാട് 🌿"));
+    lines.push(padCenter("Thank you! Visit Again!"));
+    lines.push(dblLine);
+    lines.push("\n\n");
+
+    return lines.join("\n");
+  }
+
+  /**
+   * Send receipt directly to RawBT Android ESC/POS Thermal Printer App
+   */
+  function printToRawBT(bill) {
+    let receiptText = '';
+
+    if (bill) {
+      receiptText = generate2InchThermalPlainText(bill);
+    }
+
+    if (!receiptText) {
+      const slipEl = document.getElementById("thermal-slip-preview") || 
+                     document.getElementById("thermalSlipPreview") ||
+                     el.thermalSlipPreview;
+      if (slipEl) {
+        receiptText = slipEl.innerText;
+      }
+    }
+
+    if (!receiptText || !receiptText.trim()) {
+      showToast('No receipt preview content found to print', 'error');
+      return;
+    }
+
+    try {
+      window.location.href = "rawbt:data:text/plain;base64," + btoa(unescape(encodeURIComponent(receiptText)));
+    } catch (err) {
+      console.error("RawBT Base64 encoding error:", err);
+      const bytes = new TextEncoder().encode(receiptText);
+      let bin = '';
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      window.location.href = "rawbt:data:text/plain;base64," + btoa(bin);
+    }
+  }
+
+  // Expose globally for HTML onclick triggers
+  window.printToRawBT = printToRawBT;
+
+  /**
    * Trigger 2-Inch Thermal Print
    */
   function print2InchThermalReceipt(bill) {
@@ -1037,6 +1178,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (el.modalPrintTriggerBtn) {
       el.modalPrintTriggerBtn.onclick = () => {
         print2InchThermalReceipt(bill);
+      };
+    }
+
+    const rawbtBtn = document.getElementById('modalRawBTBtn');
+    if (rawbtBtn) {
+      rawbtBtn.onclick = () => {
+        printToRawBT(bill);
       };
     }
   }

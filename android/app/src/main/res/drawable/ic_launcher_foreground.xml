@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group
+        android:scaleX="0.75"
+        android:scaleY="0.75"
+        android:translateX="13.5"
+        android:translateY="13.5">
+        <!-- Gold Emblem Outer Ring -->
+        <path
+            android:strokeColor="#D4AF37"
+            android:strokeWidth="3.5"
+            android:pathData="M 54, 12 A 42, 42 0 1, 0 54, 96 A 42, 42 0 1, 0 54, 12 Z" />
+        <!-- Inner Glow Circle -->
+        <path
+            android:fillColor="#0C3C2E"
+            android:pathData="M 54, 16 A 38, 38 0 1, 0 54, 92 A 38, 38 0 1, 0 54, 16 Z" />
+        <!-- Stylized Palm Trunk -->
+        <path
+            android:fillColor="#D4AF37"
+            android:pathData="M 51, 80 L 53, 50 L 55, 50 L 57, 80 Z" />
+        <!-- Palm Fronds Top Left -->
+        <path
+            android:strokeColor="#10B981"
+            android:strokeWidth="3"
+            android:strokeLineCap="round"
+            android:pathData="M 54, 50 Q 40, 40 32, 44" />
+        <path
+            android:strokeColor="#10B981"
+            android:strokeWidth="3"
+            android:strokeLineCap="round"
+            android:pathData="M 54, 50 Q 38, 48 30, 56" />
+        <!-- Palm Fronds Top Center -->
+        <path
+            android:strokeColor="#10B981"
+            android:strokeWidth="3.2"
+            android:strokeLineCap="round"
+            android:pathData="M 54, 50 Q 54, 34 54, 28" />
+        <!-- Palm Fronds Top Right -->
+        <path
+            android:strokeColor="#10B981"
+            android:strokeWidth="3"
+            android:strokeLineCap="round"
+            android:pathData="M 54, 50 Q 68, 40 76, 44" />
+        <path
+            android:strokeColor="#10B981"
+            android:strokeWidth="3"
+            android:strokeLineCap="round"
+            android:pathData="M 54, 50 Q 70, 48 78, 56" />
+    </group>
+</vector>

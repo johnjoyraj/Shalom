@@ -7,8 +7,17 @@
   <meta name="description" content="Shalom Kerala Stores in Gorakhpur, Uttar Pradesh. Shop authentic Kerala food items, Church devotional articles, and stationery. Doorstep delivery up to 5 Km (₹50), up to 10 Km (₹100), and free in-store pickup. Pay via UPI to 7379325499@ybl.">
   <meta name="keywords" content="Shalom Kerala Stores, Gorakhpur, Kerala Store Gorakhpur, Banana Chips, Spices, Church Articles, Bibles Gorakhpur, 7379325499@ybl">
   
+  <!-- Android App & PWA Settings -->
+  <meta name="theme-color" content="#062b1e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Shalom">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="images/icon-192.png">
+
   <!-- Favicon -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌴</text></svg>">
+  <link rel="icon" href="images/icon-192.png">
   
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/styles.css">
@@ -823,6 +832,19 @@
   <script src="js/upi.js"></script>
   <script src="js/billing.js"></script>
   <script src="js/app.js"></script>
+
+  <!-- Register PWA Service Worker for Offline & Android Installation -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+          console.log('[PWA] Service Worker registered with scope:', reg.scope);
+        }).catch(err => {
+          console.warn('[PWA] Service Worker registration failed:', err);
+        });
+      });
+    }
+  </script>
 
 </body>
 </html>

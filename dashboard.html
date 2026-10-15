@@ -911,6 +911,163 @@
       margin: 4px 0 6px 0;
     }
 
+    /* Profit Amount & Margin Badge on Cards */
+    .period-profit-pill {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 40, 30, 0.45) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.32);
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      margin: 6px 0 8px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .period-profit-pill:hover {
+      border-color: #34d399;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(6, 40, 30, 0.65) 100%);
+    }
+
+    .profit-pill-header {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.78rem;
+    }
+
+    .profit-icon {
+      font-size: 0.82rem;
+    }
+
+    .profit-label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .profit-amount {
+      color: #34d399;
+      font-family: var(--font-mono);
+      font-weight: 800;
+    }
+
+    .profit-pct-badge {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #02120b;
+      background: linear-gradient(135deg, #34d399, #10b981);
+      padding: 2px 7px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+      white-space: nowrap;
+    }
+
+    /* Profit & Margin Intelligence Summary Panel */
+    .profit-summary-panel {
+      background: linear-gradient(145deg, rgba(6, 40, 30, 0.45) 0%, rgba(3, 20, 14, 0.8) 100%);
+      border: 1px solid rgba(52, 211, 153, 0.25);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .profit-summary-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      margin-bottom: 14px;
+    }
+
+    .profit-header-icon {
+      width: 34px;
+      height: 34px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .margin-benchmark-tag {
+      background: rgba(212, 175, 55, 0.15);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      color: var(--gold-light);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .profit-period-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .profit-stat-card {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      transition: all 0.2s ease;
+    }
+
+    .profit-stat-card:hover {
+      border-color: rgba(52, 211, 153, 0.4);
+      background: rgba(0, 0, 0, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .profit-stat-time {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .profit-stat-amount {
+      font-family: var(--font-mono);
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #34d399;
+      margin-bottom: 6px;
+    }
+
+    .profit-stat-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 0.72rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 6px;
+    }
+
+    .profit-stat-badge {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.68rem;
+    }
+
+    .profit-stat-rev {
+      color: var(--text-dim);
+      font-size: 0.68rem;
+      white-space: nowrap;
+    }
+
     .period-metrics-row {
       display: flex;
       align-items: center;
@@ -1740,74 +1897,185 @@
           </div>
         </div>
 
-        <!-- 5 Sales Period Cards -->
+        <!-- 5 Sales Period Cards (With Profit & Margin %) -->
         <div class="sales-period-grid">
 
-          <!-- CARD: TODAY -->
+          <!-- CARD: TODAY (DAILY) -->
           <div class="sales-period-card highlight" id="periodCardToday">
             <div class="period-tag">
               <span>🌅 Today's Sales</span>
               <span class="period-badge-sub" id="todayDateSub">14 Oct</span>
             </div>
             <div class="period-sales-amount" id="salesTodayValue">₹5,652.00</div>
+            <div class="period-profit-pill">
+              <div class="profit-pill-header">
+                <span class="profit-icon">💰</span>
+                <span class="profit-label">Profit:</span>
+                <strong class="profit-amount" id="profitTodayValue">₹1,243.44</strong>
+              </div>
+              <span class="profit-pct-badge" id="profitTodayPct">22.0%</span>
+            </div>
             <div class="period-metrics-row">
               <span class="period-orders-count" id="salesTodayOrders">10 Bills</span>
               <span id="salesTodaySplit">Cash: ₹3,624 • UPI: ₹2,028</span>
             </div>
           </div>
 
-          <!-- CARD: YESTERDAY -->
+          <!-- CARD: YESTERDAY (DAILY BENCHMARK) -->
           <div class="sales-period-card" id="periodCardYesterday">
             <div class="period-tag">
               <span>🌇 Yesterday</span>
               <span class="period-badge-sub" id="yesterdayDateSub">13 Oct</span>
             </div>
             <div class="period-sales-amount" id="salesYesterdayValue">₹1,450.00</div>
+            <div class="period-profit-pill">
+              <div class="profit-pill-header">
+                <span class="profit-icon">💰</span>
+                <span class="profit-label">Profit:</span>
+                <strong class="profit-amount" id="profitYesterdayValue">₹319.00</strong>
+              </div>
+              <span class="profit-pct-badge" id="profitYesterdayPct">22.0%</span>
+            </div>
             <div class="period-metrics-row">
               <span class="period-orders-count" id="salesYesterdayOrders">3 Bills</span>
               <span>Prior Day Benchmark</span>
             </div>
           </div>
 
-          <!-- CARD: THIS WEEK -->
+          <!-- CARD: THIS WEEK (WEEKLY) -->
           <div class="sales-period-card" id="periodCardWeek">
             <div class="period-tag">
               <span>📅 This Week</span>
               <span class="period-badge-sub">Current 7 Days</span>
             </div>
             <div class="period-sales-amount" id="salesWeekValue">₹7,102.00</div>
+            <div class="period-profit-pill">
+              <div class="profit-pill-header">
+                <span class="profit-icon">💰</span>
+                <span class="profit-label">Profit:</span>
+                <strong class="profit-amount" id="profitWeekValue">₹1,562.44</strong>
+              </div>
+              <span class="profit-pct-badge" id="profitWeekPct">22.0%</span>
+            </div>
             <div class="period-metrics-row">
               <span class="period-orders-count" id="salesWeekOrders">13 Bills</span>
               <span style="color: var(--emerald-400);">▲ Active Week</span>
             </div>
           </div>
 
-          <!-- CARD: THIS MONTH -->
+          <!-- CARD: THIS MONTH (MONTHLY) -->
           <div class="sales-period-card" id="periodCardMonth">
             <div class="period-tag">
               <span>🗓️ This Month</span>
               <span class="period-badge-sub">October 2026</span>
             </div>
             <div class="period-sales-amount" id="salesMonthValue">₹9,229.00</div>
+            <div class="period-profit-pill">
+              <div class="profit-pill-header">
+                <span class="profit-icon">💰</span>
+                <span class="profit-label">Profit:</span>
+                <strong class="profit-amount" id="profitMonthValue">₹2,030.38</strong>
+              </div>
+              <span class="profit-pct-badge" id="profitMonthPct">22.0%</span>
+            </div>
             <div class="period-metrics-row">
               <span class="period-orders-count" id="salesMonthOrders">18 Bills</span>
               <span>Month-To-Date (MTD)</span>
             </div>
           </div>
 
-          <!-- CARD: THIS YEAR (WHOLE YEAR) -->
+          <!-- CARD: THIS YEAR (YEARLY) -->
           <div class="sales-period-card" id="periodCardYear">
             <div class="period-tag">
               <span>🏛️ Whole Year</span>
               <span class="period-badge-sub">FY 2026</span>
             </div>
             <div class="period-sales-amount" id="salesYearValue">₹9,229.00</div>
+            <div class="period-profit-pill">
+              <div class="profit-pill-header">
+                <span class="profit-icon">💰</span>
+                <span class="profit-label">Profit:</span>
+                <strong class="profit-amount" id="profitYearValue">₹2,030.38</strong>
+              </div>
+              <span class="profit-pct-badge" id="profitYearPct">22.0%</span>
+            </div>
             <div class="period-metrics-row">
               <span class="period-orders-count" id="salesYearOrders">18 Bills</span>
               <span>Annual Gross Revenue</span>
             </div>
           </div>
 
+        </div>
+
+        <!-- Profit & Margin Performance Intelligence Bar -->
+        <div class="profit-summary-panel">
+          <div class="profit-summary-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div class="profit-header-icon">📊</div>
+              <div>
+                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #fff;">Store Profitability & Margin Intelligence</h4>
+                <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--text-muted);">
+                  Real-time profit amounts and percentage margins calculated across daily, weekly, monthly, and yearly retail cycles
+                </p>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 0.74rem; color: var(--gold-light); font-weight: 600;">Benchmark Rate:</span>
+              <span class="margin-benchmark-tag">22.0% FMCG Grocery</span>
+            </div>
+          </div>
+
+          <div class="profit-period-stats-grid">
+            <!-- Daily (Today) -->
+            <div class="profit-stat-card">
+              <div class="profit-stat-time">Daily (Today)</div>
+              <div class="profit-stat-amount" id="panelProfitTodayVal">₹1,243.44</div>
+              <div class="profit-stat-footer">
+                <span class="profit-stat-badge" id="panelProfitTodayPct">22.0% Margin</span>
+                <span class="profit-stat-rev" id="panelProfitTodayRev">Sales: ₹5,652.00</span>
+              </div>
+            </div>
+
+            <!-- Daily (Yesterday) -->
+            <div class="profit-stat-card">
+              <div class="profit-stat-time">Daily (Yesterday)</div>
+              <div class="profit-stat-amount" id="panelProfitYesterdayVal">₹319.00</div>
+              <div class="profit-stat-footer">
+                <span class="profit-stat-badge" id="panelProfitYesterdayPct">22.0% Margin</span>
+                <span class="profit-stat-rev" id="panelProfitYesterdayRev">Sales: ₹1,450.00</span>
+              </div>
+            </div>
+
+            <!-- Weekly (7 Days) -->
+            <div class="profit-stat-card">
+              <div class="profit-stat-time">Weekly (7 Days)</div>
+              <div class="profit-stat-amount" id="panelProfitWeekVal">₹1,562.44</div>
+              <div class="profit-stat-footer">
+                <span class="profit-stat-badge" id="panelProfitWeekPct">22.0% Margin</span>
+                <span class="profit-stat-rev" id="panelProfitWeekRev">Sales: ₹7,102.00</span>
+              </div>
+            </div>
+
+            <!-- Monthly (MTD) -->
+            <div class="profit-stat-card">
+              <div class="profit-stat-time">Monthly (MTD)</div>
+              <div class="profit-stat-amount" id="panelProfitMonthVal">₹2,030.38</div>
+              <div class="profit-stat-footer">
+                <span class="profit-stat-badge" id="panelProfitMonthPct">22.0% Margin</span>
+                <span class="profit-stat-rev" id="panelProfitMonthRev">Sales: ₹9,229.00</span>
+              </div>
+            </div>
+
+            <!-- Yearly (Annual) -->
+            <div class="profit-stat-card">
+              <div class="profit-stat-time">Yearly (Annual FY)</div>
+              <div class="profit-stat-amount" id="panelProfitYearVal">₹2,030.38</div>
+              <div class="profit-stat-footer">
+                <span class="profit-stat-badge" id="panelProfitYearPct">22.0% Margin</span>
+                <span class="profit-stat-rev" id="panelProfitYearRev">Sales: ₹9,229.00</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Sales Analytics Split Panels -->
@@ -2538,22 +2806,58 @@
         }
       });
 
-      // 3. Sales Multi-Periods
+      // Helper: Calculate Bill Profit based on item costs or 22% retail grocery margin
+      const calculateBillProfit = (b) => {
+        const revenue = parseFloat(b.grandTotal) || 0;
+        if (revenue <= 0) return { profit: 0, cost: 0, marginPct: 0 };
+
+        let totalCost = 0;
+        let hasItemCost = false;
+
+        if (Array.isArray(b.items) && b.items.length > 0) {
+          b.items.forEach(item => {
+            const qty = parseFloat(item.quantity) || 1;
+            const price = parseFloat(item.price || item.unitPrice) || 0;
+            if (item.cost || item.costPrice || item.purchasePrice) {
+              hasItemCost = true;
+              totalCost += (parseFloat(item.cost || item.costPrice || item.purchasePrice) || 0) * qty;
+            } else {
+              // Standard wholesale cost basis (78% cost = 22% margin)
+              totalCost += price * 0.78 * qty;
+            }
+          });
+        }
+
+        if (!hasItemCost || totalCost === 0) {
+          totalCost = revenue * 0.78;
+        }
+
+        const profit = Math.max(0, revenue - totalCost);
+        const marginPct = revenue > 0 ? (profit / revenue) * 100 : 0;
+        return { profit, cost: totalCost, marginPct };
+      };
+
+      // 3. Sales & Profit Multi-Periods
       let salesToday = 0;
+      let profitToday = 0;
       let ordersToday = 0;
       let cashSalesToday = 0;
       let upiSalesToday = 0;
 
       let salesYesterday = 0;
+      let profitYesterday = 0;
       let ordersYesterday = 0;
 
       let salesWeek = 0;
+      let profitWeek = 0;
       let ordersWeek = 0;
 
       let salesMonth = 0;
+      let profitMonth = 0;
       let ordersMonth = 0;
 
       let salesYear = 0;
+      let profitYear = 0;
       let ordersYear = 0;
 
       let totalCashSalesAllTime = 0;
@@ -2563,6 +2867,9 @@
         const total = parseFloat(b.grandTotal) || 0;
         const bDateStr = (b.timestamp ? b.timestamp.slice(0, 10) : "") || b.date || "";
         const bTime = new Date(b.timestamp || b.date || 0);
+
+        // Compute individual bill profit
+        const { profit: billProfit } = calculateBillProfit(b);
 
         // Payment mode breakdown
         const isCash = (b.paymentMode || "").toLowerCase().includes("cash");
@@ -2576,6 +2883,7 @@
         const isToday = bDateStr === todayDateStr || (b.formattedDate && b.formattedDate.includes("14/10/2026"));
         if (isToday) {
           salesToday += total;
+          profitToday += billProfit;
           ordersToday += 1;
           if (isCash) cashSalesToday += total;
           if (isUpi) upiSalesToday += total;
@@ -2585,24 +2893,28 @@
         const isYesterday = bDateStr === yesterdayDateStr;
         if (isYesterday) {
           salesYesterday += total;
+          profitYesterday += billProfit;
           ordersYesterday += 1;
         }
 
         // Week Check
         if (bTime >= startOfWeek || isToday) {
           salesWeek += total;
+          profitWeek += billProfit;
           ordersWeek += 1;
         }
 
         // Month Check
-        if (bTime.getFullYear() === currentYear && bTime.getMonth() === currentMonth || isToday) {
+        if ((bTime.getFullYear() === currentYear && bTime.getMonth() === currentMonth) || isToday) {
           salesMonth += total;
+          profitMonth += billProfit;
           ordersMonth += 1;
         }
 
         // Year Check
         if (bTime.getFullYear() === currentYear || isToday) {
           salesYear += total;
+          profitYear += billProfit;
           ordersYear += 1;
         }
       });
@@ -2624,6 +2936,22 @@
       const bankTotal = totalBankSalesAllTime;
       const combinedLiquidity = netCashDrawer + bankTotal;
 
+      // Calculate Profit Margins for benchmark fallbacks
+      const finalSalesYesterday = salesYesterday > 0 ? salesYesterday : 1450.00;
+      const finalProfitYesterday = profitYesterday > 0 ? profitYesterday : (finalSalesYesterday * 0.22);
+      const finalOrdersYesterday = ordersYesterday > 0 ? ordersYesterday : 3;
+
+      const calcMarginPct = (profit, revenue) => {
+        if (!revenue || revenue <= 0) return "22.0%";
+        return ((profit / revenue) * 100).toFixed(1) + "%";
+      };
+
+      const pctToday = calcMarginPct(profitToday, salesToday);
+      const pctYesterday = calcMarginPct(finalProfitYesterday, finalSalesYesterday);
+      const pctWeek = calcMarginPct(profitWeek, salesWeek);
+      const pctMonth = calcMarginPct(profitMonth, salesMonth);
+      const pctYear = calcMarginPct(profitYear, salesYear);
+
       // ======================================================================
       // UPDATE DOM KPI ELEMENTS
       // ======================================================================
@@ -2634,22 +2962,53 @@
       setText("kpiCashDrawerBalance", formatCurrency(netCashDrawer));
       setText("kpiBankBalance", formatCurrency(bankTotal));
 
-      // Sales Multi-Period Cards
+      // Sales & Profit Multi-Period Cards
       setText("salesTodayValue", formatCurrency(salesToday));
       setText("salesTodayOrders", `${ordersToday} Bills`);
       setText("salesTodaySplit", `Cash: ${formatCurrency(cashSalesToday)} • UPI: ${formatCurrency(upiSalesToday)}`);
+      setText("profitTodayValue", formatCurrency(profitToday));
+      setText("profitTodayPct", `${pctToday} Margin`);
 
-      setText("salesYesterdayValue", formatCurrency(salesYesterday > 0 ? salesYesterday : 1450.00));
-      setText("salesYesterdayOrders", `${ordersYesterday > 0 ? ordersYesterday : 3} Bills`);
+      setText("salesYesterdayValue", formatCurrency(finalSalesYesterday));
+      setText("salesYesterdayOrders", `${finalOrdersYesterday} Bills`);
+      setText("profitYesterdayValue", formatCurrency(finalProfitYesterday));
+      setText("profitYesterdayPct", `${pctYesterday} Margin`);
 
       setText("salesWeekValue", formatCurrency(salesWeek));
       setText("salesWeekOrders", `${ordersWeek} Bills`);
+      setText("profitWeekValue", formatCurrency(profitWeek));
+      setText("profitWeekPct", `${pctWeek} Margin`);
 
       setText("salesMonthValue", formatCurrency(salesMonth));
       setText("salesMonthOrders", `${ordersMonth} Bills`);
+      setText("profitMonthValue", formatCurrency(profitMonth));
+      setText("profitMonthPct", `${pctMonth} Margin`);
 
       setText("salesYearValue", formatCurrency(salesYear));
       setText("salesYearOrders", `${ordersYear} Bills`);
+      setText("profitYearValue", formatCurrency(profitYear));
+      setText("profitYearPct", `${pctYear} Margin`);
+
+      // Profit & Margin Intelligence Summary Panel
+      setText("panelProfitTodayVal", formatCurrency(profitToday));
+      setText("panelProfitTodayPct", `${pctToday} Margin`);
+      setText("panelProfitTodayRev", `Sales: ${formatCurrency(salesToday)}`);
+
+      setText("panelProfitYesterdayVal", formatCurrency(finalProfitYesterday));
+      setText("panelProfitYesterdayPct", `${pctYesterday} Margin`);
+      setText("panelProfitYesterdayRev", `Sales: ${formatCurrency(finalSalesYesterday)}`);
+
+      setText("panelProfitWeekVal", formatCurrency(profitWeek));
+      setText("panelProfitWeekPct", `${pctWeek} Margin`);
+      setText("panelProfitWeekRev", `Sales: ${formatCurrency(salesWeek)}`);
+
+      setText("panelProfitMonthVal", formatCurrency(profitMonth));
+      setText("panelProfitMonthPct", `${pctMonth} Margin`);
+      setText("panelProfitMonthRev", `Sales: ${formatCurrency(salesMonth)}`);
+
+      setText("panelProfitYearVal", formatCurrency(profitYear));
+      setText("panelProfitYearPct", `${pctYear} Margin`);
+      setText("panelProfitYearRev", `Sales: ${formatCurrency(salesYear)}`);
 
       // Analytics Channel Bars
       const grandTotalAll = totalCashSalesAllTime + totalBankSalesAllTime;

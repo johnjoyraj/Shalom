@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Shalom Kerala Stores</string>
+    <string name="offline_title">You\'re Currently Offline</string>
+    <string name="offline_subtitle">Unable to connect to Shalom Kerala Stores cloud. Please check your mobile data or Wi-Fi.</string>
+    <string name="retry_btn_label">Retry Connection</string>
+    <string name="permission_camera_rationale">Shalom Kerala Stores uses the camera to scan product barcodes and QR codes.</string>
+    <string name="permission_camera_grant">Grant Camera Permission</string>
+</resources>

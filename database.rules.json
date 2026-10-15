@@ -1,0 +1,41 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "orders": {
+      ".read": true,
+      "$orderId": {
+        ".write": true,
+        ".validate": "newData.exists() ? newData.hasChildren(['orderId', 'status']) : true"
+      }
+    },
+    "bills": {
+      ".read": true,
+      "$billNo": {
+        ".write": "newData.exists()",
+        ".validate": "newData.hasChildren(['billNo'])"
+      }
+    },
+    "expenses": {
+      ".read": true,
+      "$expenseId": {
+        ".write": true,
+        ".validate": "newData.exists() ? newData.hasChildren(['id']) : true"
+      }
+    },
+    "customers": {
+      "$phone": {
+        ".read": true,
+        ".write": true,
+        ".validate": "newData.exists() ? newData.hasChildren(['phone']) : true"
+      }
+    },
+    "otps": {
+      "$phone": {
+        ".read": true,
+        ".write": true,
+        ".validate": "newData.exists() ? newData.hasChildren(['otp', 'expiresAt']) : true"
+      }
+    }
+  }
+}

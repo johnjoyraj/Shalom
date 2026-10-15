@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ShalomStores" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Status Bar & Nav Bar Colors -->
+        <item name="colorPrimary">@color/emerald_primary</item>
+        <item name="colorPrimaryVariant">@color/emerald_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/gold_accent</item>
+
+        <item name="android:statusBarColor">@color/emerald_primary</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/emerald_dark</item>
+        <item name="android:windowBackground">@color/emerald_primary</item>
+    </style>
+</resources>
