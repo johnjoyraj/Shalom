@@ -5,6 +5,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -38,3 +41,16 @@ jobs:
         name: ShalomKeralaStores-Debug-APK
         path: android/app/build/outputs/apk/debug/app-debug.apk
         retention-days: 30
+
+    - name: Publish Direct APK Download to GitHub Releases
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: android-v1.0
+        name: "Shalom Kerala Stores Android App v1.0"
+        body: |
+          ### 🌴 Shalom Kerala Stores Official Android App
+          - **File**: `app-debug.apk`
+          - **Install**: Download directly to your Android device and tap to install!
+        files: android/app/build/outputs/apk/debug/app-debug.apk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
