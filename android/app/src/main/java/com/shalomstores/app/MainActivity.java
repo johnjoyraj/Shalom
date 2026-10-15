@@ -144,6 +144,51 @@ public class MainActivity extends AppCompatActivity {
 
         // Custom WebChromeClient: handles camera permissions & file pickers
         webView.setWebChromeClient(new ShalomWebChromeClient());
+
+        // Native Android Bridge: saves Name, Phone, and Address permanently to SharedPreferences
+        webView.addJavascriptInterface(new ShalomAndroidBridge(), "ShalomAndroidBridge");
+    }
+
+    // =========================================================================
+    // NATIVE ANDROID BRIDGE (Device Storage for Name, Phone & Address)
+    // =========================================================================
+    public class ShalomAndroidBridge {
+
+        @android.webkit.JavascriptInterface
+        public void saveCustomerProfile(String name, String phone, String address) {
+            getSharedPreferences("ShalomCustomerPrefs", MODE_PRIVATE)
+                    .edit()
+                    .putString("name", name)
+                    .putString("phone", phone)
+                    .putString("address", address)
+                    .apply();
+        }
+
+        @android.webkit.JavascriptInterface
+        public String getSavedCustomerProfile() {
+            android.content.SharedPreferences prefs = getSharedPreferences("ShalomCustomerPrefs", MODE_PRIVATE);
+            String name = prefs.getString("name", "");
+            String phone = prefs.getString("phone", "");
+            String address = prefs.getString("address", "");
+            if (name.isEmpty() || phone.isEmpty()) return "";
+            try {
+                org.json.JSONObject obj = new org.json.JSONObject();
+                obj.put("name", name);
+                obj.put("phone", phone);
+                obj.put("address", address);
+                return obj.toString();
+            } catch (Exception e) {
+                return "";
+            }
+        }
+
+        @android.webkit.JavascriptInterface
+        public void clearCustomerProfile() {
+            getSharedPreferences("ShalomCustomerPrefs", MODE_PRIVATE)
+                    .edit()
+                    .clear()
+                    .apply();
+        }
     }
 
     private void setupSwipeRefresh() {

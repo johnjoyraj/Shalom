@@ -139,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try { renderCategories(); } catch (e) { console.warn('Categories error', e); }
     try { renderProducts(); } catch (e) { console.warn('Products error', e); }
     try { renderCustomerAuthUI(); } catch (e) { console.warn('Customer auth UI error', e); }
+    try { checkAndEnforceCustomerAccessGate(); } catch (e) { console.warn('Customer access gate error', e); }
     try { bindEvents(); } catch (e) { console.warn('Bind events error', e); }
     
     // Subscribe to cart
@@ -937,6 +938,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const CUSTOMER_SESSION_KEY = 'shalom_customer_session';
 
   function getCustomerSession() {
+    // 1. Try native Android Bridge (SharedPreferences) first if running inside Android APK
+    if (typeof window.ShalomAndroidBridge !== 'undefined' && window.ShalomAndroidBridge.getSavedCustomerProfile) {
+      try {
+        const nativeJson = window.ShalomAndroidBridge.getSavedCustomerProfile();
+        if (nativeJson) {
+          const parsed = JSON.parse(nativeJson);
+          if (parsed && parsed.name && parsed.phone) {
+            localStorage.setItem(CUSTOMER_SESSION_KEY, JSON.stringify(parsed));
+            return parsed;
+          }
+        }
+      } catch (e) {
+        console.warn('Native profile read error', e);
+      }
+    }
+
+    // 2. Try localStorage on this device
     try {
       const saved = localStorage.getItem(CUSTOMER_SESSION_KEY);
       return saved ? JSON.parse(saved) : null;
@@ -945,19 +963,111 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function saveCustomerSession(name, phone, isVerified = false) {
-    const session = { name: name.trim(), phone: phone.trim(), isVerified: isVerified };
-    localStorage.setItem(CUSTOMER_SESSION_KEY, JSON.stringify(session));
+  function saveCustomerSession(name, phone, address = '', isVerified = true) {
+    const cleanPhone = String(phone).replace(/\D/g, '').slice(-10);
+    const session = {
+      name: (name || '').trim(),
+      phone: cleanPhone,
+      address: (address || '').trim(),
+      isVerified: isVerified,
+      signedInAt: new Date().toISOString()
+    };
+
+    // 1. Save to device localStorage
+    try {
+      localStorage.setItem(CUSTOMER_SESSION_KEY, JSON.stringify(session));
+    } catch (e) {}
+
+    // 2. Save to Android Native Bridge (SharedPreferences)
+    if (typeof window.ShalomAndroidBridge !== 'undefined' && window.ShalomAndroidBridge.saveCustomerProfile) {
+      try {
+        window.ShalomAndroidBridge.saveCustomerProfile(session.name, session.phone, session.address);
+      } catch (e) {}
+    }
+
+    // 3. Sync to Google Firebase RTDB customers collection
+    if (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.isReady()) {
+      try {
+        ShalomCloudSync.db.ref(`customers/${cleanPhone}`).update({
+          name: session.name,
+          phone: cleanPhone,
+          address: session.address,
+          lastActiveAt: new Date().toISOString()
+        });
+      } catch (e) {}
+    }
+
     renderCustomerAuthUI();
-    if (document.getElementById('billingName')) document.getElementById('billingName').value = session.name;
-    if (document.getElementById('billingPhone')) document.getElementById('billingPhone').value = session.phone;
+    populateBillingFields(session);
+    checkAndEnforceCustomerAccessGate();
     return session;
   }
 
   function clearCustomerSession() {
     localStorage.removeItem(CUSTOMER_SESSION_KEY);
+    if (typeof window.ShalomAndroidBridge !== 'undefined' && window.ShalomAndroidBridge.clearCustomerProfile) {
+      try {
+        window.ShalomAndroidBridge.clearCustomerProfile();
+      } catch (e) {}
+    }
     renderCustomerAuthUI();
-    showToast('You have signed out.', 'info');
+    checkAndEnforceCustomerAccessGate();
+    showToast('You have signed out. Please sign in to access the store.', 'info');
+  }
+
+  function populateBillingFields(session) {
+    if (!session) return;
+    const nameEl = document.getElementById('billingName');
+    const phoneEl = document.getElementById('billingPhone');
+    const addressEl = document.getElementById('billingAddress');
+
+    if (nameEl) nameEl.value = session.name || '';
+    if (phoneEl) phoneEl.value = session.phone || '';
+    if (addressEl && !addressEl.value) addressEl.value = session.address || '';
+  }
+
+  function checkAndEnforceCustomerAccessGate() {
+    const overlay = document.getElementById('customerAccessGateOverlay');
+    if (!overlay) return;
+
+    const session = getCustomerSession();
+    if (session && session.name && session.phone) {
+      // User is authenticated - hide gate and enable scrolling
+      overlay.classList.add('authenticated');
+      document.body.style.overflow = '';
+      populateBillingFields(session);
+    } else {
+      // User is not signed in - show gate and lock background
+      overlay.classList.remove('authenticated');
+      document.body.style.overflow = 'hidden';
+      const nameInput = document.getElementById('gateCustName');
+      if (nameInput) setTimeout(() => nameInput.focus(), 150);
+    }
+  }
+
+  function openEditCustomerProfileModal() {
+    const overlay = document.getElementById('customerAccessGateOverlay');
+    if (!overlay) return;
+
+    const session = getCustomerSession() || {};
+    const nameInput = document.getElementById('gateCustName');
+    const phoneInput = document.getElementById('gateCustPhone');
+    const addrInput = document.getElementById('gateCustAddress');
+    const titleEl = overlay.querySelector('.access-gate-title');
+    const taglineEl = overlay.querySelector('.access-gate-tagline');
+    const submitBtn = document.getElementById('gateSubmitBtn');
+
+    if (nameInput) nameInput.value = session.name || '';
+    if (phoneInput) phoneInput.value = session.phone || '';
+    if (addrInput) addrInput.value = session.address || '';
+
+    if (titleEl) titleEl.textContent = 'EDIT DELIVERY PROFILE';
+    if (taglineEl) taglineEl.textContent = 'Update your name, contact number, or home delivery address below:';
+    if (submitBtn) submitBtn.innerHTML = '<span>Save Profile Changes →</span>';
+
+    overlay.classList.remove('authenticated');
+    document.body.style.overflow = 'hidden';
+    nameInput?.focus();
   }
 
   function escapeHtml(text) {
@@ -971,22 +1081,25 @@ document.addEventListener('DOMContentLoaded', () => {
       const container = document.getElementById('customerAuthContainer');
       if (!container) return;
       const session = getCustomerSession();
-      if (session && session.name) {
+      if (session && session.name && session.phone) {
         container.innerHTML = `
-          <div class="customer-logged-pill" style="background: rgba(255,255,255,0.12); border: 1px solid rgba(212,175,55,0.4); border-radius: 20px; padding: 5px 12px; display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #fff;">
-            <span>👤 ${escapeHtml(session.name)}</span>
-            ${session.isVerified ? `<span style="background: #0284c7; color: #fff; font-size: 0.68rem; padding: 2px 7px; border-radius: 10px; font-weight: 800;">✓ Verified</span>` : ''}
-            <button type="button" class="customer-logout-btn" id="logoutCustBtn" title="Sign out" style="background: none; border: none; color: #fca5a5; font-size: 0.74rem; cursor: pointer; text-decoration: underline;">Logout</button>
+          <div class="customer-logged-pill" title="Signed in as ${escapeHtml(session.name)}">
+            <span>👤 <strong>${escapeHtml(session.name)}</strong> (${escapeHtml(session.phone)})</span>
+            <button type="button" class="customer-edit-btn" id="editProfileBtn" title="Edit your delivery address or contact info">✏️ Edit</button>
+            <button type="button" class="customer-logout-btn" id="logoutCustBtn" title="Sign out from this device">Logout</button>
           </div>
         `;
+        document.getElementById('editProfileBtn')?.addEventListener('click', openEditCustomerProfileModal);
         document.getElementById('logoutCustBtn')?.addEventListener('click', clearCustomerSession);
       } else {
         container.innerHTML = `
-          <button type="button" class="nav-link-btn" id="customerLoginBtn">
+          <button type="button" class="nav-link-btn" id="customerLoginBtn" style="font-weight: 700;">
             <span>👤 Sign In</span>
           </button>
         `;
-        document.getElementById('customerLoginBtn')?.addEventListener('click', openCustomerLoginModal);
+        document.getElementById('customerLoginBtn')?.addEventListener('click', () => {
+          checkAndEnforceCustomerAccessGate();
+        });
       }
     } catch (e) {
       console.warn('Error rendering customer auth UI:', e);
@@ -1611,8 +1724,9 @@ document.addEventListener('DOMContentLoaded', () => {
       switchView('billing');
       const session = getCustomerSession();
       if (session) {
-        if (document.getElementById('billingName')) document.getElementById('billingName').value = session.name;
-        if (document.getElementById('billingPhone')) document.getElementById('billingPhone').value = session.phone;
+        if (document.getElementById('billingName')) document.getElementById('billingName').value = session.name || '';
+        if (document.getElementById('billingPhone')) document.getElementById('billingPhone').value = session.phone || '';
+        if (document.getElementById('billingAddress')) document.getElementById('billingAddress').value = session.address || '';
       }
     });
 
@@ -1699,6 +1813,61 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.navOrdersBtn?.addEventListener('click', (e) => {
       e.preventDefault();
       openOrdersModal();
+    });
+
+    // Customer Access Gate Form (Name, Phone & Address Sign-In & Device Persistence)
+    const gateForm = document.getElementById('customerAccessGateForm');
+    gateForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const nameInput = document.getElementById('gateCustName');
+      const phoneInput = document.getElementById('gateCustPhone');
+      const addrInput = document.getElementById('gateCustAddress');
+
+      const nameErr = document.getElementById('gateCustNameError');
+      const phoneErr = document.getElementById('gateCustPhoneError');
+      const addrErr = document.getElementById('gateCustAddressError');
+
+      if (nameErr) nameErr.textContent = '';
+      if (phoneErr) phoneErr.textContent = '';
+      if (addrErr) addrErr.textContent = '';
+
+      const name = (nameInput?.value || '').trim();
+      const rawPhone = (phoneInput?.value || '').trim();
+      const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10);
+      const address = (addrInput?.value || '').trim();
+
+      let hasError = false;
+
+      if (!name || name.length < 2) {
+        if (nameErr) nameErr.textContent = 'Please enter your full name.';
+        nameInput?.focus();
+        hasError = true;
+      } else if (cleanPhone.length !== 10) {
+        if (phoneErr) phoneErr.textContent = 'Please enter a valid 10-digit Indian mobile number.';
+        phoneInput?.focus();
+        hasError = true;
+      } else if (!address || address.length < 5) {
+        if (addrErr) addrErr.textContent = 'Please enter your delivery address (House/Flat, Street, Area).';
+        addrInput?.focus();
+        hasError = true;
+      }
+
+      if (hasError) return;
+
+      const submitBtn = document.getElementById('gateSubmitBtn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>Saving to your device...</span>';
+      }
+
+      setTimeout(() => {
+        saveCustomerSession(name, cleanPhone, address, true);
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span>Enter Store & Start Shopping (പ്രവേശിക്കുക) →</span>';
+        }
+        showToast(`🎉 Welcome to Shalom Stores, ${name}! Your profile is stored on this device.`, 'success');
+      }, 250);
     });
 
     // Customer WhatsApp Cloud OTP Login

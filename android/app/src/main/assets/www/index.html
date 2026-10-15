@@ -595,6 +595,69 @@
   </aside>
 
   <!-- =========================================================================
+       CUSTOMER ACCESS GATE OVERLAY (NAME, PHONE & ADDRESS SIGN-IN)
+       Mandatory entry gate: saves details permanently to device storage
+       ========================================================================= -->
+  <div id="customerAccessGateOverlay" class="customer-access-gate-overlay">
+    <div class="access-gate-card">
+      <div class="access-gate-emblem">🌴</div>
+      <h2 class="access-gate-title">SHALOM KERALA STORES</h2>
+      <div class="access-gate-malayalam">ശാലോം കേരള സ്റ്റോർസ് • Gorakhpur, UP</div>
+      <p class="access-gate-tagline">
+        Welcome! Please sign in with your Name, Phone Number, and Delivery Address to access the store catalog and fast home delivery.
+      </p>
+
+      <form id="customerAccessGateForm" onsubmit="return false;">
+        <!-- Full Name -->
+        <div class="gate-form-group">
+          <label for="gateCustName" class="gate-form-label">
+            <span>👤</span> Full Name <span class="req">*</span>
+          </label>
+          <input type="text" id="gateCustName" class="gate-input" placeholder="e.g. John Joy / Rahul / Wilson" required autocomplete="name">
+          <div class="gate-error-msg" id="gateCustNameError"></div>
+        </div>
+
+        <!-- Phone Number -->
+        <div class="gate-form-group">
+          <label for="gateCustPhone" class="gate-form-label">
+            <span>📱</span> Mobile Number <span class="req">*</span>
+          </label>
+          <div class="gate-phone-wrapper">
+            <span class="gate-phone-prefix">+91</span>
+            <input type="tel" id="gateCustPhone" class="gate-input gate-phone-input" placeholder="10-digit mobile number" maxlength="10" required autocomplete="tel">
+          </div>
+          <div class="gate-error-msg" id="gateCustPhoneError"></div>
+        </div>
+
+        <!-- Delivery Address -->
+        <div class="gate-form-group">
+          <label for="gateCustAddress" class="gate-form-label">
+            <span>📍</span> Delivery Address (House, Street, Area) <span class="req">*</span>
+          </label>
+          <textarea id="gateCustAddress" class="gate-input gate-textarea" rows="3" placeholder="House/Flat No., Building, Street/Colony, Landmark, Gorakhpur" required autocomplete="street-address"></textarea>
+          <div class="gate-error-msg" id="gateCustAddressError"></div>
+        </div>
+
+        <!-- Perks indicator -->
+        <div class="gate-perks">
+          <div class="gate-perk-item">✓ One-Time Sign In</div>
+          <div class="gate-perk-item">✓ Saved on Phone</div>
+          <div class="gate-perk-item">✓ 1-Click Checkout</div>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="gate-submit-btn" id="gateSubmitBtn">
+          <span>Enter Store & Start Shopping (പ്രവേശിക്കുക) →</span>
+        </button>
+
+        <div class="gate-footer-note">
+          🔒 Your details are stored safely on your device for future orders.
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
        MODAL: PRODUCT QUICK VIEW
        ========================================================================= -->
   <div class="modal-backdrop" id="quickViewBackdrop"></div>
