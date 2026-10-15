@@ -306,6 +306,10 @@ def build_catalog():
             price = float(row[6]) if row[6] is not None else 0.0
         except (ValueError, TypeError):
             price = 0.0
+
+        # Filter out items where selling price is 0 or nil
+        if price <= 0.0:
+            continue
             
         try:
             mrp = float(row[10]) if row[10] is not None else price
