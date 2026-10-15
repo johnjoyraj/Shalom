@@ -586,6 +586,10 @@
         </div>
       </div>
 
+      <button type="button" class="btn btn-outline btn-block scan-to-cart-btn" id="drawerScanAddBtn" style="margin-bottom: 10px; border: 1.5px solid #0c3c2e; color: #0c3c2e; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; background: #f0fdf4; border-radius: 10px; padding: 11px;">
+        <span>📷 Scan More Barcodes to Add Items</span>
+      </button>
+
       <button type="button" class="btn btn-primary btn-large btn-block checkout-btn" id="proceedToCheckoutBtn">
         Proceed to Billing & UPI (ചെക്കൗട്ട്) →
       </button>
@@ -593,6 +597,12 @@
     </div>
 
   </aside>
+
+  <!-- Floating Mobile Camera Scan to Add Button -->
+  <button type="button" class="floating-camera-scan-fab" id="floatingScanFab" title="Scan Product Barcode with Camera to Add to Cart">
+    <span class="fab-icon">📷</span>
+    <span class="fab-text">Scan & Add</span>
+  </button>
 
   <!-- =========================================================================
        CUSTOMER ACCESS GATE OVERLAY (NAME, PHONE & ADDRESS SIGN-IN)
@@ -789,27 +799,48 @@
        MODAL: MOBILE CAMERA SCANNER (SCAN & ADD ITEMS)
        ========================================================================= -->
   <div class="modal-backdrop" id="mobileScannerBackdrop"></div>
-  <div class="modal-dialog" id="mobileScannerModal" style="max-width: 480px; padding: 0; overflow: hidden;">
+  <div class="modal-dialog" id="mobileScannerModal" style="max-width: 480px; padding: 0; overflow: hidden; border-radius: 20px;">
+    <!-- Scanner Header -->
     <div style="background: linear-gradient(135deg, #03140e, #0c3c2e); color: #fff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between;">
       <div style="display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 1.2rem;">📷</span>
-        <strong style="font-size: 0.95rem;">Barcode & QR Scanner</strong>
+        <span style="font-size: 1.3rem;">📷</span>
+        <div>
+          <strong style="font-size: 0.95rem; display: block;">Scan Barcode to Add to Kart</strong>
+          <span style="font-size: 0.72rem; color: #a3c9b9;">Point camera at barcode or SKU label</span>
+        </div>
       </div>
-      <button type="button" class="drawer-close-btn" id="closeMobileScannerBtn" style="color: #fff; background: none; border: none; font-size: 1.2rem; cursor: pointer;">✕</button>
+      <button type="button" class="drawer-close-btn" id="closeMobileScannerBtn" style="color: #fff; background: none; border: none; font-size: 1.3rem; cursor: pointer;">✕</button>
     </div>
-    <div style="padding: 12px 16px; background: #eef5f1; font-size: 0.8rem; color: #0a3d2c; display: flex; align-items: center; justify-content: space-between;">
-      <span>Point camera at any barcode in store:</span>
-      <button type="button" class="btn btn-outline btn-sm" id="flipCameraBtn" style="padding: 3px 8px; font-size: 0.74rem;">🔄 Switch Camera</button>
+
+    <!-- Scanner Camera Control Bar -->
+    <div style="padding: 10px 16px; background: #eef5f1; font-size: 0.78rem; color: #0a3d2c; display: flex; align-items: center; justify-content: space-between;">
+      <span id="scannerStatusText">🔍 Align barcode within the golden box:</span>
+      <div style="display: flex; gap: 6px;">
+        <button type="button" class="btn btn-outline btn-sm" id="flipCameraBtn" style="padding: 4px 9px; font-size: 0.74rem; background: #fff; border-color: #0c3c2e; color: #0c3c2e; font-weight: 700;">🔄 Flip Camera</button>
+      </div>
     </div>
-    <div style="position: relative; width: 100%; height: 320px; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+
+    <!-- Live Camera Viewport -->
+    <div style="position: relative; width: 100%; height: 280px; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center;">
       <div id="scannerVideoContainer" style="width: 100%; height: 100%;"></div>
       <!-- Reticle Box & Laser -->
       <div class="scanner-reticle-box"></div>
       <div class="scanner-laser-line"></div>
     </div>
-    <div id="scannerDetectionFeedback" style="padding: 12px 18px; font-size: 0.84rem; text-align: center; color: #5b6f65; background: #fff;">
-      Ready to scan. Align product barcode inside the golden frame.
+
+    <!-- Detection Feedback Bar -->
+    <div id="scannerDetectionFeedback" style="padding: 10px 16px; font-size: 0.82rem; text-align: center; color: #5b6f65; background: #fdfdfd; border-bottom: 1px solid #eef2f0;">
+      📷 Point at any barcode in the shop to add directly to your kart.
     </div>
+
+    <!-- Live Scanned Item Confirmation Card (Dynamically shown on barcode detection) -->
+    <div id="scannedProductCardContainer" style="display: none;"></div>
+
+    <!-- Manual Barcode / SKU Fallback Search -->
+    <form id="scannerManualForm" class="scanner-manual-search-box" onsubmit="return false;">
+      <input type="text" id="scannerManualInput" class="scanner-manual-input" placeholder="Or enter barcode number / SKU manually..." autocomplete="off">
+      <button type="submit" class="scanner-manual-btn" id="scannerManualSubmitBtn">Add to Kart</button>
+    </form>
   </div>
 
   <!-- Toast Container -->

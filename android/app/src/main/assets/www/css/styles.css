@@ -3857,4 +3857,191 @@ button, input, select, textarea {
   padding: 0;
 }
 
+/* ==========================================================================
+   MOBILE CAMERA SCAN & ADD ITEMS (FAB & SCANNER MODAL)
+   ========================================================================== */
+.floating-camera-scan-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  z-index: 250;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #0e4a35, #041f15);
+  color: #ffffff;
+  border: 1.5px solid #d4af37;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 20px rgba(212, 175, 55, 0.35);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+  animation: fabPulseGlow 3s infinite;
+}
+
+@keyframes fabPulseGlow {
+  0% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 14px rgba(212, 175, 55, 0.3); }
+  50% { box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55), 0 0 26px rgba(212, 175, 55, 0.6); }
+  100% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 14px rgba(212, 175, 55, 0.3); }
+}
+
+.floating-camera-scan-fab:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55), 0 0 30px rgba(212, 175, 55, 0.6);
+}
+
+.floating-camera-scan-fab:active {
+  transform: translateY(1px) scale(0.97);
+}
+
+.floating-camera-scan-fab .fab-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.floating-camera-scan-fab .fab-text {
+  font-weight: 800;
+  color: #fdfdfd;
+}
+
+/* Scanner Live Scanned Product Card */
+.scanned-product-popup {
+  background: #ffffff;
+  border-top: 2px solid #d4af37;
+  padding: 16px;
+  animation: scanPopupSlideUp 0.3s ease;
+}
+
+@keyframes scanPopupSlideUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.scanned-product-flex {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.scanned-product-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid #d4e5dc;
+  background: #f8faf9;
+  flex-shrink: 0;
+}
+
+.scanned-product-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.scanned-product-badge {
+  display: inline-block;
+  background: #dcfce7;
+  color: #15803d;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-bottom: 4px;
+}
+
+.scanned-product-name {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #0c3c2e;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scanned-product-pricing {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #0c3c2e;
+}
+
+.scanned-product-mrp {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  text-decoration: line-through;
+  margin-left: 6px;
+}
+
+.scanned-action-row {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-scan-continue {
+  flex: 1;
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1.5px solid #86efac;
+  border-radius: 10px;
+  padding: 10px;
+  font-weight: 800;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.btn-scan-view-cart {
+  flex: 1.2;
+  background: linear-gradient(135deg, #1d7057, #0c3c2e);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  font-weight: 800;
+  font-size: 0.82rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(12, 60, 46, 0.25);
+}
+
+.scanner-manual-search-box {
+  display: flex;
+  padding: 10px 14px;
+  background: #f8faf9;
+  border-top: 1px solid #e2ebe5;
+  gap: 8px;
+}
+
+.scanner-manual-input {
+  flex: 1;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  outline: none;
+}
+
+.scanner-manual-btn {
+  background: #0c3c2e;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .floating-camera-scan-fab {
+    bottom: 20px;
+    right: 16px;
+    padding: 10px 16px;
+    font-size: 0.88rem;
+  }
+}
+
+
 

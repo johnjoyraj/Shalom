@@ -189,6 +189,20 @@ public class MainActivity extends AppCompatActivity {
                     .clear()
                     .apply();
         }
+
+        @android.webkit.JavascriptInterface
+        public void vibratePhone(int milliseconds) {
+            try {
+                android.os.Vibrator v = (android.os.Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                if (v != null && v.hasVibrator()) {
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        v.vibrate(android.os.VibrationEffect.createOneShot(milliseconds, android.os.VibrationEffect.DEFAULT_AMPLITUDE));
+                    } else {
+                        v.vibrate(milliseconds);
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
     }
 
     private void setupSwipeRefresh() {

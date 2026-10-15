@@ -118,12 +118,17 @@ document.addEventListener('DOMContentLoaded', () => {
     custNameInput: document.getElementById('custNameInput'),
     custLoginSubmitBtn: document.getElementById('custLoginSubmitBtn'),
     btnMobileScan: document.getElementById('btnMobileScan'),
+    floatingScanFab: document.getElementById('floatingScanFab'),
+    drawerScanAddBtn: document.getElementById('drawerScanAddBtn'),
 
     // Mobile Camera Scanner
     mobileScannerModal: document.getElementById('mobileScannerModal'),
     mobileScannerBackdrop: document.getElementById('mobileScannerBackdrop'),
     closeMobileScannerBtn: document.getElementById('closeMobileScannerBtn'),
     flipCameraBtn: document.getElementById('flipCameraBtn'),
+    scannedProductCardContainer: document.getElementById('scannedProductCardContainer'),
+    scannerManualForm: document.getElementById('scannerManualForm'),
+    scannerManualInput: document.getElementById('scannerManualInput'),
 
     // Toast Container
     toastContainer: document.getElementById('toastContainer')
@@ -1313,14 +1318,99 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Mobile Camera Scanner
+   * Mobile Camera Scanner (Scan & Add to Kart)
    */
   let mobileScannerInstance = null;
   let currentMobileFacingMode = 'environment';
   let lastScannedItemCode = null;
   let lastScannedItemTime = 0;
 
+  function playScannerBeep() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const audioCtx = new AudioCtx();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1900, audioCtx.currentTime); // 1.9kHz supermarket POS beep
+      gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.14);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.14);
+    } catch (e) {
+      // AudioContext might be restricted until first user interaction
+    }
+  }
+
+  function triggerScannerHaptic() {
+    try {
+      if (window.ShalomAndroidBridge && typeof window.ShalomAndroidBridge.vibratePhone === 'function') {
+        window.ShalomAndroidBridge.vibratePhone(90);
+      } else if (navigator.vibrate) {
+        navigator.vibrate(90);
+      }
+    } catch (e) {}
+  }
+
+  function findProductByBarcode(scannedCode) {
+    if (!scannedCode) return null;
+    const raw = String(scannedCode).trim();
+    const query = raw.toLowerCase();
+    const digitsOnly = raw.replace(/\D/g, '');
+    const strippedLeadingZeros = digitsOnly.replace(/^0+/, '');
+
+    // 1. Exact match on code or id
+    let product = SHALOM_PRODUCTS.find(p => {
+      const pCode = (p.code || '').toLowerCase().trim();
+      const pId = (p.id || '').toLowerCase().trim();
+      return pCode === query || pId === query;
+    });
+    if (product) return product;
+
+    // 2. Numeric match (EAN-13, UPC-A, barcode digits)
+    if (digitsOnly.length >= 4) {
+      product = SHALOM_PRODUCTS.find(p => {
+        const pDigits = (p.code || '').replace(/\D/g, '');
+        if (!pDigits) return false;
+        if (pDigits === digitsOnly) return true;
+        if (strippedLeadingZeros && pDigits.replace(/^0+/, '') === strippedLeadingZeros) return true;
+        return false;
+      });
+      if (product) return product;
+    }
+
+    // 3. Match code without prefix (e.g. SKU0012 -> 0012 or 12)
+    if (raw.length >= 3) {
+      product = SHALOM_PRODUCTS.find(p => {
+        const pCode = (p.code || '').toLowerCase();
+        return pCode.endsWith(query) || query.endsWith(pCode);
+      });
+      if (product) return product;
+    }
+
+    // 4. Keyword fallback in title
+    if (query.length >= 3) {
+      product = SHALOM_PRODUCTS.find(p => p.name.toLowerCase().includes(query));
+      if (product) return product;
+    }
+
+    return null;
+  }
+
   function openMobileScanner() {
+    if (elements.scannedProductCardContainer) {
+      elements.scannedProductCardContainer.style.display = 'none';
+      elements.scannedProductCardContainer.innerHTML = '';
+    }
+    const feedback = document.getElementById('scannerDetectionFeedback');
+    if (feedback) {
+      feedback.innerHTML = '📷 Point camera at any barcode in the store to add directly to your kart.';
+    }
+    lastScannedItemCode = null;
+    lastScannedItemTime = 0;
     elements.mobileScannerModal?.classList.add('open');
     elements.mobileScannerBackdrop?.classList.add('visible');
     document.body.style.overflow = 'hidden';
@@ -1332,9 +1422,12 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.mobileScannerModal?.classList.remove('open');
     elements.mobileScannerBackdrop?.classList.remove('visible');
     document.body.style.overflow = '';
+    if (elements.scannedProductCardContainer) {
+      elements.scannedProductCardContainer.style.display = 'none';
+    }
   }
 
-  function startMobileScanner() {
+  async function startMobileScanner() {
     const feedback = document.getElementById('scannerDetectionFeedback');
     if (feedback) feedback.textContent = 'Starting camera scanner...';
 
@@ -1343,26 +1436,43 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (!mobileScannerInstance) {
+    try {
+      if (mobileScannerInstance) {
+        try {
+          if (mobileScannerInstance.isScanning) {
+            await mobileScannerInstance.stop();
+          }
+          mobileScannerInstance.clear();
+        } catch (e) {}
+      }
+
       mobileScannerInstance = new Html5Qrcode('scannerVideoContainer');
+
+      const config = {
+        fps: 15,
+        qrbox: (viewfinderWidth, viewfinderHeight) => {
+          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+          const boxSize = Math.floor(minEdge * 0.8);
+          return { width: Math.floor(boxSize * 1.15), height: Math.floor(boxSize * 0.7) };
+        },
+        aspectRatio: 1.0,
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true
+        }
+      };
+
+      await mobileScannerInstance.start(
+        { facingMode: currentMobileFacingMode },
+        config,
+        (decodedText) => onBarcodeScanned(decodedText),
+        (err) => {}
+      );
+
+      if (feedback) feedback.innerHTML = '📷 Camera active. Point at barcode or SKU label.';
+    } catch (err) {
+      console.warn('Mobile camera start error:', err);
+      if (feedback) feedback.innerHTML = '⚠️ Please allow camera permission to scan barcodes, or enter code below.';
     }
-
-    const config = {
-      fps: 15,
-      qrbox: { width: 250, height: 180 },
-      aspectRatio: 1.33
-    };
-
-    mobileScannerInstance.start(
-      { facingMode: currentMobileFacingMode },
-      config,
-      (decodedText) => onBarcodeScanned(decodedText),
-      (err) => {}
-    ).then(() => {
-      if (feedback) feedback.textContent = 'Camera active. Point at barcode or SKU label.';
-    }).catch(err => {
-      if (feedback) feedback.textContent = 'Please allow camera permission to scan barcodes.';
-    });
   }
 
   function stopMobileScanner() {
@@ -1371,38 +1481,99 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function toggleMobileCamera() {
+  async function toggleMobileCamera() {
     currentMobileFacingMode = (currentMobileFacingMode === 'environment') ? 'user' : 'environment';
     if (mobileScannerInstance && mobileScannerInstance.isScanning) {
-      mobileScannerInstance.stop().then(() => startMobileScanner()).catch(() => startMobileScanner());
+      try {
+        await mobileScannerInstance.stop();
+        await startMobileScanner();
+      } catch (e) {
+        startMobileScanner();
+      }
     }
   }
 
   function onBarcodeScanned(scannedCode) {
     const now = Date.now();
-    if (lastScannedItemCode === scannedCode && (now - lastScannedItemTime) < 2500) {
+    // Debounce duplicate scans within 2 seconds for identical barcode
+    if (lastScannedItemCode === scannedCode && (now - lastScannedItemTime) < 2000) {
       return;
     }
     lastScannedItemCode = scannedCode;
     lastScannedItemTime = now;
 
-    const query = (scannedCode || '').trim().toLowerCase();
-    let product = SHALOM_PRODUCTS.find(p => p.code.toLowerCase() === query || p.id.toLowerCase() === query);
-    if (!product) {
-      product = SHALOM_PRODUCTS.find(p => p.name.toLowerCase().includes(query));
-    }
-
+    const product = findProductByBarcode(scannedCode);
     const feedback = document.getElementById('scannerDetectionFeedback');
+    const container = elements.scannedProductCardContainer;
+
     if (product) {
+      // Audio beep & physical vibration
+      playScannerBeep();
+      triggerScannerHaptic();
+
+      // Add to cart
       shalomCart.addItem(product, 1);
-      showToast(`Added ${product.name} (₹${product.price}) to cart!`, 'success');
+      showToast(`🛒 Added to Kart: ${product.name} (₹${product.price})`, 'success');
+
       if (feedback) {
-        feedback.innerHTML = `✅ <strong>Scanned:</strong> ${product.name} (₹${product.price})`;
+        feedback.innerHTML = `✅ <strong>Scanned successfully!</strong> Item added to your kart.`;
       }
+
+      // Display live scanned product card inside scanner modal
+      if (container) {
+        const cartItem = (shalomCart.items || []).find(item => item.id === product.id);
+        const currentQty = cartItem ? cartItem.quantity : 1;
+        const discountPercentage = product.mrp > product.price 
+          ? Math.round(((product.mrp - product.price) / product.mrp) * 100) 
+          : 0;
+
+        container.style.display = 'block';
+        container.innerHTML = `
+          <div class="scanned-product-popup">
+            <div class="scanned-badge">✅ Just Added to Kart (Qty: ${currentQty})</div>
+            <div class="scanned-product-flex">
+              <img src="${product.image || 'images/placeholder-product.svg'}" alt="${product.name}" class="scanned-product-thumb" onerror="this.src='images/placeholder-product.svg'">
+              <div class="scanned-product-details">
+                <div class="scanned-product-title">${product.name}</div>
+                <div class="scanned-product-pricing">
+                  ₹${product.price}
+                  ${product.mrp > product.price ? `<span class="scanned-product-mrp">₹${product.mrp}</span>` : ''}
+                  ${discountPercentage > 0 ? `<span style="color: #15803d; font-size: 0.76rem; margin-left: 4px;">(${discountPercentage}% OFF)</span>` : ''}
+                </div>
+                <div style="font-size: 0.72rem; color: #64748b; margin-top: 2px;">Barcode / SKU: <code>${product.code || product.id}</code></div>
+              </div>
+            </div>
+            <div class="scanned-action-row">
+              <button type="button" class="btn-scan-continue" id="btnScanContinueScan">
+                ➕ Scan Next Item
+              </button>
+              <button type="button" class="btn-scan-view-cart" id="btnScanGoToCart">
+                🛒 View Kart (${shalomCart.getTotalCount()}) →
+              </button>
+            </div>
+          </div>
+        `;
+
+        document.getElementById('btnScanContinueScan')?.addEventListener('click', () => {
+          container.style.display = 'none';
+          lastScannedItemCode = null; // Reset so they can re-scan same item if they want another
+          if (feedback) {
+            feedback.innerHTML = `📷 Ready. Point camera at next barcode.`;
+          }
+        });
+
+        document.getElementById('btnScanGoToCart')?.addEventListener('click', () => {
+          closeMobileScanner();
+          openCartDrawer();
+        });
+      }
+
     } else {
+      triggerScannerHaptic();
       if (feedback) {
-        feedback.innerHTML = `⚠️ Code "<code>${scannedCode}</code>" not found in catalog.`;
+        feedback.innerHTML = `⚠️ Barcode "<strong>${scannedCode}</strong>" not found in catalog. Try manual entry below:`;
       }
+      showToast(`Barcode "${scannedCode}" not recognized.`, 'error');
     }
   }
 
@@ -1896,9 +2067,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mobile Camera Barcode Scanner
     elements.btnMobileScan?.addEventListener('click', openMobileScanner);
+    elements.floatingScanFab?.addEventListener('click', openMobileScanner);
+    elements.drawerScanAddBtn?.addEventListener('click', () => {
+      closeCartDrawer();
+      openMobileScanner();
+    });
     elements.closeMobileScannerBtn?.addEventListener('click', closeMobileScanner);
     elements.mobileScannerBackdrop?.addEventListener('click', closeMobileScanner);
     elements.flipCameraBtn?.addEventListener('click', toggleMobileCamera);
+
+    // Manual Barcode / SKU fallback entry form inside scanner modal
+    elements.scannerManualForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const code = (elements.scannerManualInput?.value || '').trim();
+      if (!code) return;
+      onBarcodeScanned(code);
+      if (elements.scannerManualInput) elements.scannerManualInput.value = '';
+    });
 
     // Modal close events
     elements.closeQuickViewBtn?.addEventListener('click', closeQuickView);
