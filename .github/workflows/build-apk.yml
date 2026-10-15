@@ -18,9 +18,7 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-
-    - name: Set up Android SDK
-      uses: android-actions/setup-android@v3
+        cache: gradle
 
     - name: Sync Web Assets to Android App
       run: |
@@ -30,9 +28,9 @@ jobs:
       run: chmod +x android/gradlew
 
     - name: Build Debug APK with Gradle
+      working-directory: android
       run: |
-        cd android
-        ./gradlew assembleDebug --stacktrace
+        ./gradlew assembleDebug --no-daemon --stacktrace
 
     - name: Upload Debug APK Artifact
       uses: actions/upload-artifact@v4
