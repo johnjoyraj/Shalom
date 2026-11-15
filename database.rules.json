@@ -2,39 +2,86 @@
   "rules": {
     ".read": false,
     ".write": false,
+
     "orders": {
       ".read": true,
+      ".indexOn": ["submittedAt", "status", "phone"],
       "$orderId": {
         ".write": true,
         ".validate": "newData.exists() ? newData.hasChildren(['orderId', 'status']) : true"
       }
     },
+
     "bills": {
       ".read": true,
+      ".indexOn": ["timestamp", "billNo", "phone"],
       "$billNo": {
         ".write": "newData.exists()",
         ".validate": "newData.hasChildren(['billNo'])"
       }
     },
+
     "expenses": {
       ".read": true,
+      ".indexOn": ["date", "category"],
       "$expenseId": {
         ".write": true,
         ".validate": "newData.exists() ? newData.hasChildren(['id']) : true"
       }
     },
+
     "customers": {
+      ".indexOn": ["phone"],
       "$phone": {
         ".read": true,
         ".write": true,
         ".validate": "newData.exists() ? newData.hasChildren(['phone']) : true"
       }
     },
+
     "otps": {
       "$phone": {
         ".read": true,
         ".write": true,
         ".validate": "newData.exists() ? newData.hasChildren(['otp', 'expiresAt']) : true"
+      }
+    },
+
+    "prayforindia": {
+      ".read": false,
+      ".write": false,
+
+      "prayers": {
+        ".read": true,
+        ".indexOn": ["createdAt", "category", "isUrgent", "urgent", "answered"],
+        "$prayerId": {
+          ".write": true,
+          ".validate": "newData.exists() ? (newData.hasChildren(['id']) || newData.hasChildren(['title'])) : true"
+        }
+      },
+
+      "participants": {
+        ".read": true,
+        ".indexOn": ["createdAt", "username", "email"],
+        "$username": {
+          ".write": true,
+          ".validate": "newData.exists() ? (newData.hasChildren(['username']) || newData.hasChildren(['email'])) : true"
+        }
+      },
+
+      "admin": {
+        ".read": true,
+        ".write": true,
+        ".validate": "newData.hasChildren(['username', 'password'])"
+      },
+
+      "security_log": {
+        ".read": true,
+        ".indexOn": ["timestamp"],
+        "$logId": {
+          ".write": "newData.exists()",
+          ".validate": "newData.hasChildren(['type', 'timestamp'])"
+        }
       }
     }
   }
