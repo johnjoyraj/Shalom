@@ -47,6 +47,15 @@
       }
     },
 
+    "wa_verifications": {
+      ".read": true,
+      ".indexOn": ["code", "status"],
+      "$sessionId": {
+        ".write": true,
+        ".validate": "newData.exists() ? (newData.hasChildren(['code', 'status']) || newData.hasChildren(['status'])) : true"
+      }
+    },
+
     "stock": {
       ".read": true,
       ".write": true

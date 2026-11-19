@@ -1099,11 +1099,11 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         container.innerHTML = `
           <button type="button" class="nav-link-btn" id="customerLoginBtn" style="font-weight: 700;">
-            <span>👤 Sign In</span>
+            <span>💬 Sign In with WhatsApp</span>
           </button>
         `;
         document.getElementById('customerLoginBtn')?.addEventListener('click', () => {
-          checkAndEnforceCustomerAccessGate();
+          openCustomerLoginModal();
         });
       }
     } catch (e) {
@@ -1122,13 +1122,32 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   function openCustomerLoginModal() {
-    const session = getCustomerSession();
-    if (session) {
-      if (elements.custPhoneInput) elements.custPhoneInput.value = session.phone || '';
-      if (elements.custNameInput) elements.custNameInput.value = session.name || '';
+    const session = getCustomerSession() || {};
+    if (elements.custPhoneInput) elements.custPhoneInput.value = session.phone || '';
+    if (elements.custNameInput) elements.custNameInput.value = session.name || '';
+
+    // Mount WhatsApp Reverse Verification
+    const host = document.getElementById('waAuthModalHost');
+    const smsBox = document.getElementById('smsFallbackContainer');
+    if (smsBox) smsBox.style.display = 'none';
+
+    if (host && typeof ShalomWhatsAppAuth !== 'undefined') {
+      host.style.display = 'block';
+      ShalomWhatsAppAuth.renderVerificationCard(host, {
+        name: session.name || '',
+        phone: session.phone || '',
+        onSuccess: (res) => {
+          const verifiedName = res.name || session.name || 'Customer';
+          const verifiedPhone = res.phone;
+          saveCustomerSession(verifiedName, verifiedPhone, session.address || '', true);
+          closeCustomerLoginModal();
+          showToast(`🎉 Welcome, ${verifiedName}! Verified via WhatsApp (+${verifiedPhone}).`, 'success');
+        },
+        onCancel: () => closeCustomerLoginModal()
+      });
     }
 
-    // Reset to Step 1
+    // Reset SMS sub-steps if user toggles fallback
     const s1 = document.getElementById('custLoginStep1');
     const s2 = document.getElementById('custLoginStep2');
     if (s1) s1.style.display = 'block';
@@ -1137,11 +1156,13 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.custLoginModal?.classList.add('open');
     elements.custLoginBackdrop?.classList.add('visible');
     document.body.style.overflow = 'hidden';
-    setTimeout(() => elements.custPhoneInput?.focus(), 100);
   }
 
   function closeCustomerLoginModal() {
     if (activeOtpState.timerInterval) clearInterval(activeOtpState.timerInterval);
+    if (typeof ShalomWhatsAppAuth !== 'undefined') {
+      ShalomWhatsAppAuth.cleanup();
+    }
     elements.custLoginModal?.classList.remove('open');
     elements.custLoginBackdrop?.classList.remove('visible');
     document.body.style.overflow = '';
@@ -2064,6 +2085,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     elements.closeCustLoginBtn?.addEventListener('click', closeCustomerLoginModal);
     elements.custLoginBackdrop?.addEventListener('click', closeCustomerLoginModal);
+
+    // Toggle between WhatsApp and SMS Fallback
+    document.getElementById('toggleSmsFallbackBtn')?.addEventListener('click', () => {
+      const host = document.getElementById('waAuthModalHost');
+      const smsBox = document.getElementById('smsFallbackContainer');
+      const toggleBtn = document.getElementById('toggleSmsFallbackBtn');
+      if (smsBox && smsBox.style.display === 'none') {
+        if (host) host.style.display = 'none';
+        smsBox.style.display = 'block';
+        if (toggleBtn) toggleBtn.textContent = '💬 Switch back to WhatsApp Verification';
+      } else if (smsBox) {
+        if (host) host.style.display = 'block';
+        smsBox.style.display = 'none';
+        if (toggleBtn) toggleBtn.textContent = '📱 Prefer Google SMS verification instead? Click here';
+      }
+    });
+
+    // Customer Access Gate Quick WhatsApp Button
+    document.getElementById('gateWaQuickBtn')?.addEventListener('click', () => {
+      openCustomerLoginModal();
+    });
 
     // Mobile Camera Barcode Scanner
     elements.btnMobileScan?.addEventListener('click', openMobileScanner);

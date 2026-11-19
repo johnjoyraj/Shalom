@@ -308,6 +308,14 @@ const SHALOM_AUTH = {
           🔑 Default Master PIN: <strong>7379</strong>
         </div>
 
+        <!-- Method 2: Instant Inbound WhatsApp Verification -->
+        <div style="margin-top: 14px;">
+          <button type="button" id="authWaAdminBtn" style="background: linear-gradient(135deg, #25D366, #128C7E); color: #ffffff; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; width: 100%; box-sizing: border-box; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);">
+            <span>💬 Unlock with WhatsApp (+91 73793 25499)</span>
+          </button>
+        </div>
+        <div id="authWaContainer" style="display: none; margin-top: 14px;"></div>
+
         <!-- Divider -->
         <div class="auth-divider-row">
           <span class="auth-divider-line"></span>
@@ -377,6 +385,30 @@ const SHALOM_AUTH = {
     pinForm.addEventListener("submit", (e) => {
       e.preventDefault();
       handlePinSubmit();
+    });
+
+    // Inbound WhatsApp Verification Handler for Admin
+    document.getElementById("authWaAdminBtn")?.addEventListener("click", () => {
+      const waBox = document.getElementById("authWaContainer");
+      if (!waBox) return;
+      waBox.style.display = waBox.style.display === "block" ? "none" : "block";
+      if (waBox.style.display === "block" && typeof ShalomWhatsAppAuth !== "undefined") {
+        ShalomWhatsAppAuth.renderVerificationCard(waBox, {
+          name: "John Joyraj",
+          phone: "917379325499",
+          onSuccess: (res) => {
+            const userSession = {
+              email: SHALOM_AUTH.AUTHORIZED_EMAIL,
+              name: "John Joyraj (WhatsApp Verified)",
+              phone: res.phone,
+              picture: "",
+              loginTime: Date.now()
+            };
+            sessionStorage.setItem(SHALOM_AUTH.STORAGE_KEY, JSON.stringify(userSession));
+            SHALOM_AUTH.unlockInterface(userSession);
+          }
+        });
+      }
     });
 
     document.getElementById("authConfigToggleBtn").addEventListener("click", () => {

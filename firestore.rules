@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // WhatsApp Inbound "Click-to-Verify" sessions
+    match /wa_verifications/{sessionId} {
+      // Anyone can read their own pending session or listen in real-time
+      allow get: if true;
+      allow list: if false;
+      // Allow initial session creation
+      allow create: if request.resource.data.status == 'pending';
+      // Status updates to verified (by webhook or authorized client)
+      allow update: if request.resource.data.status in ['pending', 'verified', 'expired'];
+      allow delete: if false;
+    }
+
+    // Customer accounts
+    match /customers/{phone} {
+      allow read, write: if true;
+    }
+
+    // Orders
+    match /orders/{orderId} {
+      allow read, create, update: if true;
+    }
+  }
+}
