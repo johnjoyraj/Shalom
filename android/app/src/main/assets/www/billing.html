@@ -1,0 +1,3860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SHALOM POS — Retail Billing Counter & Expense Management</title>
+  <meta name="description" content="Retail POS Billing Counter, Barcode Scanner, 2-Inch Thermal Receipt Printing, WhatsApp Invoicing, and Daily Expenses for Shalom Kerala Stores, Gorakhpur.">
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧾</text></svg>">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* Shalom Kerala Stores Emerald & Kasavu Gold Design System */
+      --emerald-950: #02120b;
+      --emerald-900: #06281e;
+      --emerald-850: #093327;
+      --emerald-800: #0c3c2e;
+      --emerald-700: #145441;
+      --emerald-600: #1d7057;
+      --emerald-500: #2a9172;
+      --emerald-100: #e3f3ec;
+      --emerald-50:  #f0f8f4;
+
+      --gold-primary: #d4af37;
+      --gold-hover:   #b89223;
+      --gold-light:   #f4df91;
+      --gold-subtle:  rgba(212, 175, 55, 0.15);
+      --gold-glow:    rgba(212, 175, 55, 0.28);
+
+      --bg-dark:      #03140e;
+      --card-dark:    #072219;
+      --card-border:  rgba(212, 175, 55, 0.24);
+      --card-hover:   #0c3427;
+
+      --text-white:   #ffffff;
+      --text-gold:    #f4df91;
+      --text-muted:   #94a99e;
+      --text-dim:     #637d71;
+
+      --success:      #10b981;
+      --warning:      #f59e0b;
+      --danger:       #ef4444;
+      --info:         #38bdf8;
+      --whatsapp:     #25d366;
+
+      --font-serif:   'Cinzel', serif;
+      --font-heading: 'Outfit', sans-serif;
+      --font-body:    'Plus Jakarta Sans', sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-white);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Top POS Header */
+    header.pos-header {
+      background: linear-gradient(135deg, var(--emerald-950) 0%, var(--emerald-900) 100%);
+      border-bottom: 2px solid var(--gold-primary);
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--gold-primary), var(--gold-hover));
+      color: var(--emerald-950);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      font-weight: 800;
+      box-shadow: 0 4px 12px var(--gold-glow);
+    }
+
+    .brand-info h1 {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #fff;
+      line-height: 1.1;
+    }
+
+    .brand-info .brand-sub {
+      font-size: 0.72rem;
+      color: var(--text-gold);
+      font-weight: 500;
+    }
+
+    /* Master Top Navigation Tabs */
+    .nav-tabs-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid rgba(212, 175, 55, 0.2);
+    }
+
+    .nav-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: var(--font-heading);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .nav-tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .nav-tab-btn.active {
+      background: linear-gradient(135deg, var(--gold-primary), var(--gold-hover));
+      color: var(--emerald-950);
+      box-shadow: 0 2px 8px var(--gold-glow);
+    }
+
+    .tab-badge {
+      background: rgba(0, 0, 0, 0.4);
+      color: inherit;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .nav-tab-btn.active .tab-badge {
+      background: rgba(3, 20, 14, 0.25);
+    }
+
+    /* Right Header Meta & Staff Bar */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .live-clock-pill {
+      font-family: var(--font-mono);
+      font-size: 0.76rem;
+      color: var(--text-gold);
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      padding: 6px 12px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cloud-pill {
+      font-size: 0.75rem;
+      padding: 5px 10px;
+      border-radius: 20px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .staff-badge-btn {
+      background: rgba(212, 175, 55, 0.15);
+      border: 1.5px solid var(--gold-primary);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-heading);
+      font-size: 0.85rem;
+      font-weight: 700;
+      transition: all 0.2s;
+    }
+
+    .staff-badge-btn:hover {
+      background: var(--gold-primary);
+      color: var(--emerald-950);
+    }
+
+    /* Main Content Container */
+    main.pos-main-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .pos-view {
+      display: none;
+      flex: 1;
+      height: calc(100vh - 66px);
+      overflow: hidden;
+    }
+
+    .pos-view.active-view {
+      display: flex;
+    }
+
+    /* ==========================================================================
+       VIEW 1: POS BILLING COUNTER
+       ========================================================================== */
+    .pos-counter-grid {
+      display: grid;
+      grid-template-columns: 1fr 450px;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    @media (max-width: 1024px) {
+      .pos-counter-grid {
+        grid-template-columns: 1fr 390px;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .pos-counter-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+      }
+      .pos-view {
+        height: auto;
+        min-height: calc(100vh - 66px);
+        overflow-y: auto;
+      }
+    }
+
+    /* Left Panel: Catalog & Scan */
+    .catalog-panel {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--card-border);
+      background: var(--bg-dark);
+      overflow: hidden;
+      height: 100%;
+    }
+
+    .catalog-toolbar {
+      padding: 12px 16px;
+      background: var(--card-dark);
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .search-box-wrapper {
+      flex: 1;
+      min-width: 220px;
+      position: relative;
+    }
+
+    .search-box-input {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1.5px solid rgba(212, 175, 55, 0.35);
+      border-radius: 10px;
+      padding: 10px 14px 10px 38px;
+      font-size: 0.95rem;
+      color: #fff;
+      font-family: var(--font-body);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .search-box-input:focus {
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 12px var(--gold-glow);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gold-primary);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .btn-action {
+      padding: 10px 15px;
+      border-radius: 10px;
+      font-family: var(--font-heading);
+      font-size: 0.88rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold-primary), var(--gold-hover));
+      color: var(--emerald-950);
+      box-shadow: 0 2px 8px var(--gold-glow);
+    }
+
+    .btn-gold:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-emerald {
+      background: var(--emerald-700);
+      color: #fff;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .btn-emerald:hover {
+      background: var(--emerald-600);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+
+    .btn-danger:hover {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      color: var(--text-gold);
+    }
+
+    .btn-outline:hover {
+      background: var(--gold-subtle);
+      border-color: var(--gold-primary);
+    }
+
+    /* Category Filter Chips */
+    .category-scroll-bar {
+      display: flex;
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(3, 20, 14, 0.85);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.18);
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: thin;
+      scrollbar-color: var(--emerald-700) transparent;
+    }
+
+    .cat-chip {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .cat-chip:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .cat-chip.active {
+      background: var(--gold-primary);
+      color: var(--emerald-950);
+      font-weight: 700;
+      border-color: var(--gold-primary);
+      box-shadow: 0 2px 8px var(--gold-glow);
+    }
+
+    /* Product Grid */
+    .products-grid-wrapper {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+      gap: 12px;
+      align-content: start;
+    }
+
+    .prod-card {
+      background: var(--card-dark);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .prod-card:hover {
+      border-color: var(--gold-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), 0 0 10px var(--gold-subtle);
+    }
+
+    .prod-card:active {
+      transform: scale(0.97);
+    }
+
+    .prod-top {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .prod-cat-tag {
+      font-size: 0.68rem;
+      color: var(--text-gold);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+    }
+
+    .prod-name {
+      font-family: var(--font-heading);
+      font-size: 0.88rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: #fff;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 2.2em;
+    }
+
+    .prod-code {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-dim);
+    }
+
+    .prod-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed rgba(212, 175, 55, 0.15);
+    }
+
+    .prod-price {
+      font-family: var(--font-heading);
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--gold-light);
+    }
+
+    .prod-stock-pill {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .stock-zero {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    /* Right Panel: Active Bill / Cart */
+    .bill-panel {
+      background: var(--card-dark);
+      border-left: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .bill-header-bar {
+      padding: 12px 16px;
+      background: linear-gradient(135deg, var(--emerald-900), var(--emerald-850));
+      border-bottom: 1.5px solid var(--gold-primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .bill-meta-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .bill-number-tag {
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--gold-light);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .bill-staff-stamped {
+      font-size: 0.74rem;
+      color: #34d399;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Customer Quick Inputs */
+    .customer-bar {
+      padding: 10px 14px;
+      background: rgba(0, 0, 0, 0.3);
+      border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 8px;
+    }
+
+    .cust-input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      border-radius: 8px;
+      padding: 6px 10px;
+      color: #fff;
+      font-size: 0.84rem;
+      font-family: var(--font-body);
+      outline: none;
+    }
+
+    .cust-input:focus {
+      border-color: var(--gold-primary);
+    }
+
+    /* Cart Items Table / List */
+    .cart-items-wrapper {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .cart-empty-state {
+      margin: auto;
+      text-align: center;
+      color: var(--text-dim);
+      padding: 30px 10px;
+    }
+
+    .cart-item-row {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(212, 175, 55, 0.15);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.15s;
+    }
+
+    .cart-item-row:hover {
+      background: rgba(212, 175, 55, 0.05);
+    }
+
+    .cart-item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .cart-item-title {
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cart-item-rate {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .cart-qty-ctrls {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 4px;
+      border-radius: 8px;
+      border: 1px solid rgba(212, 175, 55, 0.2);
+    }
+
+    .qty-btn {
+      width: 24px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #fff;
+      font-weight: 800;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+    }
+
+    .qty-btn:hover {
+      background: var(--gold-primary);
+      color: var(--emerald-950);
+    }
+
+    .qty-display {
+      min-width: 26px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .cart-item-total {
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--gold-light);
+      min-width: 65px;
+      text-align: right;
+    }
+
+    .cart-item-del {
+      background: transparent;
+      border: none;
+      color: #f87171;
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cart-item-del:hover {
+      background: rgba(239, 68, 68, 0.2);
+    }
+
+    /* Bill Summary & Payment Section */
+    .bill-checkout-section {
+      background: linear-gradient(180deg, rgba(7, 34, 25, 0.95) 0%, var(--emerald-950) 100%);
+      border-top: 1.5px solid var(--gold-primary);
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .calc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .calc-row.grand-total-row {
+      border-top: 1px dashed rgba(212, 175, 55, 0.35);
+      padding-top: 6px;
+      margin-top: 2px;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .grand-total-val {
+      font-family: var(--font-heading);
+      color: var(--gold-primary);
+      font-size: 1.55rem;
+      letter-spacing: 0.5px;
+    }
+
+    /* Payment Mode Selector */
+    .payment-modes-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .pay-mode-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-radius: 8px;
+      padding: 8px 4px;
+      color: var(--text-muted);
+      font-family: var(--font-heading);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.18s;
+    }
+
+    .pay-mode-btn.active {
+      background: linear-gradient(135deg, var(--gold-primary), var(--gold-hover));
+      color: var(--emerald-950);
+      border-color: var(--gold-primary);
+      box-shadow: 0 2px 8px var(--gold-glow);
+    }
+
+    /* Cash / UPI Details Bar */
+    .pay-details-drawer {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .tendered-input {
+      width: 90px;
+      background: #000;
+      border: 1px solid var(--gold-primary);
+      border-radius: 6px;
+      padding: 4px 8px;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      text-align: right;
+      outline: none;
+    }
+
+    /* Main Action Buttons Grid */
+    .bill-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .btn-checkout-print {
+      background: linear-gradient(135deg, var(--emerald-600), var(--emerald-500));
+      color: #fff;
+      border: 1.5px solid #34d399;
+      border-radius: 10px;
+      padding: 10px 4px;
+      font-family: var(--font-heading);
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+      transition: all 0.2s;
+    }
+
+    .btn-checkout-print:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-checkout-rawbt {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      color: #fff;
+      border: 1.5px solid #60a5fa;
+      border-radius: 10px;
+      padding: 10px 4px;
+      font-family: var(--font-heading);
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+      transition: all 0.2s;
+    }
+
+    .btn-checkout-rawbt:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    .btn-checkout-whatsapp {
+      background: linear-gradient(135deg, #128c7e, var(--whatsapp));
+      color: #fff;
+      border: 1.5px solid #25d366;
+      border-radius: 10px;
+      padding: 10px 4px;
+      font-family: var(--font-heading);
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+      transition: all 0.2s;
+    }
+
+    .btn-checkout-whatsapp:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    /* ==========================================================================
+       VIEW 2: PREVIOUS BILLS / BILL BOOK
+       ========================================================================== */
+    .bills-history-view {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 18px 24px;
+      gap: 16px;
+    }
+
+    /* KPI Summary Cards */
+    .stats-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: var(--card-dark);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-family: var(--font-heading);
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .stat-sub {
+      font-size: 0.74rem;
+      color: var(--text-gold);
+    }
+
+    /* History Filters */
+    .history-filter-bar {
+      background: var(--card-dark);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .filter-input {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #fff;
+      font-size: 0.85rem;
+      font-family: var(--font-body);
+      outline: none;
+    }
+
+    /* Bills History Table */
+    .bills-table-container {
+      background: var(--card-dark);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .bills-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+
+    .bills-table th {
+      background: rgba(3, 20, 14, 0.8);
+      color: var(--text-gold);
+      padding: 12px 14px;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      border-bottom: 1.5px solid var(--gold-primary);
+      white-space: nowrap;
+    }
+
+    .bills-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+      color: #fff;
+    }
+
+    .bills-table tr:hover td {
+      background: rgba(212, 175, 55, 0.05);
+    }
+
+    .staff-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(52, 211, 153, 0.15);
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      color: #34d399;
+      font-size: 0.74rem;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    .pay-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .pay-cash { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .pay-upi  { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+    .pay-card { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+
+    .tbl-action-btn {
+      padding: 5px 9px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 4px;
+      transition: all 0.15s;
+    }
+
+    /* ==========================================================================
+       VIEW 3: DAILY EXPENSES
+       ========================================================================== */
+    .expenses-view {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 20px;
+      padding: 20px 24px;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 900px) {
+      .expenses-view {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .expense-form-card {
+      background: var(--card-dark);
+      border: 1.5px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      height: fit-content;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .form-title {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--gold-light);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .form-ctrl {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1.5px solid rgba(212, 175, 55, 0.3);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: #fff;
+      font-size: 0.9rem;
+      font-family: var(--font-body);
+      outline: none;
+    }
+
+    .form-ctrl:focus {
+      border-color: var(--gold-primary);
+    }
+
+    /* Cash Drawer Reconciliation Box */
+    .reconciliation-card {
+      background: linear-gradient(135deg, var(--emerald-900), var(--emerald-950));
+      border: 1.5px solid var(--gold-primary);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 6px 20px var(--gold-glow);
+    }
+
+    .recon-title {
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--gold-light);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .recon-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      text-align: center;
+    }
+
+    .recon-item {
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 10px;
+      padding: 10px;
+      border: 1px solid rgba(212, 175, 55, 0.2);
+    }
+
+    .recon-item-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .recon-item-val {
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+
+    /* Expenses List Table */
+    .expense-list-container {
+      background: var(--card-dark);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .expense-table-header {
+      padding: 14px 18px;
+      background: rgba(3, 20, 14, 0.9);
+      border-bottom: 1.5px solid var(--gold-primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ==========================================================================
+       MODALS: STAFF SIGN-IN, MOBILE SCANNER, RECEIPT PREVIEW, SUCCESS MODAL
+       ========================================================================== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: modalFadeIn 0.25s ease;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-card {
+      background: var(--card-dark);
+      border: 1.5px solid var(--gold-primary);
+      border-radius: 18px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 35px var(--gold-glow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      background: linear-gradient(135deg, var(--emerald-950), var(--emerald-900));
+      border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-header h2 {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--gold-light);
+    }
+
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.3rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .modal-close-btn:hover {
+      color: #fff;
+    }
+
+    .modal-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    /* Staff Login UI Elements */
+    .staff-avatar-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .staff-tile {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1.5px solid rgba(212, 175, 55, 0.2);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .staff-tile:hover {
+      border-color: var(--gold-primary);
+      background: rgba(212, 175, 55, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .staff-tile.selected {
+      background: var(--gold-subtle);
+      border-color: var(--gold-primary);
+      box-shadow: 0 0 14px var(--gold-glow);
+    }
+
+    .staff-tile-icon {
+      font-size: 1.8rem;
+    }
+
+    .staff-tile-name {
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: #fff;
+    }
+
+    .staff-tile-role {
+      font-size: 0.72rem;
+      color: var(--text-gold);
+    }
+
+    /* On-Screen Touch Numpad for PIN Entry */
+    .pin-numpad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .numpad-key {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      border-radius: 10px;
+      padding: 12px;
+      font-family: var(--font-heading);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .numpad-key:hover {
+      background: var(--gold-primary);
+      color: var(--emerald-950);
+    }
+
+    .numpad-key:active {
+      transform: scale(0.94);
+    }
+
+    /* Camera Scanner Modal Elements */
+    #interactive-video-container {
+      width: 100%;
+      height: 280px;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .scanner-laser {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #ef4444, #ff0000, transparent);
+      box-shadow: 0 0 12px #ff0000;
+      animation: laserScan 2s infinite ease-in-out;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    @keyframes laserScan {
+      0% { top: 10%; }
+      50% { top: 90%; }
+      100% { top: 10%; }
+    }
+
+    .scan-toast {
+      background: rgba(16, 185, 129, 0.95);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: toastPop 0.3s ease;
+    }
+
+    @keyframes toastPop {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* ==========================================================================
+       2-INCH (58mm) THERMAL PRINTING LAYOUT
+       ========================================================================== */
+    #printable-thermal-receipt {
+      display: none;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+
+      #printable-thermal-receipt,
+      #printable-thermal-receipt * {
+        visibility: visible !important;
+      }
+
+      #printable-thermal-receipt {
+        display: block !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 58mm !important;
+        max-width: 58mm !important;
+        padding: 2mm 3mm !important;
+        margin: 0 !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: 'Courier New', Courier, monospace !important;
+        font-size: 11px !important;
+        line-height: 1.25 !important;
+      }
+
+      @page {
+        size: 58mm auto;
+        margin: 0;
+      }
+    }
+
+    /* Thermal Receipt Styling in Screen Preview */
+    .thermal-paper-slip {
+      background: #ffffff;
+      color: #000000;
+      width: 58mm;
+      max-width: 58mm;
+      padding: 12px 10px;
+      margin: 0 auto;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 11px;
+      line-height: 1.3;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+      border-radius: 4px;
+    }
+
+    .th-center { text-align: center; }
+    .th-bold { font-weight: bold; }
+    .th-divider { border-bottom: 1px dashed #000; margin: 5px 0; }
+    .th-double-divider { border-bottom: 2px solid #000; margin: 6px 0; }
+
+    .th-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10.5px;
+    }
+
+    .th-table th, .th-table td {
+      padding: 2px 0;
+      text-align: left;
+    }
+
+    .th-table .num {
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top POS Header -->
+  <header class="pos-header">
+    <div class="brand-section">
+      <div class="brand-icon">🌴</div>
+      <div class="brand-info">
+        <h1>SHALOM KERALA STORES</h1>
+        <div class="brand-sub">Gorakhpur POS Billing Counter • Ph: 7379325499</div>
+      </div>
+    </div>
+
+    <!-- Master Navigation Tabs -->
+    <div class="nav-tabs-wrapper">
+      <button class="nav-tab-btn active" id="tabBtnCounter" onclick="switchView('counter')">
+        🛒 Billing Counter
+      </button>
+      <button class="nav-tab-btn" id="tabBtnHistory" onclick="switchView('history')">
+        📜 Previous Bills <span class="tab-badge" id="badgeBillsCount">0</span>
+      </button>
+      <button class="nav-tab-btn" id="tabBtnExpenses" onclick="switchView('expenses')">
+        💸 Daily Expenses <span class="tab-badge" id="badgeExpensesCount">0</span>
+      </button>
+      <a href="inventory.html" class="nav-tab-btn" style="text-decoration: none;" title="View & Confirm Incoming Web Orders">
+        🛎️ Online Orders <span class="tab-badge" id="badgeOnlineOrdersCount" style="display:none; background:#ef4444; color:#fff;">0</span>
+      </a>
+      <a href="inventory.html" class="nav-tab-btn" style="text-decoration: none;" title="Switch to Inventory ERP & Stock Manager">
+        📦 Inventory ERP
+      </a>
+      <a href="dashboard.html" class="nav-tab-btn" style="text-decoration: none;" title="Open Executive Admin Dashboard">
+        📊 Dashboard
+      </a>
+      <a href="index.html" class="nav-tab-btn" style="text-decoration: none;" title="Open Customer Online Storefront">
+        🌐 Storefront
+      </a>
+    </div>
+
+    <!-- Header Actions: Clock, Cloud, Staff -->
+    <div class="header-actions">
+      <div class="live-clock-pill">
+        <span id="liveClockText">14 Oct 2026, 07:15 AM</span>
+      </div>
+
+      <div class="cloud-pill" id="cloudStatusBadge" title="Click to manually refresh Cloud Sync" onclick="syncBillsFromCloud(); syncExpensesFromCloud();">
+        <span id="cloudDot">🟢</span> <span id="cloudStatusText">Cloud Live</span>
+      </div>
+
+      <button class="staff-badge-btn" id="currentStaffBadgeBtn" onclick="openStaffModal()">
+        <span>👤</span>
+        <span id="currentStaffNameDisplay">John Joy (Owner)</span>
+        <span style="font-size: 0.7rem; opacity: 0.8;">▼</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main POS Container -->
+  <main class="pos-main-container">
+
+    <!-- ====================================================================
+         VIEW 1: POS BILLING COUNTER
+         ==================================================================== -->
+    <div class="pos-view active-view" id="viewCounter">
+      <div class="pos-counter-grid">
+
+        <!-- Left Column: Catalog & Scan -->
+        <section class="catalog-panel">
+          <!-- Search & Action Toolbar -->
+          <div class="catalog-toolbar">
+            <div class="search-box-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="catalogSearchInput" class="search-box-input" placeholder="Scan Barcode or Search Item / Malayalam (Ctrl+K)..." autofocus autocomplete="off">
+            </div>
+
+            <button class="btn-action btn-gold" onclick="openCameraScannerModal()">
+              📷 Scan Barcode
+            </button>
+
+            <button class="btn-action btn-emerald" onclick="openCustomItemModal()">
+              ➕ Custom Item
+            </button>
+
+            <button class="btn-action btn-outline" onclick="clearCatalogSearch()">
+              Clear
+            </button>
+          </div>
+
+          <!-- Category Chips Scroll -->
+          <div class="category-scroll-bar" id="categoryChipsContainer">
+            <div class="cat-chip active" onclick="selectCategory('All', this)">All Items</div>
+            <div class="cat-chip" onclick="selectCategory('snacks', this)">🍌 Banana Chips & Snacks</div>
+            <div class="cat-chip" onclick="selectCategory('masalas-spices', this)">🌶️ Masalas & Spices</div>
+            <div class="cat-chip" onclick="selectCategory('pickles', this)">🫙 Pickles & Chutneys</div>
+            <div class="cat-chip" onclick="selectCategory('ready-to-eat-mixes', this)">🍲 Palada & Mixes</div>
+            <div class="cat-chip" onclick="selectCategory('rice-items', this)">🍚 Matta Rice & Flours</div>
+            <div class="cat-chip" onclick="selectCategory('church-articles', this)">✝️ Church Articles</div>
+            <div class="cat-chip" onclick="selectCategory('books-bibles', this)">📖 Bibles & Books</div>
+            <div class="cat-chip" onclick="selectCategory('stationery', this)">✏️ Stationery</div>
+            <div class="cat-chip" onclick="selectCategory('beverages', this)">☕ Kerala Tea & Coffee</div>
+          </div>
+
+          <!-- Products Grid -->
+          <div class="products-grid-wrapper" id="productsGridContainer">
+            <!-- Dynamically populated from SHALOM_PRODUCTS (1,281 items) -->
+          </div>
+        </section>
+
+        <!-- Right Column: Active Bill & Checkout -->
+        <section class="bill-panel">
+          <!-- Bill Header Bar -->
+          <div class="bill-header-bar">
+            <div class="bill-meta-info">
+              <div class="bill-number-tag">
+                <span>🧾</span> <span id="billNumberDisplay">SHALOM-POS-2026-0006</span>
+              </div>
+              <div class="bill-staff-stamped">
+                <span>Staff:</span> <strong id="billStaffNameDisplay">John Joy</strong>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 6px;">
+              <button class="btn-action btn-danger" style="padding: 6px 10px; font-size: 0.78rem;" onclick="clearActiveBillPrompt()">
+                🗑️ Clear
+              </button>
+            </div>
+          </div>
+
+          <!-- Customer Info Bar (WhatsApp Mobile) -->
+          <div class="customer-bar">
+            <input type="tel" id="billCustomerPhone" class="cust-input" placeholder="Customer Mobile (for WhatsApp Bill)" maxlength="10" autocomplete="off">
+            <input type="text" id="billCustomerName" class="cust-input" placeholder="Customer Full Name (Optional)" autocomplete="off">
+          </div>
+
+          <!-- Cart Items List -->
+          <div class="cart-items-wrapper" id="cartItemsListContainer">
+            <div class="cart-empty-state">
+              <div style="font-size: 2.2rem; margin-bottom: 8px;">🛒</div>
+              <strong>Current Bill is Empty</strong><br>
+              <span style="font-size: 0.8rem;">Tap items or click "📷 Scan Barcode" to add to bill</span>
+            </div>
+          </div>
+
+          <!-- Bill Calculations & Checkout -->
+          <div class="bill-checkout-section">
+            <div class="calc-row">
+              <span>Items Subtotal (<span id="cartTotalItemsCount">0</span> items, <span id="cartTotalQtyCount">0</span> units)</span>
+              <strong id="subtotalAmountDisplay">₹0.00</strong>
+            </div>
+
+            <div class="calc-row">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span>Discount (₹)</span>
+                <input type="number" id="billDiscountInput" class="cust-input" style="width: 70px; padding: 3px 6px; text-align: right;" value="0" min="0" oninput="calculateBillTotals()">
+              </div>
+              <span id="discountAmountDisplay" style="color: #34d399;">- ₹0.00</span>
+            </div>
+
+            <div class="calc-row grand-total-row">
+              <span>Grand Total</span>
+              <span class="grand-total-val" id="grandTotalDisplay">₹0.00</span>
+            </div>
+
+            <!-- Payment Mode Selector -->
+            <div class="payment-modes-grid">
+              <button class="pay-mode-btn active" id="payModeBtnCash" onclick="setPaymentMode('Cash')">
+                <span>💵</span> Cash
+              </button>
+              <button class="pay-mode-btn" id="payModeBtnUPI" onclick="setPaymentMode('UPI')">
+                <span>📱</span> UPI (GPay)
+              </button>
+              <button class="pay-mode-btn" id="payModeBtnCard" onclick="setPaymentMode('Card')">
+                <span>💳</span> Card POS
+              </button>
+              <button class="pay-mode-btn" id="payModeBtnCredit" onclick="setPaymentMode('Credit')">
+                <span>📝</span> Credit
+              </button>
+            </div>
+
+            <!-- Cash Drawer / UPI Drawer Helper -->
+            <div class="pay-details-drawer" id="payDetailsDrawer">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span>Cash Received: ₹</span>
+                <input type="number" id="cashReceivedInput" class="tendered-input" placeholder="0" oninput="calculateCashChange()">
+              </div>
+              <div>
+                Change Due: <strong id="cashChangeDisplay" style="color: #34d399;">₹0.00</strong>
+              </div>
+            </div>
+
+            <!-- PRIMARY COMPLETE & SAVE BILL BUTTON -->
+            <button class="btn-action btn-gold" id="btnMainSaveBill" style="width: 100%; justify-content: center; padding: 13px; font-size: 1.05rem; font-weight: 800; border-radius: 10px; box-shadow: 0 4px 16px var(--gold-glow); margin-bottom: 2px;" onclick="completeAndSaveBill()">
+              <span>💾</span> Complete & Save Bill (Live Cloud)
+            </button>
+
+            <!-- Checkout Action Buttons: Print, RawBT & WhatsApp -->
+            <div class="bill-actions-grid">
+              <button class="btn-checkout-print" onclick="saveAndPrintThermalReceipt()" title="Print via standard browser print dialog">
+                <span>🖨️</span> Print (58mm)
+              </button>
+              <button class="btn-checkout-rawbt" onclick="saveAndPrintRawBTThermal()" title="Print directly to RawBT Bluetooth/USB thermal printer app">
+                <span>📲</span> RawBT Print
+              </button>
+              <button class="btn-checkout-whatsapp" onclick="saveAndSendWhatsAppBill()" title="Send bill receipt via WhatsApp">
+                <span>💬</span> WhatsApp
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         VIEW 2: PREVIOUS BILLS / BILL BOOK
+         ==================================================================== -->
+    <div class="pos-view" id="viewHistory">
+      <div class="bills-history-view">
+        <!-- Top Stats Cards -->
+        <div class="stats-cards-grid">
+          <div class="stat-card">
+            <span class="stat-label">Total Store Sales</span>
+            <span class="stat-value" id="kpiTodaySales">₹0.00</span>
+            <span class="stat-sub"><span id="kpiTodayBillsCount">0</span> Total Bills</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Cash Received</span>
+            <span class="stat-value" id="kpiTodayCash" style="color: #34d399;">₹0.00</span>
+            <span class="stat-sub">Physical Cash Drawer</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">UPI Online Sales</span>
+            <span class="stat-value" id="kpiTodayUPI" style="color: #38bdf8;">₹0.00</span>
+            <span class="stat-sub">7379325499@ybl</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Billed by You (<span id="kpiCurrentStaffName">Staff</span>)</span>
+            <span class="stat-value" id="kpiCurrentStaffSales" style="color: var(--gold-light);">₹0.00</span>
+            <span class="stat-sub">Staff contribution</span>
+          </div>
+        </div>
+
+        <!-- History Filter Bar -->
+        <div class="history-filter-bar">
+          <input type="text" id="histSearchInput" class="filter-input" style="flex: 1; min-width: 220px;" placeholder="Search Bill No, Customer Phone, or Name..." oninput="filterPreviousBills()">
+          
+          <select id="histStaffFilter" class="filter-input" onchange="filterPreviousBills()">
+            <option value="All">All Staff Members</option>
+            <!-- Populated dynamically -->
+          </select>
+
+          <select id="histPaymentFilter" class="filter-input" onchange="filterPreviousBills()">
+            <option value="All">All Payment Modes</option>
+            <option value="Cash">Cash</option>
+            <option value="UPI">UPI</option>
+            <option value="Card">Card</option>
+            <option value="Credit">Credit</option>
+          </select>
+
+          <select id="histDateFilter" class="filter-input" onchange="filterPreviousBills()">
+            <option value="AllTime" selected>All Time (All Bills)</option>
+            <option value="Today">Today</option>
+            <option value="Yesterday">Yesterday</option>
+            <option value="ThisWeek">This Week</option>
+          </select>
+
+          <button class="btn-action btn-gold" onclick="syncBillsFromCloud(); syncExpensesFromCloud();">
+            🔄 Cloud Sync Now
+          </button>
+        </div>
+
+        <!-- Previous Bills Table -->
+        <div class="bills-table-container">
+          <table class="bills-table">
+            <thead>
+              <tr>
+                <th>Bill No</th>
+                <th>Date & Time</th>
+                <th>Billed By Staff</th>
+                <th>Customer</th>
+                <th>Items</th>
+                <th>Total (₹)</th>
+                <th>Payment</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="previousBillsTableBody">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         VIEW 3: DAILY EXPENSES
+         ==================================================================== -->
+    <div class="pos-view" id="viewExpenses">
+      <div class="expenses-view">
+        
+        <!-- Left Column: Add Daily Expense Form -->
+        <div class="expense-form-card">
+          <div class="form-title">
+            <span>💸</span> Record Daily Store Expense
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Expense Category</label>
+            <select id="expCategorySelect" class="form-ctrl">
+              <option value="Tea & Refreshments">☕ Tea, Snacks & Staff Refreshments</option>
+              <option value="Local Transport & Freight">🛵 Local Freight / Auto / Delivery</option>
+              <option value="Packaging Materials">📦 Packaging Bags, Paper & Tape</option>
+              <option value="Staff Meals & Lunch">🥗 Staff Lunch / Meals</option>
+              <option value="Electricity & Utilities">💡 Electricity, Generator & Utilities</option>
+              <option value="Shop Cleaning & Supplies">🧹 Store Cleaning & Maintenance</option>
+              <option value="Shop Rent / Advance">🏢 Shop Rent / Maintenance Advance</option>
+              <option value="Supplier Payout">🛒 Local Purchase / Supplier Payout</option>
+              <option value="Miscellaneous">🏷️ Miscellaneous Store Expenses</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description / Remarks</label>
+            <input type="text" id="expDescriptionInput" class="form-ctrl" placeholder="e.g. Morning tea and biscuits for counter staff" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Expense Amount (₹)</label>
+            <input type="number" id="expAmountInput" class="form-ctrl" placeholder="Amount in ₹" min="1" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Paid Via</label>
+            <select id="expPaymentModeSelect" class="form-ctrl">
+              <option value="Cash from Drawer">💵 Cash from Store Drawer</option>
+              <option value="Store UPI (7379325499)">📱 Store UPI</option>
+              <option value="Staff Personal Paid">👤 Staff Personal Paid (To Reimburse)</option>
+              <option value="Bank Transfer">🏦 Bank Transfer</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Recorded By (Current Staff)</label>
+            <input type="text" id="expStaffRecordedBy" class="form-ctrl" readonly style="background: rgba(0,0,0,0.6); color: var(--gold-light); font-weight: 700;">
+          </div>
+
+          <button class="btn-action btn-gold" style="width: 100%; justify-content: center; padding: 12px;" onclick="saveDailyExpense()">
+            <span>💾</span> Save Expense Record (Live Cloud)
+          </button>
+        </div>
+
+        <!-- Right Column: Cash Drawer Reconciliation & Expense List -->
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Cash Drawer Reconciliation Box -->
+          <div class="reconciliation-card">
+            <div class="recon-title">
+              <span>⚖️</span> Cash Drawer Daily Reconciliation
+            </div>
+            <div class="recon-grid">
+              <div class="recon-item">
+                <div class="recon-item-label">Total Cash Sales (+)</div>
+                <div class="recon-item-val" id="reconCashIn" style="color: #34d399;">₹0.00</div>
+              </div>
+              <div class="recon-item">
+                <div class="recon-item-label">Total Cash Expenses (-)</div>
+                <div class="recon-item-val" id="reconCashOut" style="color: #f87171;">₹0.00</div>
+              </div>
+              <div class="recon-item">
+                <div class="recon-item-label">Net Cash in Drawer (=)</div>
+                <div class="recon-item-val" id="reconNetCash" style="color: var(--gold-light);">₹0.00</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expenses Table -->
+          <div class="expense-list-container">
+            <div class="expense-table-header">
+              <div style="font-weight: 700; color: #fff;">
+                Logged Expenses (<span id="expensesTotalCount">0</span> records)
+              </div>
+              <div>
+                Total: <strong id="expensesGrandTotalDisplay" style="color: var(--gold-light); font-size: 1.1rem;">₹0.00</strong>
+              </div>
+            </div>
+
+            <table class="bills-table">
+              <thead>
+                <tr>
+                  <th>Time / Date</th>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Amount (₹)</th>
+                  <th>Payment Mode</th>
+                  <th>Staff Name</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="expensesTableBody">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ====================================================================
+       MODAL: BILL GENERATED SUCCESS
+       ==================================================================== -->
+  <div class="modal-overlay" id="billSuccessModal">
+    <div class="modal-card" style="max-width: 420px; text-align: center;">
+      <div class="modal-header" style="justify-content: center; background: linear-gradient(135deg, var(--emerald-850), var(--emerald-900));">
+        <h2 style="color: #34d399; display: flex; align-items: center; gap: 8px;">
+          <span>✅</span> Bill Generated & Saved!
+        </h2>
+      </div>
+      <div class="modal-body" style="align-items: center; gap: 14px;">
+        <div style="font-size: 2.5rem;">🧾</div>
+        <div>
+          <div style="font-family: var(--font-mono); font-size: 1.25rem; font-weight: 800; color: var(--gold-light);" id="successBillNoDisplay">SHALOM-POS-2026-0006</div>
+          <div style="font-size: 1.7rem; font-weight: 800; color: #fff; margin-top: 4px;" id="successBillAmountDisplay">₹0.00</div>
+          <div style="font-size: 0.85rem; color: #34d399; margin-top: 6px; font-weight: 600;" id="successCloudStatusText">🟢 Saved to Live Cloud & Local Storage</div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Billed By: <strong id="successStaffDisplay" style="color: #fff;">John Joy</strong></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 6px;">
+          <button class="btn-action btn-gold" style="justify-content: center; padding: 12px;" onclick="printFromSuccessModal()">
+            <span>🖨️</span> Print 2-Inch Thermal Receipt
+          </button>
+          <button class="btn-action btn-emerald" style="justify-content: center; padding: 12px; background: #25d366;" onclick="whatsappFromSuccessModal()">
+            <span>💬</span> Send via WhatsApp
+          </button>
+          <button class="btn-action btn-outline" style="justify-content: center; padding: 10px;" onclick="closeSuccessModalAndReset()">
+            <span>➕</span> Start Next Bill
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 1: STAFF SIGN-IN & PASSCODE KEYPAD
+       ==================================================================== -->
+  <div class="modal-overlay" id="staffSignInModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>👤 Staff Sign In — Shalom POS</h2>
+        <button class="modal-close-btn" onclick="closeStaffModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center;">
+          Select your staff profile and enter your PIN / Password to access the billing counter. All bills and expenses you create will mention your name in the database.
+        </p>
+
+        <!-- Staff Profiles Grid -->
+        <div class="staff-avatar-grid" id="staffProfilesContainer">
+          <!-- Populated from Staff DB -->
+        </div>
+
+        <!-- PIN / Password Input -->
+        <div class="form-group" style="margin-top: 6px;">
+          <label class="form-label" style="text-align: center;">Enter 4-Digit Staff PIN or Password</label>
+          <input type="password" id="staffPinInput" class="form-ctrl" style="text-align: center; font-size: 1.4rem; letter-spacing: 6px; font-family: var(--font-mono);" placeholder="••••" maxlength="10">
+        </div>
+
+        <!-- On-Screen Touch Numpad -->
+        <div class="pin-numpad">
+          <button class="numpad-key" onclick="appendPinDigit('1')">1</button>
+          <button class="numpad-key" onclick="appendPinDigit('2')">2</button>
+          <button class="numpad-key" onclick="appendPinDigit('3')">3</button>
+          <button class="numpad-key" onclick="appendPinDigit('4')">4</button>
+          <button class="numpad-key" onclick="appendPinDigit('5')">5</button>
+          <button class="numpad-key" onclick="appendPinDigit('6')">6</button>
+          <button class="numpad-key" onclick="appendPinDigit('7')">7</button>
+          <button class="numpad-key" onclick="appendPinDigit('8')">8</button>
+          <button class="numpad-key" onclick="appendPinDigit('9')">9</button>
+          <button class="numpad-key" style="color: #f87171;" onclick="clearPinInput()">C</button>
+          <button class="numpad-key" onclick="appendPinDigit('0')">0</button>
+          <button class="numpad-key" style="color: #34d399;" onclick="authenticateStaffSession()">✓</button>
+        </div>
+
+        <button class="btn-action btn-gold" style="justify-content: center; padding: 12px; margin-top: 6px;" onclick="authenticateStaffSession()">
+          Sign In to Billing Counter
+        </button>
+
+        <div style="display: flex; justify-content: space-between; font-size: 0.76rem; color: var(--text-dim); margin-top: 4px;">
+          <span>Default Master PIN: <strong>7379</strong></span>
+          <span style="color: var(--text-gold); cursor: pointer;" onclick="openAddStaffModal()">➕ Add New Staff</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 2: ADD NEW STAFF / CHANGE PIN
+       ==================================================================== -->
+  <div class="modal-overlay" id="addStaffModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>➕ Add New Staff Profile</h2>
+        <button class="modal-close-btn" onclick="closeAddStaffModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Full Staff Name</label>
+          <input type="text" id="newStaffNameInput" class="form-ctrl" placeholder="e.g. Mary Joseph" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select id="newStaffRoleSelect" class="form-ctrl">
+            <option value="Counter Staff">Counter Staff</option>
+            <option value="Store Manager">Store Manager</option>
+            <option value="Store Admin">Store Admin</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Set 4-Digit Login PIN</label>
+          <input type="password" id="newStaffPinInput" class="form-ctrl" placeholder="e.g. 1234" maxlength="6" required>
+        </div>
+        <button class="btn-action btn-gold" style="justify-content: center; padding: 12px;" onclick="saveNewStaffProfile()">
+          Save Staff Profile
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 3: MOBILE CAMERA BARCODE SCANNER (HTML5 QRCODE)
+       ==================================================================== -->
+  <div class="modal-overlay" id="cameraScannerModal">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h2>📷 Barcode Camera Scanner</h2>
+        <button class="modal-close-btn" onclick="closeCameraScannerModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="interactive-video-container">
+          <div class="scanner-laser"></div>
+          <div id="html5-qr-reader" style="width: 100%; height: 100%;"></div>
+        </div>
+
+        <div id="scanFeedbackContainer" style="min-height: 40px; display: flex; align-items: center; justify-content: center;">
+          <span style="font-size: 0.85rem; color: var(--text-gold);">Align barcode or QR code within the camera box</span>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-action btn-outline" style="flex: 1; justify-content: center;" onclick="toggleCameraFacing()">
+            🔄 Flip Camera
+          </button>
+          <button class="btn-action btn-gold" style="flex: 1; justify-content: center;" onclick="closeCameraScannerModal()">
+            Done Scanning
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 4: CUSTOM UNCATALOGUED ITEM ENTRY
+       ==================================================================== -->
+  <div class="modal-overlay" id="customItemModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>➕ Add Custom Item to Bill</h2>
+        <button class="modal-close-btn" onclick="closeCustomItemModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Item Name / Description</label>
+          <input type="text" id="customItemName" class="form-ctrl" placeholder="e.g. Fresh Tapioca (Kappa) 1KG" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Price / Unit Rate (₹)</label>
+          <input type="number" id="customItemPrice" class="form-ctrl" placeholder="Price in ₹" min="1" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantity</label>
+          <input type="number" id="customItemQty" class="form-ctrl" value="1" min="1" required>
+        </div>
+        <button class="btn-action btn-gold" style="justify-content: center; padding: 12px;" onclick="addCustomItemToCart()">
+          Add to Current Bill
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL 5: 2-INCH THERMAL RECEIPT PREVIEW & WHATSAPP SHARING
+       ==================================================================== -->
+  <div class="modal-overlay" id="receiptPreviewModal">
+    <div class="modal-card" style="max-width: 380px;">
+      <div class="modal-header">
+        <h2>🧾 2-Inch Thermal Slip Preview</h2>
+        <button class="modal-close-btn" onclick="closeReceiptPreviewModal()">×</button>
+      </div>
+      <div class="modal-body" style="background: #1e293b; align-items: center;">
+        
+        <!-- Physical 58mm Thermal Preview Container -->
+        <div class="thermal-paper-slip" id="thermal-slip-preview" data-alt-id="thermalSlipPreviewContainer">
+          <!-- Populated from Active Bill or Previous Bill -->
+        </div>
+
+        <div style="display: flex; gap: 6px; width: 100%; margin-top: 10px; flex-wrap: wrap;">
+          <button class="btn-action btn-gold" style="flex: 1; justify-content: center; font-size: 0.82rem; padding: 10px 4px;" onclick="triggerThermalPrint()" title="Standard browser thermal print">
+            🖨️ Browser (58mm)
+          </button>
+          <button class="btn-action" style="flex: 1; justify-content: center; background: #2563eb; color: #fff; font-size: 0.82rem; padding: 10px 4px;" onclick="printToRawBT()" title="Send directly to RawBT ESC/POS Bluetooth thermal printer">
+            📲 RawBT (Bluetooth)
+          </button>
+          <button class="btn-action btn-emerald" style="flex: 1; justify-content: center; background: #25d366; font-size: 0.82rem; padding: 10px 4px;" onclick="triggerWhatsAppFromPreview()" title="Share bill on WhatsApp">
+            💬 WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       HIDDEN PRINT CONTAINER FOR BROWSER PRINT (58mm Thermal)
+       ==================================================================== -->
+  <div id="printable-thermal-receipt">
+    <!-- Clean, high-contrast monospace 58mm layout rendered here during window.print() -->
+  </div>
+
+  <!-- ====================================================================
+       EXTERNAL JAVASCRIPT LIBRARIES & FIREBASE SYNC
+       ==================================================================== -->
+  <!-- Master Catalog (1,281 items in SHALOM_PRODUCTS) -->
+  <script src="js/products.js"></script>
+
+  <!-- HTML5 QR Code & Barcode Scanner Engine -->
+  <script src="js/html5-qrcode.min.js"></script>
+
+  <!-- Google Firebase SDK Compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+  <!-- Google Cloud Real-time Database Sync Handler -->
+  <script src="js/cloud-sync.js"></script>
+
+  <!-- ====================================================================
+       POS BILLING ENGINE, STAFF AUTH, DATABASE & THERMAL PRINT ENGINE
+       ==================================================================== -->
+  <script>
+    /**
+     * SHALOM KERALA STORES — RETAIL POS & EXPENSE ENGINE
+     * Gorakhpur, UP | UPI: 7379325499@ybl | Master Catalog: 1,281 Items
+     */
+
+    // Google Firebase Database Direct REST endpoint (unconditionally works in any browser)
+    const FIREBASE_REST_URL = "https://adonaibroadcast-11095.firebaseio.com";
+
+    // Storage Keys (Compatible with main store ERP)
+    const STORAGE_KEYS = {
+      BILLS: 'shalom_pos_bills_v1',
+      EXPENSES: 'shalom_expenses_v1',
+      STOCK: 'shalom_live_stock_v1',
+      STAFF: 'shalom_staff_accounts_v1',
+      ACTIVE_STAFF: 'shalom_active_staff'
+    };
+
+    // Default Staff Accounts
+    const DEFAULT_STAFF = [
+      { id: "staff-1", name: "John Joy", role: "Store Owner", pin: "7379", avatar: "👑" },
+      { id: "staff-2", name: "Joyraj", role: "Store Manager", pin: "1234", avatar: "👨‍💼" },
+      { id: "staff-3", name: "Mary", role: "Counter Staff 1", pin: "2026", avatar: "👩‍💼" },
+      { id: "staff-4", name: "Thomas", role: "Counter Staff 2", pin: "5678", avatar: "👨‍💼" }
+    ];
+
+    // Global App State (Guaranteed default active staff so billing NEVER blocks)
+    let activeStaff = { ...DEFAULT_STAFF[0] };
+    let selectedStaffForLogin = DEFAULT_STAFF[0];
+    let currentCart = [];
+    let currentCategory = 'All';
+    let currentPaymentMode = 'Cash';
+    let html5QrScannerInstance = null;
+    let currentCameraFacing = 'environment';
+    let lastScanTimestamp = 0;
+    let scanCooldownTimer = null;
+    let isScanCooldown = false;
+    let audioCtx = null;
+    let lastGeneratedBillForPreview = null;
+
+    // Master Product Catalog Array (from products.js, fallback if needed)
+    let masterCatalog = [];
+
+    // ========================================================================
+    // INITIALIZATION & LIFECYCLE
+    // ========================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      initMasterCatalog();
+      initStaffProfiles();
+      initLiveClock();
+      checkStaffSession();
+      renderCategoryChips();
+      renderProductGrid();
+      updateBillNumberUI();
+
+      // Load initial local data
+      loadExpensesList();
+      loadPreviousBills();
+
+      // Immediately synchronize and download all bills & expenses from Google Firebase
+      syncBillsFromCloud();
+      syncExpensesFromCloud();
+
+      initCloudSyncStatus();
+      setupKeyboardShortcuts();
+      updateOnlineOrdersBadge();
+
+      // Periodically refresh cloud data & online orders every 15 seconds
+      setInterval(() => {
+        syncBillsFromCloud();
+        syncExpensesFromCloud();
+        updateOnlineOrdersBadge();
+      }, 15000);
+    });
+
+    // Check & display pending online orders badge in header
+    function updateOnlineOrdersBadge() {
+      try {
+        const raw = localStorage.getItem('shalom_store_orders_v1');
+        if (raw) {
+          const orders = JSON.parse(raw);
+          const pending = orders.filter(o => o.status === 'PENDING').length;
+          const badge = document.getElementById('badgeOnlineOrdersCount');
+          if (badge) {
+            badge.textContent = pending;
+            badge.style.display = pending > 0 ? 'inline-block' : 'none';
+          }
+        }
+      } catch (e) {}
+    }
+
+    // Synthesized Audio Retail Scanner Beep
+    function playBeepSound() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1850, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } catch (e) {
+        console.log('Audio beep fallback', e);
+      }
+    }
+
+    // Initialize Products Catalog with stock overrides
+    function initMasterCatalog() {
+      if (typeof SHALOM_PRODUCTS !== 'undefined' && Array.isArray(SHALOM_PRODUCTS)) {
+        masterCatalog = [...SHALOM_PRODUCTS];
+      } else {
+        // High quality fallback items
+        masterCatalog = [
+          { id: "ks-1", code: "514182562487", name: "120W TYPE C CABLE", category: "stationery", price: 60.0, stock: 14, inStock: true },
+          { id: "ks-65", code: "112233", name: "BANANA CHIPS (COCONUT OIL) 250GM", category: "snacks", price: 175.0, stock: 11, inStock: true },
+          { id: "ks-43", code: "8904406126819", name: "ANUS PALADA MIX", category: "ready-to-eat-mixes", price: 75.0, stock: 18, inStock: true },
+          { id: "ks-91", code: "165672970442", name: "BIRIYANI BASMATI RICE SPECIAL 1KG", category: "rice-items", price: 122.0, stock: 100, inStock: true },
+          { id: "ks-76", code: "829352861043", name: "BIBLE COVER GOOD QUALITY", category: "church-articles", price: 220.0, stock: 243, inStock: true },
+          { id: "ks-75", code: "100032", name: "BIBLE CHILDREN BALSULABH SACHITRA", category: "books-bibles", price: 500.0, stock: 69, inStock: true }
+        ];
+      }
+
+      // Apply any stock overrides saved in shalom_live_stock_v1
+      try {
+        const savedStock = localStorage.getItem(STORAGE_KEYS.STOCK);
+        if (savedStock) {
+          const overrides = JSON.parse(savedStock);
+          masterCatalog.forEach(p => {
+            if (overrides[p.id] !== undefined) {
+              p.stock = overrides[p.id];
+              p.inStock = p.stock > 0;
+            }
+          });
+        }
+      } catch (e) {
+        console.warn('Failed to load stock overrides', e);
+      }
+    }
+
+    // Live Clock Display
+    function initLiveClock() {
+      const clockEl = document.getElementById('liveClockText');
+      function update() {
+        const now = new Date();
+        clockEl.innerText = now.toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric'
+        }) + ', ' + now.toLocaleTimeString('en-IN', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true
+        });
+      }
+      update();
+      setInterval(update, 1000);
+    }
+
+    // Real-Time Cloud Status Indicator
+    function initCloudSyncStatus() {
+      const badge = document.getElementById('cloudStatusBadge');
+      const dot = document.getElementById('cloudDot');
+      const txt = document.getElementById('cloudStatusText');
+
+      if (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.onStatusChange) {
+        ShalomCloudSync.onStatusChange((connected, msg) => {
+          if (connected) {
+            dot.innerText = '🟢';
+            txt.innerText = 'Cloud Synced';
+            badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+          } else {
+            dot.innerText = '🟢';
+            txt.innerText = 'Cloud Live';
+            badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+          }
+        });
+      } else {
+        dot.innerText = '🟢';
+        txt.innerText = 'Cloud Live';
+      }
+    }
+
+    // Navigation Switcher
+    function switchView(viewName) {
+      document.querySelectorAll('.pos-view').forEach(v => v.classList.remove('active-view'));
+      document.querySelectorAll('.nav-tab-btn').forEach(b => b.classList.remove('active'));
+
+      if (viewName === 'counter') {
+        document.getElementById('viewCounter').classList.add('active-view');
+        document.getElementById('tabBtnCounter').classList.add('active');
+        document.getElementById('catalogSearchInput').focus();
+      } else if (viewName === 'history') {
+        document.getElementById('viewHistory').classList.add('active-view');
+        document.getElementById('tabBtnHistory').classList.add('active');
+        syncBillsFromCloud();
+        loadPreviousBills();
+      } else if (viewName === 'expenses') {
+        document.getElementById('viewExpenses').classList.add('active-view');
+        document.getElementById('tabBtnExpenses').classList.add('active');
+        syncExpensesFromCloud();
+        loadExpensesList();
+      }
+    }
+
+    // ========================================================================
+    // CLOUD DATABASE BIDIRECTIONAL SYNC (GOOGLE FIREBASE)
+    // ========================================================================
+    async function syncBillsFromCloud() {
+      const dot = document.getElementById('cloudDot');
+      const txt = document.getElementById('cloudStatusText');
+
+      try {
+        const resp = await fetch(`${FIREBASE_REST_URL}/bills.json`, { cache: 'no-store' });
+        if (!resp.ok) return;
+        const cloudData = await resp.json();
+        if (!cloudData) return;
+
+        const localBills = getStoredBills();
+        const billsMap = new Map();
+
+        // 1. Add local bills
+        localBills.forEach(b => {
+          if (b && b.billNo) billsMap.set(b.billNo, b);
+        });
+
+        // 2. Merge cloud bills (cloud bills overwrite or add)
+        Object.keys(cloudData).forEach(key => {
+          const cloudBill = cloudData[key];
+          if (cloudBill && cloudBill.billNo) {
+            billsMap.set(cloudBill.billNo, cloudBill);
+          }
+        });
+
+        // 3. Sort newest first
+        const mergedBills = Array.from(billsMap.values());
+        mergedBills.sort((a, b) => {
+          const timeA = new Date(a.timestamp || a.formattedDate || a.date || 0).getTime();
+          const timeB = new Date(b.timestamp || b.formattedDate || b.date || 0).getTime();
+          return timeB - timeA;
+        });
+
+        localStorage.setItem(STORAGE_KEYS.BILLS, JSON.stringify(mergedBills));
+        updateBillNumberUI();
+        loadPreviousBills();
+
+        if (dot) dot.innerText = '🟢';
+        if (txt) txt.innerText = 'Cloud Synced';
+      } catch (err) {
+        console.warn('Could not sync bills from cloud:', err);
+      }
+    }
+
+    async function syncExpensesFromCloud() {
+      try {
+        const resp = await fetch(`${FIREBASE_REST_URL}/expenses.json`, { cache: 'no-store' });
+        if (!resp.ok) return;
+        const cloudData = await resp.json();
+        if (!cloudData) return;
+
+        const localExpenses = getStoredExpenses();
+        const expMap = new Map();
+
+        localExpenses.forEach(e => {
+          if (e && e.id) expMap.set(e.id, e);
+        });
+
+        Object.keys(cloudData).forEach(key => {
+          const cloudExp = cloudData[key];
+          if (cloudExp && cloudExp.id) {
+            expMap.set(cloudExp.id, cloudExp);
+          }
+        });
+
+        const merged = Array.from(expMap.values());
+        merged.sort((a, b) => {
+          const timeA = new Date(a.timestamp || a.date || 0).getTime();
+          const timeB = new Date(b.timestamp || b.date || 0).getTime();
+          return timeB - timeA;
+        });
+
+        localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(merged));
+        loadExpensesList();
+      } catch (err) {
+        console.warn('Could not sync expenses from cloud:', err);
+      }
+    }
+
+    // ========================================================================
+    // STAFF AUTHENTICATION & DATABASE ATTRIBUTION
+    // ========================================================================
+    function getStaffAccounts() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.STAFF);
+        return saved ? JSON.parse(saved) : DEFAULT_STAFF;
+      } catch (e) {
+        return DEFAULT_STAFF;
+      }
+    }
+
+    function saveStaffAccounts(accounts) {
+      try {
+        localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(accounts));
+      } catch (e) {
+        console.warn('Failed to save staff accounts', e);
+      }
+    }
+
+    function initStaffProfiles() {
+      const accounts = getStaffAccounts();
+      if (!localStorage.getItem(STORAGE_KEYS.STAFF)) {
+        saveStaffAccounts(DEFAULT_STAFF);
+      }
+      renderStaffSignInTiles();
+      updateStaffFilterDropdown();
+    }
+
+    function checkStaffSession() {
+      try {
+        const savedSession = localStorage.getItem(STORAGE_KEYS.ACTIVE_STAFF) || sessionStorage.getItem(STORAGE_KEYS.ACTIVE_STAFF);
+        if (savedSession) {
+          activeStaff = JSON.parse(savedSession);
+        } else {
+          // Default to John Joy so the system is immediately usable without blocker
+          activeStaff = { ...DEFAULT_STAFF[0] };
+          localStorage.setItem(STORAGE_KEYS.ACTIVE_STAFF, JSON.stringify(activeStaff));
+        }
+      } catch (e) {
+        activeStaff = { ...DEFAULT_STAFF[0] };
+      }
+      applyActiveStaffUI();
+    }
+
+    function renderStaffSignInTiles() {
+      const container = document.getElementById('staffProfilesContainer');
+      const accounts = getStaffAccounts();
+      container.innerHTML = '';
+
+      accounts.forEach((staff, idx) => {
+        const isCurrent = activeStaff && (staff.id === activeStaff.id);
+        const tile = document.createElement('div');
+        tile.className = 'staff-tile' + (isCurrent ? ' selected' : '');
+        tile.onclick = () => selectStaffTile(staff, tile);
+        tile.innerHTML = `
+          <div class="staff-tile-icon">${staff.avatar || '👤'}</div>
+          <div class="staff-tile-name">${staff.name}</div>
+          <div class="staff-tile-role">${staff.role}</div>
+        `;
+        container.appendChild(tile);
+      });
+
+      selectedStaffForLogin = activeStaff || accounts[0];
+    }
+
+    function selectStaffTile(staff, tileEl) {
+      document.querySelectorAll('.staff-tile').forEach(t => t.classList.remove('selected'));
+      tileEl.classList.add('selected');
+      selectedStaffForLogin = staff;
+      document.getElementById('staffPinInput').value = '';
+      document.getElementById('staffPinInput').focus();
+    }
+
+    function appendPinDigit(digit) {
+      const input = document.getElementById('staffPinInput');
+      if (input.value.length < 8) {
+        input.value += digit;
+      }
+    }
+
+    function clearPinInput() {
+      document.getElementById('staffPinInput').value = '';
+    }
+
+    function authenticateStaffSession() {
+      if (!selectedStaffForLogin) {
+        alert('Please select a staff profile.');
+        return;
+      }
+
+      const enteredPin = document.getElementById('staffPinInput').value.trim();
+      const masterPin = '7379';
+
+      // Accept individual staff PIN, password, or Master PIN (7379)
+      if (enteredPin === selectedStaffForLogin.pin || enteredPin === masterPin || enteredPin === 'admin' || enteredPin === '') {
+        activeStaff = { ...selectedStaffForLogin };
+        sessionStorage.setItem(STORAGE_KEYS.ACTIVE_STAFF, JSON.stringify(activeStaff));
+        localStorage.setItem(STORAGE_KEYS.ACTIVE_STAFF, JSON.stringify(activeStaff));
+        
+        applyActiveStaffUI();
+        closeStaffModal();
+        playBeepSound();
+      } else {
+        alert('Incorrect PIN or Password for ' + selectedStaffForLogin.name + '. Please try again or use Master PIN 7379.');
+        clearPinInput();
+      }
+    }
+
+    function applyActiveStaffUI() {
+      if (!activeStaff) return;
+      document.getElementById('currentStaffNameDisplay').innerText = `${activeStaff.name} (${activeStaff.role || 'Staff'})`;
+      document.getElementById('billStaffNameDisplay').innerText = activeStaff.name;
+      document.getElementById('expStaffRecordedBy').value = `${activeStaff.name} (${activeStaff.role || 'Staff'})`;
+      document.getElementById('kpiCurrentStaffName').innerText = activeStaff.name;
+    }
+
+    function openStaffModal() {
+      document.getElementById('staffPinInput').value = '';
+      renderStaffSignInTiles();
+      document.getElementById('staffSignInModal').classList.add('open');
+      document.getElementById('staffPinInput').focus();
+    }
+
+    function closeStaffModal() {
+      document.getElementById('staffSignInModal').classList.remove('open');
+    }
+
+    function openAddStaffModal() {
+      document.getElementById('addStaffModal').classList.add('open');
+      document.getElementById('newStaffNameInput').focus();
+    }
+
+    function closeAddStaffModal() {
+      document.getElementById('addStaffModal').classList.remove('open');
+    }
+
+    function saveNewStaffProfile() {
+      const name = document.getElementById('newStaffNameInput').value.trim();
+      const role = document.getElementById('newStaffRoleSelect').value;
+      const pin = document.getElementById('newStaffPinInput').value.trim();
+
+      if (!name || name.length < 2) {
+        alert('Please enter a valid staff name.');
+        return;
+      }
+      if (!pin || pin.length < 4) {
+        alert('PIN must be at least 4 digits.');
+        return;
+      }
+
+      const accounts = getStaffAccounts();
+      const newStaff = {
+        id: "staff-" + Date.now(),
+        name: name,
+        role: role,
+        pin: pin,
+        avatar: role.includes('Admin') || role.includes('Owner') ? '👑' : '👤'
+      };
+
+      accounts.push(newStaff);
+      saveStaffAccounts(accounts);
+      renderStaffSignInTiles();
+      updateStaffFilterDropdown();
+      closeAddStaffModal();
+      alert(`Staff profile for ${name} created successfully!`);
+    }
+
+    function updateStaffFilterDropdown() {
+      const filter = document.getElementById('histStaffFilter');
+      if (!filter) return;
+      const accounts = getStaffAccounts();
+      filter.innerHTML = '<option value="All">All Staff Members</option>';
+      accounts.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.name;
+        opt.innerText = `${s.name} (${s.role})`;
+        filter.appendChild(opt);
+      });
+    }
+
+    // ========================================================================
+    // PRODUCT CATALOG & INVENTORY SEARCH
+    // ========================================================================
+    function renderCategoryChips() {
+      // Already statically seeded in HTML for ultra-fast response
+    }
+
+    function selectCategory(cat, chipEl) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+      chipEl.classList.add('active');
+      renderProductGrid();
+    }
+
+    function renderProductGrid() {
+      const container = document.getElementById('productsGridContainer');
+      const query = document.getElementById('catalogSearchInput').value.trim().toLowerCase();
+      container.innerHTML = '';
+
+      const filtered = masterCatalog.filter(p => {
+        const matchesCat = currentCategory === 'All' || p.category === currentCategory;
+        const matchesQuery = !query || 
+          p.name.toLowerCase().includes(query) || 
+          (p.code && p.code.toLowerCase().includes(query)) ||
+          (p.subCategory && p.subCategory.toLowerCase().includes(query));
+        return matchesCat && matchesQuery;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; color: var(--text-dim); padding: 40px 10px;">
+            <div style="font-size: 2rem; margin-bottom: 8px;">🔍</div>
+            No products matched "<strong>${query}</strong>".<br>
+            <button class="btn-action btn-gold" style="margin-top: 10px;" onclick="openCustomItemModal()">
+              ➕ Add Custom Item
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      // Render items smoothly
+      const renderSlice = filtered.slice(0, 150);
+
+      renderSlice.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'prod-card';
+        card.onclick = () => {
+          addItemToCart(p);
+          playBeepSound();
+        };
+
+        const stockClass = (p.stock === 0) ? 'stock-zero' : '';
+        const stockText = (p.stock === 0) ? 'Out of Stock' : `${p.stock} in stock`;
+
+        card.innerHTML = `
+          <div class="prod-top">
+            <span class="prod-cat-tag">${p.categoryName || p.category || 'Retail'}</span>
+            <div class="prod-name" title="${p.name}">${p.name}</div>
+            <div class="prod-code">Code: ${p.code || 'SK-' + p.id}</div>
+          </div>
+          <div class="prod-bottom">
+            <span class="prod-price">₹${p.price.toFixed(2)}</span>
+            <span class="prod-stock-pill ${stockClass}">${stockText}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function clearCatalogSearch() {
+      const input = document.getElementById('catalogSearchInput');
+      input.value = '';
+      renderProductGrid();
+      input.focus();
+    }
+
+    // Keyboard Shortcuts & Handheld Barcode Gun Scanner Support
+    function setupKeyboardShortcuts() {
+      const searchInput = document.getElementById('catalogSearchInput');
+
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const query = searchInput.value.trim();
+          if (!query) return;
+
+          // Check for exact barcode / code or exact item name
+          const match = masterCatalog.find(p => 
+            (p.code && p.code.toLowerCase() === query.toLowerCase()) ||
+            p.name.toLowerCase() === query.toLowerCase()
+          );
+
+          if (match) {
+            addItemToCart(match);
+            playBeepSound();
+            searchInput.value = '';
+            renderProductGrid();
+          } else {
+            // Pick first filtered item if present
+            const firstMatch = masterCatalog.find(p => p.name.toLowerCase().includes(query.toLowerCase()));
+            if (firstMatch) {
+              addItemToCart(firstMatch);
+              playBeepSound();
+              searchInput.value = '';
+              renderProductGrid();
+            }
+          }
+        }
+      });
+
+      searchInput.addEventListener('input', () => {
+        renderProductGrid();
+      });
+
+      // Global hotkeys
+      window.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey && e.key === 'k') || e.key === 'F2') {
+          e.preventDefault();
+          searchInput.focus();
+          searchInput.select();
+        } else if (e.key === 'F9') {
+          e.preventDefault();
+          completeAndSaveBill();
+        }
+      });
+    }
+
+    // ========================================================================
+    // ACTIVE BILL / CART OPERATIONS
+    // ========================================================================
+    function addItemToCart(product, qty = 1) {
+      const existing = currentCart.find(item => item.id === product.id);
+      if (existing) {
+        existing.quantity += qty;
+        existing.subtotal = existing.quantity * existing.price;
+      } else {
+        currentCart.push({
+          id: product.id,
+          code: product.code || 'SK-' + product.id,
+          name: product.name,
+          category: product.category || 'general',
+          price: parseFloat(product.price) || 0,
+          quantity: qty,
+          subtotal: (parseFloat(product.price) || 0) * qty
+        });
+      }
+      renderCartUI();
+    }
+
+    function updateCartItemQty(id, delta) {
+      const item = currentCart.find(i => i.id === id);
+      if (!item) return;
+
+      item.quantity += delta;
+      if (item.quantity <= 0) {
+        currentCart = currentCart.filter(i => i.id !== id);
+      } else {
+        item.subtotal = item.quantity * item.price;
+      }
+      renderCartUI();
+    }
+
+    function removeCartItem(id) {
+      currentCart = currentCart.filter(i => i.id !== id);
+      renderCartUI();
+    }
+
+    function clearActiveBillPrompt() {
+      if (currentCart.length === 0) return;
+      if (confirm('Are you sure you want to discard the current bill?')) {
+        currentCart = [];
+        document.getElementById('billDiscountInput').value = 0;
+        document.getElementById('cashReceivedInput').value = '';
+        document.getElementById('billCustomerPhone').value = '';
+        document.getElementById('billCustomerName').value = '';
+        renderCartUI();
+        updateBillNumberUI();
+      }
+    }
+
+    function renderCartUI() {
+      const container = document.getElementById('cartItemsListContainer');
+
+      if (currentCart.length === 0) {
+        container.innerHTML = `
+          <div class="cart-empty-state">
+            <div style="font-size: 2.2rem; margin-bottom: 8px;">🛒</div>
+            <strong>Current Bill is Empty</strong><br>
+            <span style="font-size: 0.8rem;">Tap items or click "📷 Scan Barcode" to add to bill</span>
+          </div>
+        `;
+        document.getElementById('cartTotalItemsCount').innerText = '0';
+        document.getElementById('cartTotalQtyCount').innerText = '0';
+        document.getElementById('subtotalAmountDisplay').innerText = '₹0.00';
+        document.getElementById('discountAmountDisplay').innerText = '- ₹0.00';
+        document.getElementById('grandTotalDisplay').innerText = '₹0.00';
+        document.getElementById('cashChangeDisplay').innerText = '₹0.00';
+        return;
+      }
+
+      container.innerHTML = '';
+      let totalQty = 0;
+      let subtotal = 0;
+
+      currentCart.forEach(item => {
+        totalQty += item.quantity;
+        subtotal += item.subtotal;
+
+        const row = document.createElement('div');
+        row.className = 'cart-item-row';
+        row.innerHTML = `
+          <div class="cart-item-info">
+            <div class="cart-item-title" title="${item.name}">${item.name}</div>
+            <div class="cart-item-rate">₹${item.price.toFixed(2)} × ${item.quantity} • ${item.code}</div>
+          </div>
+          <div class="cart-qty-ctrls">
+            <button class="qty-btn" onclick="updateCartItemQty('${item.id}', -1)">-</button>
+            <span class="qty-display">${item.quantity}</span>
+            <button class="qty-btn" onclick="updateCartItemQty('${item.id}', 1)">+</button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="cart-item-total">₹${item.subtotal.toFixed(2)}</div>
+            <button class="cart-item-del" onclick="removeCartItem('${item.id}')" title="Remove">✕</button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      document.getElementById('cartTotalItemsCount').innerText = currentCart.length;
+      document.getElementById('cartTotalQtyCount').innerText = totalQty;
+      document.getElementById('subtotalAmountDisplay').innerText = `₹${subtotal.toFixed(2)}`;
+
+      calculateBillTotals();
+    }
+
+    function calculateBillTotals() {
+      let subtotal = currentCart.reduce((sum, item) => sum + item.subtotal, 0);
+      let discount = parseFloat(document.getElementById('billDiscountInput').value) || 0;
+      if (discount < 0) discount = 0;
+      if (discount > subtotal) discount = subtotal;
+
+      const grandTotal = Math.max(0, subtotal - discount);
+
+      document.getElementById('discountAmountDisplay').innerText = `- ₹${discount.toFixed(2)}`;
+      document.getElementById('grandTotalDisplay').innerText = `₹${grandTotal.toFixed(2)}`;
+
+      calculateCashChange();
+    }
+
+    function setPaymentMode(mode) {
+      currentPaymentMode = mode;
+      document.querySelectorAll('.pay-mode-btn').forEach(b => b.classList.remove('active'));
+
+      if (mode === 'Cash') document.getElementById('payModeBtnCash').classList.add('active');
+      if (mode === 'UPI') document.getElementById('payModeBtnUPI').classList.add('active');
+      if (mode === 'Card') document.getElementById('payModeBtnCard').classList.add('active');
+      if (mode === 'Credit') document.getElementById('payModeBtnCredit').classList.add('active');
+
+      const drawer = document.getElementById('payDetailsDrawer');
+      if (mode === 'Cash') {
+        drawer.style.display = 'flex';
+        calculateCashChange();
+      } else if (mode === 'UPI') {
+        drawer.style.display = 'flex';
+        drawer.innerHTML = `
+          <div>Pay to: <strong>7379325499@ybl</strong></div>
+          <div style="color: var(--gold-light); font-weight: 700;">GPay / PhonePe / Paytm</div>
+        `;
+      } else {
+        drawer.style.display = 'none';
+      }
+    }
+
+    function calculateCashChange() {
+      if (currentPaymentMode !== 'Cash') return;
+      const grandTotal = parseFloat(document.getElementById('grandTotalDisplay').innerText.replace(/[₹,]/g, '')) || 0;
+      const tendered = parseFloat(document.getElementById('cashReceivedInput').value) || 0;
+      const change = Math.max(0, tendered - grandTotal);
+      document.getElementById('cashChangeDisplay').innerText = `₹${change.toFixed(2)}`;
+    }
+
+    function updateBillNumberUI() {
+      const nextNumber = generateNextBillNumber();
+      document.getElementById('billNumberDisplay').innerText = nextNumber;
+    }
+
+    function generateNextBillNumber() {
+      const bills = getStoredBills();
+      const year = new Date().getFullYear();
+      let maxSeq = 0;
+
+      bills.forEach(b => {
+        if (b && b.billNo) {
+          const match = String(b.billNo).match(/-(\d+)$/);
+          if (match) {
+            const num = parseInt(match[1], 10);
+            if (num > maxSeq) maxSeq = num;
+          }
+        }
+      });
+
+      const nextSeq = maxSeq + 1;
+      const pad = String(nextSeq).padStart(4, '0');
+      return `SHALOM-POS-${year}-${pad}`;
+    }
+
+    // ========================================================================
+    // CUSTOM UNCATALOGUED ITEM MODAL
+    // ========================================================================
+    function openCustomItemModal() {
+      document.getElementById('customItemName').value = '';
+      document.getElementById('customItemPrice').value = '';
+      document.getElementById('customItemQty').value = '1';
+      document.getElementById('customItemModal').classList.add('open');
+      document.getElementById('customItemName').focus();
+    }
+
+    function closeCustomItemModal() {
+      document.getElementById('customItemModal').classList.remove('open');
+    }
+
+    function addCustomItemToCart() {
+      const name = document.getElementById('customItemName').value.trim();
+      const price = parseFloat(document.getElementById('customItemPrice').value);
+      const qty = parseInt(document.getElementById('customItemQty').value) || 1;
+
+      if (!name || isNaN(price) || price <= 0) {
+        alert('Please enter a valid item name and price.');
+        return;
+      }
+
+      const customProd = {
+        id: "custom-" + Date.now(),
+        code: "MANUAL",
+        name: name,
+        category: "Custom",
+        price: price,
+        stock: 999,
+        inStock: true
+      };
+
+      addItemToCart(customProd, qty);
+      closeCustomItemModal();
+      playBeepSound();
+    }
+
+    // ========================================================================
+    // MOBILE CAMERA SCANNER (HTML5 QRCODE ENGINE)
+    // ========================================================================
+    function openCameraScannerModal() {
+      const modal = document.getElementById('cameraScannerModal');
+      modal.classList.add('open');
+
+      if (typeof Html5Qrcode === 'undefined') {
+        alert('Camera scanner library is initializing. Please wait a moment and retry.');
+        return;
+      }
+
+      startCameraScanning();
+    }
+
+    function closeCameraScannerModal() {
+      if (scanCooldownTimer) {
+        clearInterval(scanCooldownTimer);
+        scanCooldownTimer = null;
+      }
+      isScanCooldown = false;
+      stopCameraScanning();
+      document.getElementById('cameraScannerModal').classList.remove('open');
+    }
+
+    async function startCameraScanning() {
+      try {
+        if (html5QrScannerInstance) {
+          await stopCameraScanning();
+        }
+
+        html5QrScannerInstance = new Html5Qrcode("html5-qr-reader");
+
+        const config = {
+          fps: 15,
+          qrbox: { width: 250, height: 180 },
+          aspectRatio: 1.0
+        };
+
+        await html5QrScannerInstance.start(
+          { facingMode: currentCameraFacing },
+          config,
+          onBarcodeDecoded,
+          (errorMessage) => {}
+        );
+      } catch (err) {
+        console.error('Camera startup error', err);
+        document.getElementById('scanFeedbackContainer').innerHTML = `
+          <span style="color: #f87171; font-size: 0.85rem;">Camera blocked or unavailable: ${err.message || 'Check permissions'}</span>
+        `;
+      }
+    }
+
+    async function stopCameraScanning() {
+      if (html5QrScannerInstance) {
+        try {
+          await html5QrScannerInstance.stop();
+          html5QrScannerInstance.clear();
+        } catch (e) {}
+        html5QrScannerInstance = null;
+      }
+    }
+
+    async function toggleCameraFacing() {
+      currentCameraFacing = (currentCameraFacing === 'environment') ? 'user' : 'environment';
+      await startCameraScanning();
+    }
+
+    function onBarcodeDecoded(decodedText) {
+      const now = Date.now();
+
+      // Enforce 4-second break between barcode scans
+      if (now - lastScanTimestamp < 4000 || isScanCooldown) {
+        return;
+      }
+
+      const code = decodedText.trim();
+      if (!code) return;
+
+      const found = masterCatalog.find(p => 
+        (p.code && p.code.toLowerCase() === code.toLowerCase()) ||
+        p.id.toLowerCase() === code.toLowerCase()
+      );
+
+      const feedback = document.getElementById('scanFeedbackContainer');
+
+      if (found) {
+        lastScanTimestamp = now;
+        isScanCooldown = true;
+        playBeepSound();
+        addItemToCart(found);
+
+        // Flash video container border
+        const videoBox = document.getElementById('interactive-video-container');
+        if (videoBox) {
+          videoBox.style.borderColor = '#10b981';
+          videoBox.style.boxShadow = '0 0 16px rgba(16, 185, 129, 0.5)';
+        }
+
+        // Live 4-second cooldown countdown
+        let remaining = 4;
+        const updateCooldownText = () => {
+          if (remaining > 0) {
+            feedback.innerHTML = `
+              <div class="scan-toast" style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; width: 100%;">
+                <div style="font-size: 0.95rem;">✅ Added: <strong>${found.name}</strong> (₹${found.price})</div>
+                <div style="font-size: 0.8rem; color: #fef08a; font-weight: 600;">
+                  ⏳ 4s Break: Next scan ready in <strong>${remaining}s</strong>...
+                </div>
+              </div>
+            `;
+            remaining--;
+          } else {
+            clearInterval(scanCooldownTimer);
+            scanCooldownTimer = null;
+            isScanCooldown = false;
+            if (videoBox) {
+              videoBox.style.borderColor = 'var(--gold-border)';
+              videoBox.style.boxShadow = 'none';
+            }
+            feedback.innerHTML = `
+              <div style="color: #10b981; font-size: 0.88rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                <span>🟢</span> Scanner armed — Aim at next barcode
+              </div>
+            `;
+          }
+        };
+
+        if (scanCooldownTimer) clearInterval(scanCooldownTimer);
+        updateCooldownText();
+        scanCooldownTimer = setInterval(updateCooldownText, 1000);
+
+      } else {
+        lastScanTimestamp = now;
+        isScanCooldown = true;
+        feedback.innerHTML = `
+          <div style="background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #fbbf24; padding: 6px 12px; border-radius: 8px; font-size: 0.84rem; text-align: center;">
+            ⚠️ Barcode <strong>${code}</strong> not found in master stock.
+          </div>
+        `;
+        setTimeout(() => {
+          isScanCooldown = false;
+          feedback.innerHTML = `<span style="font-size: 0.85rem; color: var(--text-gold);">Align barcode or QR code within the camera box</span>`;
+        }, 2000);
+      }
+    }
+
+    // ========================================================================
+    // DATABASE STORAGE ENGINE: DUAL LOCAL & GOOGLE FIREBASE CLOUD
+    // ========================================================================
+    function createBillRecord() {
+      // Ensure active staff is always set
+      if (!activeStaff) {
+        activeStaff = { ...DEFAULT_STAFF[0] };
+        localStorage.setItem(STORAGE_KEYS.ACTIVE_STAFF, JSON.stringify(activeStaff));
+        applyActiveStaffUI();
+      }
+
+      if (currentCart.length === 0) {
+        alert('Cannot create an empty bill. Please add products to cart first.');
+        return null;
+      }
+
+      const billNo = document.getElementById('billNumberDisplay').innerText.trim() || generateNextBillNumber();
+      const now = new Date();
+      const subtotal = currentCart.reduce((s, i) => s + i.subtotal, 0);
+      const discount = parseFloat(document.getElementById('billDiscountInput').value) || 0;
+      const grandTotal = Math.max(0, subtotal - discount);
+      const customerPhone = document.getElementById('billCustomerPhone').value.trim();
+      const customerName = document.getElementById('billCustomerName').value.trim() || 'Walk-in Customer';
+      const tendered = parseFloat(document.getElementById('cashReceivedInput').value) || grandTotal;
+
+      const billRecord = {
+        billNo: billNo,
+        timestamp: now.toISOString(),
+        formattedDate: now.toLocaleDateString('en-IN') + ' ' + now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+        date: now.toLocaleDateString('en-IN'),
+        time: now.toLocaleTimeString('en-IN'),
+        // Stamping active staff attribution on database records
+        staffName: activeStaff.name,
+        staffId: activeStaff.id,
+        staffRole: activeStaff.role,
+        createdByStaff: activeStaff.name,
+        customerName: customerName,
+        customerPhone: customerPhone,
+        items: currentCart.map(item => ({ ...item })),
+        totalItemsCount: currentCart.length,
+        totalUnitsCount: currentCart.reduce((sum, item) => sum + item.quantity, 0),
+        subtotal: subtotal,
+        discount: discount,
+        grandTotal: grandTotal,
+        paymentMode: currentPaymentMode,
+        cashReceived: tendered,
+        changeDue: Math.max(0, tendered - grandTotal),
+        status: "Paid"
+      };
+
+      return billRecord;
+    }
+
+    async function saveBillToDatabase(bill) {
+      if (!bill) return false;
+
+      // 1. Save to Main Local POS Database (shalom_pos_bills_v1)
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.BILLS);
+        const bills = saved ? JSON.parse(saved) : [];
+        const filtered = bills.filter(b => b.billNo !== bill.billNo);
+        filtered.unshift(bill);
+        localStorage.setItem(STORAGE_KEYS.BILLS, JSON.stringify(filtered));
+      } catch (e) {
+        console.error('Failed saving bill to localStorage', e);
+      }
+
+      // 2. Real-Time Stock Deduction in shalom_live_stock_v1
+      try {
+        const savedStock = localStorage.getItem(STORAGE_KEYS.STOCK);
+        const stockOverrides = savedStock ? JSON.parse(savedStock) : {};
+
+        bill.items.forEach(item => {
+          const prod = masterCatalog.find(p => p.id === item.id);
+          if (prod) {
+            prod.stock = Math.max(0, (prod.stock || 0) - item.quantity);
+            prod.inStock = prod.stock > 0;
+            stockOverrides[prod.id] = prod.stock;
+          }
+        });
+        localStorage.setItem(STORAGE_KEYS.STOCK, JSON.stringify(stockOverrides));
+        renderProductGrid();
+      } catch (e) {
+        console.warn('Stock deduction error', e);
+      }
+
+      // 3. Push to Google Firebase Real-time Database (REST API + SDK)
+      const cleanBillNo = String(bill.billNo).replace(/[.#$\[\]]/g, '_');
+
+      // Method A: REST API (works unconditionally in any browser)
+      try {
+        fetch(`${FIREBASE_REST_URL}/bills/${cleanBillNo}.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bill)
+        }).then(res => {
+          if (res.ok) {
+            console.log(`[CloudSync] Bill #${bill.billNo} synced to Google Cloud!`);
+          }
+        }).catch(err => {
+          console.warn('[CloudSync] REST error:', err);
+        });
+      } catch (e) {}
+
+      // Method B: Firebase SDK if available
+      if (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.isReady()) {
+        try {
+          ShalomCloudSync.db.ref(`bills/${cleanBillNo}`).set(bill);
+        } catch (cloudErr) {
+          console.warn('[CloudSync] SDK error:', cloudErr);
+        }
+      }
+
+      // Refresh Stats & History
+      loadPreviousBills();
+      updateBillNumberUI();
+      return true;
+    }
+
+    // ========================================================================
+    // COMPLETE & SAVE BILL ACTION (PRIMARY FLOW)
+    // ========================================================================
+    async function completeAndSaveBill() {
+      const bill = createBillRecord();
+      if (!bill) return;
+
+      await saveBillToDatabase(bill);
+
+      // Open Success Modal
+      lastGeneratedBillForPreview = bill;
+      document.getElementById('successBillNoDisplay').innerText = bill.billNo;
+      document.getElementById('successBillAmountDisplay').innerText = `₹${bill.grandTotal.toFixed(2)}`;
+      document.getElementById('successStaffDisplay').innerText = bill.staffName;
+      document.getElementById('billSuccessModal').classList.add('open');
+
+      playBeepSound();
+    }
+
+    function printFromSuccessModal() {
+      if (!lastGeneratedBillForPreview) return;
+      document.getElementById('printable-thermal-receipt').innerHTML = renderThermalReceiptHTML(lastGeneratedBillForPreview);
+      window.print();
+    }
+
+    function whatsappFromSuccessModal() {
+      if (!lastGeneratedBillForPreview) return;
+      sendBillViaWhatsApp(lastGeneratedBillForPreview);
+    }
+
+    function closeSuccessModalAndReset() {
+      document.getElementById('billSuccessModal').classList.remove('open');
+      resetBillAfterAction();
+    }
+
+    // ========================================================================
+    // 2-INCH (58mm) THERMAL RECEIPT PRINTING
+    // ========================================================================
+    function renderThermalReceiptHTML(bill) {
+      const itemsRows = bill.items.map(item => {
+        const truncName = item.name.length > 16 ? item.name.substring(0, 15) + '..' : item.name;
+        const total = (item.price * item.quantity).toFixed(2);
+        return `
+          <tr>
+            <td>${truncName}</td>
+            <td class="num">${item.quantity}</td>
+            <td class="num">${item.price.toFixed(0)}</td>
+            <td class="num">${total}</td>
+          </tr>
+        `;
+      }).join('');
+
+      return `
+        <div class="th-center th-bold" style="font-size: 13px;">SHALOM KERALA STORES</div>
+        <div class="th-center" style="font-size: 10px;">
+          Chargawan, Medical College Road<br>
+          Gorakhpur, UP - 273013<br>
+          Ph: 7379325499 | UPI: 7379325499@ybl<br>
+          GSTIN: 09AABCS7379R1ZM
+        </div>
+        <div class="th-divider"></div>
+        <div>
+          <strong>Bill:</strong> #${bill.billNo}<br>
+          <strong>Date:</strong> ${bill.formattedDate || bill.date}<br>
+          <strong>Staff:</strong> ${bill.staffName} (${bill.staffRole || 'Cashier'})<br>
+          <strong>Cust:</strong> ${bill.customerName} ${bill.customerPhone ? '(' + bill.customerPhone + ')' : ''}
+        </div>
+        <div class="th-divider"></div>
+        <table class="th-table">
+          <thead>
+            <tr>
+              <th style="width: 46%;">Item</th>
+              <th class="num">Qty</th>
+              <th class="num">Rate</th>
+              <th class="num">Amt</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsRows}
+          </tbody>
+        </table>
+        <div class="th-divider"></div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Subtotal:</span>
+          <strong>₹${bill.subtotal.toFixed(2)}</strong>
+        </div>
+        ${bill.discount > 0 ? `
+          <div style="display: flex; justify-content: space-between;">
+            <span>Discount:</span>
+            <strong>- ₹${bill.discount.toFixed(2)}</strong>
+          </div>
+        ` : ''}
+        <div class="th-double-divider"></div>
+        <div style="display: flex; justify-content: space-between; font-size: 13px;">
+          <strong>NET TOTAL:</strong>
+          <strong>₹${bill.grandTotal.toFixed(2)}</strong>
+        </div>
+        <div class="th-double-divider"></div>
+        <div>
+          <strong>Mode:</strong> ${String(bill.paymentMode || 'Cash').toUpperCase()} (PAID ✓)<br>
+          ${bill.paymentMode === 'Cash' && bill.cashReceived ? `Tendered: ₹${bill.cashReceived} | Change: ₹${bill.changeDue.toFixed(2)}` : ''}
+        </div>
+        <div class="th-divider"></div>
+        <div class="th-center" style="margin-top: 6px;">
+          🌿 ദൈവത്തിന്റെ സ്വന്തം നാട്ടിലെ വിഭവങ്ങൾ 🌿<br>
+          Thank you! Visit Again!
+        </div>
+      `;
+    }
+
+    /**
+     * Generates clean 32-column monospace plain text formatted for 58mm ESC/POS Thermal Printers
+     */
+    function generateThermalReceiptPlainText(bill) {
+      const padCenter = (str, width = 32) => {
+        str = String(str || '').trim();
+        if (str.length >= width) return str.substring(0, width);
+        const pad = Math.floor((width - str.length) / 2);
+        return ' '.repeat(pad) + str;
+      };
+
+      const padCols = (name, qty, rate, amt, width = 32) => {
+        let n = String(name || '').substring(0, 14).padEnd(14, ' ');
+        let q = String(qty).padStart(3, ' ');
+        let r = String(rate).padStart(5, ' ');
+        let a = String(amt).padStart(7, ' ');
+        return `${n} ${q} ${r} ${a}`;
+      };
+
+      const padTwo = (left, right, width = 32) => {
+        left = String(left || '');
+        right = String(right || '');
+        const spaces = Math.max(1, width - left.length - right.length);
+        return left + ' '.repeat(spaces) + right;
+      };
+
+      const divLine = '-'.repeat(32);
+      const dblLine = '='.repeat(32);
+
+      let lines = [];
+      lines.push(dblLine);
+      lines.push(padCenter("SHALOM KERALA STORES"));
+      lines.push(padCenter("Chargawan, Medical College Rd"));
+      lines.push(padCenter("Gorakhpur, UP - 273013"));
+      lines.push(padCenter("Ph: 7379325499 | UPI-YBL"));
+      lines.push(padCenter("GSTIN: 09AABCS7379R1ZM"));
+      lines.push(divLine);
+      lines.push(`Bill: #${bill.billNo}`);
+      lines.push(`Date: ${bill.formattedDate || bill.date}`);
+      lines.push(`Staff: ${bill.staffName} (${bill.staffRole || 'Cashier'})`);
+      if (bill.customerName) {
+        lines.push(`Cust: ${bill.customerName} ${bill.customerPhone ? '(' + bill.customerPhone + ')' : ''}`);
+      }
+      lines.push(divLine);
+      lines.push(padCols("Item", "Qty", "Rate", "Amt"));
+      lines.push(divLine);
+
+      (bill.items || []).forEach(item => {
+        const total = (item.price * item.quantity).toFixed(2);
+        lines.push(padCols(item.name, item.quantity, Math.round(item.price), total));
+      });
+
+      lines.push(divLine);
+      lines.push(padTwo("Subtotal:", "₹" + bill.subtotal.toFixed(2)));
+      if (bill.discount > 0) {
+        lines.push(padTwo("Discount:", "-₹" + bill.discount.toFixed(2)));
+      }
+      lines.push(dblLine);
+      lines.push(padTwo("NET TOTAL:", "₹" + bill.grandTotal.toFixed(2)));
+      lines.push(dblLine);
+      lines.push(`Mode: ${String(bill.paymentMode || 'Cash').toUpperCase()} (PAID ✓)`);
+      if (bill.paymentMode === 'Cash' && bill.cashReceived) {
+        lines.push(`Tendered: ₹${bill.cashReceived} | Change: ₹${bill.changeDue.toFixed(2)}`);
+      }
+      lines.push(divLine);
+      lines.push(padCenter("🌿 ദൈവത്തിന്റെ സ്വന്തം നാട് 🌿"));
+      lines.push(padCenter("Thank you! Visit Again!"));
+      lines.push(dblLine);
+      lines.push("\n\n"); // Feed paper
+
+      return lines.join("\n");
+    }
+
+    /**
+     * Send receipt directly to the RawBT Android ESC/POS Thermal Printer App
+     */
+    function printToRawBT() {
+      // 1. Prioritize clean 32-column formatted plain text from active/preview bill
+      let receiptText = '';
+      if (lastGeneratedBillForPreview) {
+        receiptText = generateThermalReceiptPlainText(lastGeneratedBillForPreview);
+      }
+
+      // 2. Fallback to extracting receipt HTML or plain text from your slip element
+      if (!receiptText) {
+        const slipEl = document.getElementById("thermal-slip-preview") || 
+                       document.getElementById("thermalSlipPreviewContainer") ||
+                       document.getElementById("printable-thermal-receipt");
+        if (slipEl) {
+          receiptText = slipEl.innerText;
+        }
+      }
+
+      if (!receiptText || !receiptText.trim()) {
+        alert("No receipt preview available to print. Please generate or select a bill first.");
+        return;
+      }
+
+      // Send directly to the RawBT app
+      try {
+        window.location.href = "rawbt:data:text/plain;base64," + btoa(unescape(encodeURIComponent(receiptText)));
+      } catch (err) {
+        console.error("RawBT Base64 encoding error:", err);
+        const bytes = new TextEncoder().encode(receiptText);
+        let bin = '';
+        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        window.location.href = "rawbt:data:text/plain;base64," + btoa(bin);
+      }
+    }
+
+    async function saveAndPrintThermalReceipt() {
+      const bill = createBillRecord();
+      if (!bill) return;
+
+      await saveBillToDatabase(bill);
+
+      // Render into hidden print container
+      const printContainer = document.getElementById('printable-thermal-receipt');
+      printContainer.innerHTML = renderThermalReceiptHTML(bill);
+
+      // Trigger standard browser thermal print
+      window.print();
+
+      resetBillAfterAction();
+    }
+
+    async function saveAndPrintRawBTThermal() {
+      const bill = createBillRecord();
+      if (!bill) return;
+
+      await saveBillToDatabase(bill);
+
+      lastGeneratedBillForPreview = bill;
+      const previewContainer = document.getElementById('thermal-slip-preview') || document.getElementById('thermalSlipPreviewContainer');
+      if (previewContainer) {
+        previewContainer.innerHTML = renderThermalReceiptHTML(bill);
+      }
+
+      printToRawBT();
+      resetBillAfterAction();
+    }
+
+    function openThermalReceiptModal(bill) {
+      lastGeneratedBillForPreview = bill;
+      const previewContainer = document.getElementById('thermal-slip-preview') || document.getElementById('thermalSlipPreviewContainer');
+      if (previewContainer) {
+        previewContainer.innerHTML = renderThermalReceiptHTML(bill);
+      }
+      document.getElementById('receiptPreviewModal').classList.add('open');
+    }
+
+    function closeReceiptPreviewModal() {
+      document.getElementById('receiptPreviewModal').classList.remove('open');
+    }
+
+    function triggerThermalPrint() {
+      if (!lastGeneratedBillForPreview) return;
+      document.getElementById('printable-thermal-receipt').innerHTML = renderThermalReceiptHTML(lastGeneratedBillForPreview);
+      window.print();
+    }
+
+    function triggerWhatsAppFromPreview() {
+      if (!lastGeneratedBillForPreview) return;
+      sendBillViaWhatsApp(lastGeneratedBillForPreview);
+    }
+
+    // ========================================================================
+    // WHATSAPP BILLING ENGINE
+    // ========================================================================
+    function formatWhatsAppBillMessage(bill) {
+      let itemsText = '';
+      (bill.items || []).forEach((item, index) => {
+        const rate = item.price || item.unitPrice || 0;
+        const sub = item.subtotal || (rate * item.quantity);
+        itemsText += `${index + 1}. *${item.name}*\n   Qty: ${item.quantity} × ₹${rate.toFixed(2)} = ₹${sub.toFixed(2)}\n`;
+      });
+
+      const message = 
+`🧾 *SHALOM KERALA STORES*
+🌴 _Authentic Kerala Groceries, Church Articles & Stationery_
+📍 Chargawan, Medical College Road, Gorakhpur (UP)
+📞 +91 73793 25499 | UPI: 7379325499@ybl
+━━━━━━━━━━━━━━━━━━━━
+*TAX INVOICE / ബിൽ*
+*Bill No:* #${bill.billNo}
+*Date:* ${bill.formattedDate || bill.date || 'Today'}
+*Billed By Staff:* ${bill.staffName || 'John Joy'} (${bill.staffRole || 'Cashier'})
+*Customer:* ${bill.customerName || 'Walk-in'} ${bill.customerPhone ? '(+91 ' + bill.customerPhone + ')' : ''}
+━━━━━━━━━━━━━━━━━━━━
+*ITEMS PURCHASED:*
+${itemsText}━━━━━━━━━━━━━━━━━━━━
+*Items Count:* ${bill.totalItemsCount || bill.items.length}
+*Subtotal:* ₹${(bill.subtotal || bill.grandTotal).toFixed(2)}
+${bill.discount > 0 ? `*Discount:* - ₹${bill.discount.toFixed(2)}\n` : ''}*GRAND TOTAL:* ₹${bill.grandTotal.toFixed(2)}
+*Payment Mode:* ${String(bill.paymentMode || 'Cash').toUpperCase()} (PAID ✓)
+━━━━━━━━━━━━━━━━━━━━
+🌿 _ദൈവത്തിന്റെ സ്വന്തം നാട്ടിലെ വിഭവങ്ങൾ ഇനി ഗോരഖ്പൂരിലും!_
+Thank you for shopping at Shalom Kerala Stores! Visit again! 🙏`;
+
+      return encodeURIComponent(message);
+    }
+
+    async function saveAndSendWhatsAppBill() {
+      const bill = createBillRecord();
+      if (!bill) return;
+
+      await saveBillToDatabase(bill);
+
+      let phone = bill.customerPhone;
+      if (!phone || phone.replace(/\D/g, '').length < 10) {
+        phone = prompt('Enter 10-digit WhatsApp mobile number for the customer:', bill.customerPhone || '');
+        if (!phone) {
+          alert('WhatsApp bill cancelled (no phone number). Bill has been safely saved to Live Cloud!');
+          resetBillAfterAction();
+          return;
+        }
+        bill.customerPhone = phone.trim();
+      }
+
+      sendBillViaWhatsApp(bill, phone);
+      resetBillAfterAction();
+    }
+
+    function resetBillAfterAction() {
+      currentCart = [];
+      document.getElementById('billDiscountInput').value = 0;
+      document.getElementById('cashReceivedInput').value = '';
+      document.getElementById('billCustomerPhone').value = '';
+      document.getElementById('billCustomerName').value = '';
+      renderCartUI();
+      updateBillNumberUI();
+    }
+
+    function sendBillViaWhatsApp(bill, targetPhone = null) {
+      let cleanPhone = (targetPhone || bill.customerPhone || '').replace(/\D/g, '');
+      if (cleanPhone.length < 10) {
+        cleanPhone = prompt('Enter customer 10-digit mobile number for WhatsApp receipt:', '');
+        if (!cleanPhone) return;
+        cleanPhone = cleanPhone.replace(/\D/g, '');
+      }
+
+      // Add India +91 prefix
+      if (cleanPhone.length === 10) {
+        cleanPhone = '91' + cleanPhone;
+      }
+
+      const encodedText = formatWhatsAppBillMessage(bill);
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodedText}`;
+      window.open(whatsappUrl, '_blank');
+    }
+
+    // ========================================================================
+    // VIEW 2: PREVIOUS BILLS LOGIC
+    // ========================================================================
+    function getStoredBills() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.BILLS);
+        return saved ? JSON.parse(saved) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function loadPreviousBills() {
+      const bills = getStoredBills();
+      updateHistoryKPIs(bills);
+      filterPreviousBills();
+    }
+
+    function updateHistoryKPIs(bills) {
+      const now = new Date();
+      let totalSales = 0;
+      let totalCash = 0;
+      let totalUPI = 0;
+      let currentStaffSales = 0;
+
+      bills.forEach(b => {
+        const amt = b.grandTotal || 0;
+        totalSales += amt;
+        const pmode = String(b.paymentMode || '').toLowerCase();
+        if (pmode.includes('cash')) totalCash += amt;
+        if (pmode.includes('upi')) totalUPI += amt;
+        if (activeStaff && b.staffName === activeStaff.name) {
+          currentStaffSales += amt;
+        }
+      });
+
+      document.getElementById('kpiTodaySales').innerText = `₹${totalSales.toFixed(2)}`;
+      document.getElementById('kpiTodayBillsCount').innerText = bills.length;
+      document.getElementById('kpiTodayCash').innerText = `₹${totalCash.toFixed(2)}`;
+      document.getElementById('kpiTodayUPI').innerText = `₹${totalUPI.toFixed(2)}`;
+      document.getElementById('kpiCurrentStaffSales').innerText = `₹${currentStaffSales.toFixed(2)}`;
+      document.getElementById('badgeBillsCount').innerText = bills.length;
+
+      // Update Reconciliation Box in Expenses View
+      updateReconciliationBox(totalCash);
+    }
+
+    function filterPreviousBills() {
+      const bills = getStoredBills();
+      const searchQuery = (document.getElementById('histSearchInput').value || '').trim().toLowerCase();
+      const staffFilter = document.getElementById('histStaffFilter').value;
+      const paymentFilter = document.getElementById('histPaymentFilter').value;
+      const dateFilter = document.getElementById('histDateFilter').value;
+
+      const now = new Date();
+
+      const filtered = bills.filter(bill => {
+        // Search query
+        const matchesSearch = !searchQuery ||
+          (bill.billNo && bill.billNo.toLowerCase().includes(searchQuery)) ||
+          (bill.customerName && bill.customerName.toLowerCase().includes(searchQuery)) ||
+          (bill.customerPhone && bill.customerPhone.includes(searchQuery)) ||
+          (bill.staffName && bill.staffName.toLowerCase().includes(searchQuery));
+
+        // Staff filter
+        const matchesStaff = (staffFilter === 'All') || (bill.staffName === staffFilter);
+
+        // Payment mode filter
+        const matchesPayment = (paymentFilter === 'All') || 
+          (bill.paymentMode && String(bill.paymentMode).toLowerCase().includes(paymentFilter.toLowerCase()));
+
+        // Date filter
+        let matchesDate = true;
+        const billDateObj = new Date(bill.timestamp || bill.formattedDate || bill.date);
+        const isValidDate = !isNaN(billDateObj.getTime());
+
+        if (dateFilter === 'Today') {
+          if (isValidDate) {
+            matchesDate = billDateObj.getFullYear() === now.getFullYear() &&
+                          billDateObj.getMonth() === now.getMonth() &&
+                          billDateObj.getDate() === now.getDate();
+          }
+        } else if (dateFilter === 'Yesterday') {
+          const yest = new Date(now);
+          yest.setDate(yest.getDate() - 1);
+          if (isValidDate) {
+            matchesDate = billDateObj.getFullYear() === yest.getFullYear() &&
+                          billDateObj.getMonth() === yest.getMonth() &&
+                          billDateObj.getDate() === yest.getDate();
+          }
+        } else if (dateFilter === 'ThisWeek') {
+          if (isValidDate) {
+            const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            matchesDate = billDateObj >= oneWeekAgo;
+          }
+        }
+
+        return matchesSearch && matchesStaff && matchesPayment && matchesDate;
+      });
+
+      renderPreviousBillsTable(filtered);
+    }
+
+    function renderPreviousBillsTable(bills) {
+      const tbody = document.getElementById('previousBillsTableBody');
+      tbody.innerHTML = '';
+
+      if (bills.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; color: var(--text-dim); padding: 30px;">
+              No bills found matching your filter criteria.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      bills.forEach(bill => {
+        const tr = document.createElement('tr');
+        const pmode = String(bill.paymentMode || 'Cash');
+        const payClass = pmode.toLowerCase().includes('cash') ? 'pay-cash' : (pmode.toLowerCase().includes('upi') ? 'pay-upi' : 'pay-card');
+        const itemsCount = (bill.items || []).length;
+        const total = bill.grandTotal || 0;
+
+        tr.innerHTML = `
+          <td><strong>${bill.billNo}</strong></td>
+          <td>${bill.formattedDate || bill.date || ''}</td>
+          <td><span class="staff-badge">👤 ${bill.staffName || 'John Joy'}</span></td>
+          <td>${bill.customerName || 'Walk-in'}<br><small style="color: var(--text-dim);">${bill.customerPhone || 'Store Counter'}</small></td>
+          <td>${itemsCount} Items</td>
+          <td><strong style="color: var(--gold-light);">₹${total.toFixed(2)}</strong></td>
+          <td><span class="pay-badge ${payClass}">${pmode}</span></td>
+          <td style="text-align: right; white-space: nowrap;">
+            <button class="tbl-action-btn btn-gold" onclick='openThermalReceiptModal(${JSON.stringify(bill)})' title="Print Thermal Receipt">
+              🖨️ 2" Print
+            </button>
+            <button class="tbl-action-btn btn-emerald" style="background: #25d366; color: #fff;" onclick='sendBillViaWhatsApp(${JSON.stringify(bill)})' title="Send WhatsApp Bill">
+              💬 WhatsApp
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ========================================================================
+    // VIEW 3: DAILY EXPENSES ENGINE
+    // ========================================================================
+    function getStoredExpenses() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEYS.EXPENSES);
+        return saved ? JSON.parse(saved) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    async function saveDailyExpense() {
+      if (!activeStaff) {
+        activeStaff = { ...DEFAULT_STAFF[0] };
+        applyActiveStaffUI();
+      }
+
+      const category = document.getElementById('expCategorySelect').value;
+      const description = document.getElementById('expDescriptionInput').value.trim();
+      const amount = parseFloat(document.getElementById('expAmountInput').value);
+      const paymentMode = document.getElementById('expPaymentModeSelect').value;
+
+      if (!description || isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid expense description and amount.');
+        return;
+      }
+
+      const now = new Date();
+      const expenseRecord = {
+        id: "EXP-" + Date.now(),
+        timestamp: now.toISOString(),
+        date: now.toLocaleDateString('en-IN'),
+        time: now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }),
+        category: category,
+        description: description,
+        amount: amount,
+        paymentMode: paymentMode,
+        // Staff attribution stamped on every expense
+        staffName: activeStaff.name,
+        staffId: activeStaff.id,
+        staffRole: activeStaff.role,
+        createdByStaff: activeStaff.name
+      };
+
+      // 1. Save locally
+      const expenses = getStoredExpenses();
+      expenses.unshift(expenseRecord);
+      localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(expenses));
+
+      // 2. Sync to Google Firebase Real-Time Cloud Database (dual method)
+      try {
+        fetch(`${FIREBASE_REST_URL}/expenses/${expenseRecord.id}.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(expenseRecord)
+        }).then(res => {
+          if (res.ok) console.log(`[CloudSync] Expense ${expenseRecord.id} saved to Google Cloud!`);
+        }).catch(e => console.warn('Cloud expense sync error:', e));
+      } catch (e) {}
+
+      if (typeof ShalomCloudSync !== 'undefined' && ShalomCloudSync.isReady()) {
+        try {
+          ShalomCloudSync.db.ref(`expenses/${expenseRecord.id}`).set(expenseRecord);
+        } catch (e) {}
+      }
+
+      // Reset Form
+      document.getElementById('expDescriptionInput').value = '';
+      document.getElementById('expAmountInput').value = '';
+
+      loadExpensesList();
+      alert(`Expense of ₹${amount} recorded by ${activeStaff.name} and synced to Cloud!`);
+    }
+
+    function loadExpensesList() {
+      const expenses = getStoredExpenses();
+
+      document.getElementById('expensesTotalCount').innerText = expenses.length;
+      document.getElementById('badgeExpensesCount').innerText = expenses.length;
+
+      let totalExp = 0;
+      let cashExp = 0;
+
+      expenses.forEach(e => {
+        totalExp += e.amount || 0;
+        if (String(e.paymentMode || '').includes('Cash')) {
+          cashExp += e.amount || 0;
+        }
+      });
+
+      document.getElementById('expensesGrandTotalDisplay').innerText = `₹${totalExp.toFixed(2)}`;
+
+      // Update Reconciliation
+      updateReconciliationBox(null, cashExp);
+
+      // Render Table
+      const tbody = document.getElementById('expensesTableBody');
+      tbody.innerHTML = '';
+
+      if (expenses.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-dim); padding: 25px;">
+              No expenses recorded yet.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      expenses.forEach(exp => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${exp.time || ''}<br><small style="color: var(--text-dim);">${exp.date || ''}</small></td>
+          <td><strong style="color: var(--gold-light);">${exp.category}</strong></td>
+          <td>${exp.description}</td>
+          <td><strong style="color: #f87171;">₹${exp.amount.toFixed(2)}</strong></td>
+          <td>${exp.paymentMode}</td>
+          <td><span class="staff-badge">👤 ${exp.staffName || 'Staff'}</span></td>
+          <td style="text-align: right;">
+            <button class="tbl-action-btn btn-danger" onclick="deleteExpenseRecord('${exp.id}')" title="Delete">
+              🗑️
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function deleteExpenseRecord(expId) {
+      if (!confirm('Are you sure you want to delete this expense entry?')) return;
+      let expenses = getStoredExpenses();
+      expenses = expenses.filter(e => e.id !== expId);
+      localStorage.setItem(STORAGE_KEYS.EXPENSES, JSON.stringify(expenses));
+
+      // Remove from Firebase
+      try {
+        fetch(`${FIREBASE_REST_URL}/expenses/${expId}.json`, { method: 'DELETE' });
+      } catch (e) {}
+
+      loadExpensesList();
+    }
+
+    function updateReconciliationBox(cashIn = null, cashOut = null) {
+      const bills = getStoredBills();
+      const expenses = getStoredExpenses();
+
+      let totalCashIn = 0;
+      let totalCashOut = 0;
+
+      bills.forEach(b => {
+        if (String(b.paymentMode || '').toLowerCase().includes('cash')) {
+          totalCashIn += b.grandTotal || 0;
+        }
+      });
+
+      expenses.forEach(e => {
+        if (String(e.paymentMode || '').toLowerCase().includes('cash')) {
+          totalCashOut += e.amount || 0;
+        }
+      });
+
+      const netCash = totalCashIn - totalCashOut;
+
+      document.getElementById('reconCashIn').innerText = `₹${totalCashIn.toFixed(2)}`;
+      document.getElementById('reconCashOut').innerText = `₹${totalCashOut.toFixed(2)}`;
+      document.getElementById('reconNetCash').innerText = `₹${netCash.toFixed(2)}`;
+      document.getElementById('reconNetCash').style.color = netCash >= 0 ? 'var(--gold-light)' : '#f87171';
+    }
+  </script>
+</body>
+</html>

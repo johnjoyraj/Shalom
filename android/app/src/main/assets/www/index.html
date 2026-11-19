@@ -37,6 +37,9 @@
       <div class="ticker-right">
         <span class="ticker-link">⚡ UPI: <strong>7379325499@ybl</strong></span>
         <span class="ticker-link">📞 Support: <strong>+91 73793 25499</strong></span>
+        <a href="billing.html" class="ticker-link" style="background: rgba(212,175,55,0.22); border: 1px solid rgba(212,175,55,0.5); color: #f4df91; text-decoration: none; padding: 2px 10px; border-radius: 12px; font-weight: 700; margin-left: 6px;">🧾 POS Counter →</a>
+        <a href="inventory.html" class="ticker-link" style="background: rgba(56,189,248,0.18); border: 1px solid rgba(56,189,248,0.4); color: #7dd3fc; text-decoration: none; padding: 2px 8px; border-radius: 12px; font-weight: 700;">📦 Inventory</a>
+        <a href="dashboard.html" class="ticker-link" style="background: rgba(168,85,247,0.18); border: 1px solid rgba(168,85,247,0.4); color: #c084fc; text-decoration: none; padding: 2px 8px; border-radius: 12px; font-weight: 700;">📊 Dashboard</a>
       </div>
     </div>
   </aside>
@@ -78,6 +81,24 @@
         <button type="button" class="nav-link-btn" id="navOrdersBtn">
           <span>📦 My Orders</span>
         </button>
+
+        <!-- Store Staff Portal Dropdown -->
+        <div class="staff-portal-dropdown-wrap" style="position: relative;">
+          <button type="button" class="nav-link-btn" id="btnStaffPortalsToggle" style="border: 1px solid rgba(212, 175, 55, 0.45); color: #f4df91; background: rgba(212, 175, 55, 0.12);" onclick="toggleStaffDropdown(event)">
+            <span>🏬 Staff ERP ▾</span>
+          </button>
+          <div class="staff-portal-menu" id="staffPortalMenu" style="display: none; position: absolute; right: 0; top: calc(100% + 8px); background: #072219; border: 1.5px solid #d4af37; border-radius: 12px; padding: 6px; box-shadow: 0 12px 30px rgba(0,0,0,0.6); z-index: 1000; min-width: 210px;">
+            <a href="billing.html" style="display: flex; align-items: center; gap: 8px; color: #fff; padding: 9px 12px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(212,175,55,0.18)'" onmouseout="this.style.background='transparent'">
+              <span>🧾</span> POS Billing Counter
+            </a>
+            <a href="inventory.html" style="display: flex; align-items: center; gap: 8px; color: #fff; padding: 9px 12px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(56,189,248,0.18)'" onmouseout="this.style.background='transparent'">
+              <span>📦</span> Inventory & Stock ERP
+            </a>
+            <a href="dashboard.html" style="display: flex; align-items: center; gap: 8px; color: #fff; padding: 9px 12px; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: background 0.2s;" onmouseover="this.style.background='rgba(168,85,247,0.18)'" onmouseout="this.style.background='transparent'">
+              <span>📊</span> Executive Dashboard
+            </a>
+          </div>
+        </div>
 
         <!-- Kart Trigger Button -->
         <button type="button" class="kart-trigger-btn" id="cartTriggerBtn" aria-label="Open Shopping Kart">
@@ -929,6 +950,21 @@
 
   <!-- Register PWA Service Worker for Offline & Android Installation -->
   <script>
+    function toggleStaffDropdown(e) {
+      if (e) e.stopPropagation();
+      const menu = document.getElementById('staffPortalMenu');
+      if (menu) {
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+      }
+    }
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('staffPortalMenu');
+      const toggle = document.getElementById('btnStaffPortalsToggle');
+      if (menu && toggle && !toggle.contains(e.target) && !menu.contains(e.target)) {
+        menu.style.display = 'none';
+      }
+    });
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').then(reg => {

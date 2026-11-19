@@ -2380,6 +2380,9 @@
   </div>
 
 
+  <!-- Product Catalog for Live Stock Valuation -->
+  <script src="js/products.js"></script>
+
   <!-- ========================================================================
        JAVASCRIPT BUSINESS LOGIC & CLOUD DATA ENGINE
        ======================================================================== -->
@@ -2506,8 +2509,46 @@
     const BASELINE_STOCK = {
       totalValuation: 581370.00,
       totalItems: 1292,
-      totalUnits: 11351
+      totalUnits: 11351,
+      outOfStockCount: 0,
+      lowStockCount: 0
     };
+
+    // Live Dynamic Stock Valuation Engine (from products.js + localStorage live stock)
+    function calculateLiveStockValuation() {
+      if (typeof SHALOM_PRODUCTS === 'undefined' || !Array.isArray(SHALOM_PRODUCTS)) {
+        return BASELINE_STOCK;
+      }
+      let overrides = {};
+      try {
+        const saved = localStorage.getItem('shalom_live_stock_v1');
+        if (saved) overrides = JSON.parse(saved);
+      } catch(e) {}
+
+      let totalValuation = 0;
+      let totalUnits = 0;
+      let totalItems = SHALOM_PRODUCTS.length;
+      let outOfStockCount = 0;
+      let lowStockCount = 0;
+
+      SHALOM_PRODUCTS.forEach(p => {
+        let stock = (overrides[p.id] !== undefined) ? Number(overrides[p.id]) : (Number(p.stock) || 0);
+        if (stock < 0) stock = 0;
+        const price = Number(p.price) || 0;
+        totalValuation += (price * stock);
+        totalUnits += stock;
+        if (stock === 0) outOfStockCount++;
+        else if (stock <= 5) lowStockCount++;
+      });
+
+      return {
+        totalValuation,
+        totalItems,
+        totalUnits,
+        outOfStockCount,
+        lowStockCount
+      };
+    }
 
     // Historical Excel Invoices (Extracted from Sales_Invoicing sheet)
     const BASELINE_HISTORICAL_SALES = [
@@ -2955,9 +2996,11 @@
       // ======================================================================
       // UPDATE DOM KPI ELEMENTS
       // ======================================================================
+      appState.stock = calculateLiveStockValuation();
       setText("kpiPendingBillsValue", formatCurrency(pendingBillsTotal));
       setText("kpiPendingPaymentsValue", formatCurrency(pendingPaymentsTotal));
       setText("kpiStockValue", formatCurrency(appState.stock.totalValuation));
+      setText("kpiStockCountDetail", `${appState.stock.totalItems.toLocaleString('en-IN')} Catalog Items • ${appState.stock.totalUnits.toLocaleString('en-IN')} Units in Stock${appState.stock.lowStockCount > 0 ? ` (${appState.stock.lowStockCount} Low)` : ''}`);
       setText("kpiTotalLiquidityValue", formatCurrency(combinedLiquidity));
       setText("kpiCashDrawerBalance", formatCurrency(netCashDrawer));
       setText("kpiBankBalance", formatCurrency(bankTotal));

@@ -135,48 +135,86 @@ class ShalomCloudSyncService {
 
   /**
    * Pushes a customer order placed on index.html to Google Firebase
+   * Dual-layer: Uses Firebase SDK if ready, with unconditional REST API fallback
    */
   async pushCustomerOrder(order) {
-    if (!this.isReady()) {
-      console.log('Firebase not configured. Saved order locally in browser.');
-      return false;
+    if (!order || !order.orderId) return false;
+    const cleanId = String(order.orderId).trim();
+    const sanitizedOrder = JSON.parse(JSON.stringify(order));
+
+    // Layer 1: Firebase SDK
+    if (this.isReady()) {
+      try {
+        await this.db.ref(`orders/${cleanId}`).set(sanitizedOrder);
+        this.lastSyncTime = new Date();
+        console.log(`[CloudSync SDK] Order #${cleanId} synced to Google Cloud!`);
+        return true;
+      } catch (err) {
+        console.warn('[CloudSync SDK] SDK push failed, attempting REST API fallback:', err);
+      }
     }
 
+    // Layer 2: Direct Google Firebase REST API
     try {
-      const cleanId = String(order.orderId).trim();
-      const sanitizedOrder = JSON.parse(JSON.stringify(order));
-      await this.db.ref(`orders/${cleanId}`).set(sanitizedOrder);
-      this.lastSyncTime = new Date();
-      console.log(`[CloudSync] Order #${cleanId} synced to Google Cloud!`);
-      return true;
-    } catch (err) {
-      console.error('[CloudSync] Failed to push order to cloud:', err);
-      return false;
+      const resp = await fetch(`https://adonaibroadcast-11095.firebaseio.com/orders/${cleanId}.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sanitizedOrder)
+      });
+      if (resp.ok) {
+        this.lastSyncTime = new Date();
+        console.log(`[CloudSync REST] Order #${cleanId} synced to Google Cloud!`);
+        return true;
+      }
+    } catch (restErr) {
+      console.warn('[CloudSync REST] Error pushing order:', restErr);
     }
+
+    return false;
   }
 
   /**
    * Admin confirms order and saves permanent bill to cloud
    */
   async confirmOrder(orderId, billNo, billRecord = null) {
-    if (!this.isReady()) return false;
+    const cleanId = String(orderId).trim();
+    const cleanBillNo = String(billNo).replace(/[.#$\[\]]/g, '_');
+    const updatePayload = {
+      status: 'CONFIRMED',
+      billNo: billNo,
+      confirmedAt: new Date().toISOString()
+    };
 
+    // Layer 1: Firebase SDK
+    if (this.isReady()) {
+      try {
+        await this.db.ref(`orders/${cleanId}`).update(updatePayload);
+        if (billRecord) {
+          const sanitizedBill = JSON.parse(JSON.stringify(billRecord));
+          await this.db.ref(`bills/${cleanBillNo}`).set(sanitizedBill);
+        }
+        return true;
+      } catch (err) {
+        console.warn('[CloudSync SDK] SDK confirm failed, trying REST:', err);
+      }
+    }
+
+    // Layer 2: REST API
     try {
-      const cleanId = String(orderId).trim();
-      await this.db.ref(`orders/${cleanId}`).update({
-        status: 'CONFIRMED',
-        billNo: billNo,
-        confirmedAt: new Date().toISOString()
+      await fetch(`https://adonaibroadcast-11095.firebaseio.com/orders/${cleanId}.json`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatePayload)
       });
-
       if (billRecord) {
-        const cleanBillNo = String(billNo).replace(/[.#$\[\]]/g, '_');
-        const sanitizedBill = JSON.parse(JSON.stringify(billRecord));
-        await this.db.ref(`bills/${cleanBillNo}`).set(sanitizedBill);
+        await fetch(`https://adonaibroadcast-11095.firebaseio.com/bills/${cleanBillNo}.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(billRecord)
+        });
       }
       return true;
-    } catch (err) {
-      console.error('[CloudSync] Failed to confirm order in cloud:', err);
+    } catch (e) {
       return false;
     }
   }
@@ -185,18 +223,30 @@ class ShalomCloudSyncService {
    * Admin rejects order
    */
   async rejectOrder(orderId, reason = 'Out of stock or payment unverified') {
-    if (!this.isReady()) return false;
+    const cleanId = String(orderId).trim();
+    const updatePayload = {
+      status: 'REJECTED',
+      rejectReason: reason,
+      rejectedAt: new Date().toISOString()
+    };
+
+    if (this.isReady()) {
+      try {
+        await this.db.ref(`orders/${cleanId}`).update(updatePayload);
+        return true;
+      } catch (err) {
+        console.warn('[CloudSync SDK] SDK reject failed, trying REST:', err);
+      }
+    }
 
     try {
-      const cleanId = String(orderId).trim();
-      await this.db.ref(`orders/${cleanId}`).update({
-        status: 'REJECTED',
-        rejectReason: reason,
-        rejectedAt: new Date().toISOString()
+      await fetch(`https://adonaibroadcast-11095.firebaseio.com/orders/${cleanId}.json`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatePayload)
       });
       return true;
-    } catch (err) {
-      console.error('[CloudSync] Failed to reject order in cloud:', err);
+    } catch (e) {
       return false;
     }
   }

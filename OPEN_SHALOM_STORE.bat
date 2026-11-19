@@ -1,7 +1,8 @@
 @echo off
 title Shalom Kerala Stores Web Storefront
 echo ========================================================
-echo Opening Shalom Kerala Stores Web Storefront
+echo Opening Shalom Kerala Stores Web App & POS Server
 echo ========================================================
-start "" "%~dp0index.html"
+cd /d "%~dp0"
+start "" py -3 server.py
 exit

@@ -1470,11 +1470,17 @@
       <button class="nav-tab-btn" id="tabBtnExpenses" onclick="switchView('expenses')">
         💸 Daily Expenses <span class="tab-badge" id="badgeExpensesCount">0</span>
       </button>
+      <a href="inventory.html" class="nav-tab-btn" style="text-decoration: none;" title="View & Confirm Incoming Web Orders">
+        🛎️ Online Orders <span class="tab-badge" id="badgeOnlineOrdersCount" style="display:none; background:#ef4444; color:#fff;">0</span>
+      </a>
       <a href="inventory.html" class="nav-tab-btn" style="text-decoration: none;" title="Switch to Inventory ERP & Stock Manager">
         📦 Inventory ERP
       </a>
       <a href="dashboard.html" class="nav-tab-btn" style="text-decoration: none;" title="Open Executive Admin Dashboard">
         📊 Dashboard
+      </a>
+      <a href="index.html" class="nav-tab-btn" style="text-decoration: none;" title="Open Customer Online Storefront">
+        🌐 Storefront
       </a>
     </div>
 
@@ -2150,13 +2156,31 @@
 
       initCloudSyncStatus();
       setupKeyboardShortcuts();
+      updateOnlineOrdersBadge();
 
-      // Periodically refresh cloud data every 15 seconds
+      // Periodically refresh cloud data & online orders every 15 seconds
       setInterval(() => {
         syncBillsFromCloud();
         syncExpensesFromCloud();
+        updateOnlineOrdersBadge();
       }, 15000);
     });
+
+    // Check & display pending online orders badge in header
+    function updateOnlineOrdersBadge() {
+      try {
+        const raw = localStorage.getItem('shalom_store_orders_v1');
+        if (raw) {
+          const orders = JSON.parse(raw);
+          const pending = orders.filter(o => o.status === 'PENDING').length;
+          const badge = document.getElementById('badgeOnlineOrdersCount');
+          if (badge) {
+            badge.textContent = pending;
+            badge.style.display = pending > 0 ? 'inline-block' : 'none';
+          }
+        }
+      } catch (e) {}
+    }
 
     // Synthesized Audio Retail Scanner Beep
     function playBeepSound() {

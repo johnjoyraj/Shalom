@@ -12,11 +12,13 @@ def sync_assets():
     print(f"Syncing web storefront assets to {ASSETS_WWW}...")
     os.makedirs(ASSETS_WWW, exist_ok=True)
 
-    # 1. Copy index.html
-    src_html = os.path.join(BASE_DIR, "index.html")
-    dst_html = os.path.join(ASSETS_WWW, "index.html")
-    shutil.copy2(src_html, dst_html)
-    print("  [OK] Synced index.html")
+    # 1. Copy web portals
+    for html_file in ["index.html", "billing.html", "inventory.html", "dashboard.html", "sw.js"]:
+        src = os.path.join(BASE_DIR, html_file)
+        dst = os.path.join(ASSETS_WWW, html_file)
+        if os.path.exists(src):
+            shutil.copy2(src, dst)
+            print(f"  [OK] Synced {html_file}")
 
     # 2. Copy directories: css, js, images
     for folder in ["css", "js", "images"]:

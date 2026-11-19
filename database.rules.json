@@ -47,6 +47,16 @@
       }
     },
 
+    "stock": {
+      ".read": true,
+      ".write": true
+    },
+
+    "parties": {
+      ".read": true,
+      ".write": true
+    },
+
     "prayforindia": {
       ".read": false,
       ".write": false,
@@ -81,6 +91,169 @@
         "$logId": {
           ".write": "newData.exists()",
           ".validate": "newData.hasChildren(['type', 'timestamp'])"
+        }
+      }
+    },
+
+    "school": {
+      ".read": false,
+      ".write": false,
+
+      "metadata": {
+        ".read": true,
+        ".write": false
+      },
+
+      "schools": {
+        ".read": true,
+        ".indexOn": ["code", "status"],
+        "$schoolId": {
+          ".write": true,
+          ".validate": "newData.exists() ? newData.hasChildren(['name', 'code']) : true"
+        }
+      },
+
+      "subscription_plans": {
+        ".read": true,
+        ".write": false
+      },
+
+      "users": {
+        ".read": false,
+        ".indexOn": ["login_id", "school_id", "role"],
+        "$userId": {
+          ".read": true,
+          ".write": true,
+          ".validate": "newData.exists() ? newData.hasChildren(['login_id', 'password_hash']) : true"
+        }
+      },
+
+      "classes": {
+        ".read": true,
+        ".indexOn": ["school_id"],
+        "$classId": {
+          ".write": true
+        }
+      },
+
+      "students": {
+        ".read": true,
+        ".indexOn": ["school_id", "class_id", "admission_no"],
+        "$studentId": {
+          ".write": true,
+          ".validate": "newData.exists() ? newData.hasChildren(['name', 'admission_no']) : true"
+        }
+      },
+
+      "teachers": {
+        ".read": true,
+        ".indexOn": ["school_id", "teacher_code"],
+        "$teacherId": {
+          ".write": true
+        }
+      },
+
+      "subjects": {
+        ".read": true,
+        "$subjectId": {
+          ".write": true
+        }
+      },
+
+      "chapters": {
+        ".read": true,
+        "$chapterId": {
+          ".write": true
+        }
+      },
+
+      "attendance": {
+        ".read": true,
+        ".indexOn": ["school_id", "student_id", "date"],
+        "$attId": {
+          ".write": true
+        }
+      },
+
+      "assignments": {
+        ".read": true,
+        ".indexOn": ["school_id", "class_id"],
+        "$assignmentId": {
+          ".write": true
+        }
+      },
+
+      "assignment_submissions": {
+        ".read": true,
+        ".indexOn": ["assignment_id", "student_id"],
+        "$subId": {
+          ".write": true
+        }
+      },
+
+      "exam_marks": {
+        ".read": true,
+        ".indexOn": ["school_id", "student_id"],
+        "$markId": {
+          ".write": true
+        }
+      },
+
+      "fee_structures": {
+        ".read": true,
+        ".indexOn": ["school_id"],
+        "$feeId": {
+          ".write": true
+        }
+      },
+
+      "fee_payments": {
+        ".read": true,
+        ".indexOn": ["school_id", "student_id", "receipt_no"],
+        "$paymentId": {
+          ".write": "newData.exists()",
+          ".validate": "newData.hasChildren(['receipt_no', 'amount_paid'])"
+        }
+      },
+
+      "notices": {
+        ".read": true,
+        ".indexOn": ["school_id", "date"],
+        "$noticeId": {
+          ".write": true
+        }
+      },
+
+      "timetables": {
+        ".read": true,
+        ".indexOn": ["school_id", "class_id", "day_of_week"],
+        "$timetableId": {
+          ".write": true
+        }
+      },
+
+      "leave_applications": {
+        ".read": true,
+        ".indexOn": ["school_id", "applicant_type", "status"],
+        "$leaveId": {
+          ".write": true
+        }
+      },
+
+      "transport_routes": {
+        ".read": true,
+        ".indexOn": ["school_id"],
+        "$routeId": {
+          ".write": true
+        }
+      },
+
+      "online_payments": {
+        ".read": true,
+        ".indexOn": ["upi_id", "school_code", "status", "created_at"],
+        "$paymentId": {
+          ".write": "newData.exists()",
+          ".validate": "newData.child('upi_id').val() == 'joy.john@ybl' && newData.hasChildren(['transaction_id', 'amount', 'utr_no', 'status'])"
         }
       }
     }
