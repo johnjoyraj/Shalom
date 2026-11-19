@@ -138,45 +138,54 @@
 
       console.log(`[WhatsAppAuth] Initiated session ${sessionId} with code ${code}`);
 
-      // 1. Save to Firebase Firestore (if available)
-      const firestore = this.getFirestore();
-      if (firestore) {
-        try {
-          await firestore.collection("wa_verifications").doc(sessionId).set({
-            code,
-            status: "pending",
-            phone: cleanPhone || null,
-            name: (name || '').trim(),
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            expiresAt: expiresAt
-          });
-          console.log('[WhatsAppAuth] Saved session to Firestore');
-        } catch (fsErr) {
-          console.warn('[WhatsAppAuth] Firestore write notice:', fsErr);
+      // Asynchronously sync session to Firestore, RTDB and local server (non-blocking)
+      const syncToCloud = async () => {
+        const firestore = this.getFirestore();
+        if (firestore) {
+          try {
+            await Promise.race([
+              firestore.collection("wa_verifications").doc(sessionId).set({
+                code,
+                status: "pending",
+                phone: cleanPhone || null,
+                name: (name || '').trim(),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                expiresAt: expiresAt
+              }),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+            ]);
+            console.log('[WhatsAppAuth] Saved session to Firestore');
+          } catch (fsErr) {
+            console.warn('[WhatsAppAuth] Firestore write notice:', fsErr.message);
+          }
         }
-      }
 
-      // 2. Save to Firebase Realtime Database (dual sync for instant response)
-      const rtdb = this.getDatabase();
-      if (rtdb) {
-        try {
-          await rtdb.ref(`wa_verifications/${sessionId}`).set(sessionData);
-          console.log('[WhatsAppAuth] Saved session to RTDB');
-        } catch (rtErr) {
-          console.warn('[WhatsAppAuth] RTDB write notice:', rtErr);
+        const rtdb = this.getDatabase();
+        if (rtdb) {
+          try {
+            await Promise.race([
+              rtdb.ref(`wa_verifications/${sessionId}`).set(sessionData),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+            ]);
+            console.log('[WhatsAppAuth] Saved session to RTDB');
+          } catch (rtErr) {
+            console.warn('[WhatsAppAuth] RTDB write notice:', rtErr.message);
+          }
         }
-      }
 
-      // 3. Register session with local backend server (if running)
-      try {
-        fetch('/api/whatsapp/register_session', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(sessionData)
-        }).catch(() => {});
-      } catch (e) {}
+        try {
+          fetch('/api/whatsapp/register_session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(sessionData)
+          }).catch(() => {});
+        } catch (e) {}
+      };
 
-      // 4. Attach Real-Time Listeners (Firestore + RTDB + Polling triple-fallback)
+      // Launch cloud sync in background without blocking the UI
+      syncToCloud();
+
+      // Attach Real-Time Listeners (Firestore + RTDB + Polling triple-fallback)
       this.attachListeners(sessionId, onSuccess, onStatusChange, onError);
 
       return {

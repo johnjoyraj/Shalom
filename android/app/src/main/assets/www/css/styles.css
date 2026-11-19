@@ -2695,6 +2695,14 @@ button, input, select, textarea {
   transition: all var(--transition-smooth);
 }
 
+/* Ensure customer login modal renders on top of access gate overlay */
+#custLoginBackdrop {
+  z-index: 10000000 !important;
+}
+#custLoginModal {
+  z-index: 10000001 !important;
+}
+
 .modal-dialog.open {
   transform: translate(-50%, -50%) scale(1);
   opacity: 1;
