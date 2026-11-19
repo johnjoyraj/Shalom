@@ -651,48 +651,70 @@
         const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=8&data=${encodeURIComponent(waUrl)}`;
 
         bodyEl.innerHTML = `
+          <!-- Notice: Reverse Inbound Flow Explanation -->
+          <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; text-align: left;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 800; color: #166534;">
+              <span>💡</span>
+              <span>NO SMS WAITING REQUIRED (INBOUND VERIFICATION)</span>
+            </div>
+            <div style="font-size: 0.77rem; color: #14532d; margin-top: 4px; line-height: 1.45;">
+              You do <strong>not</strong> receive an SMS. Instead, tap the button below to send this 6-digit code <strong>to</strong> our store WhatsApp. Zero fees, 100% free!
+            </div>
+          </div>
+
           <!-- Verification Code Box -->
-          <div class="wa-code-display-box">
-            <div class="wa-code-label">Your WhatsApp Login Code</div>
+          <div class="wa-code-display-box" style="margin-bottom: 14px;">
+            <div class="wa-code-label">Step 1: Your Verification Code</div>
             <div class="wa-code-digits" id="waDigitsDisplay">${code}</div>
             <button type="button" class="wa-code-copy-btn" id="waCopyCodeBtn">📋 Copy Code</button>
           </div>
 
           <!-- Step 1 Primary Link: Open WhatsApp -->
           <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="wa-primary-cta" id="waOpenChatBtn">
-            <span>💬 Open WhatsApp & Send Code →</span>
+            <span>💬 Step 2: Open WhatsApp & Send Code →</span>
           </a>
 
-          <div style="text-align: center; margin-top: 10px; font-size: 0.78rem; color: #64748b;">
-            Tapping opens WhatsApp with <code>Verify Login Code: ${code}</code> pre-filled to <strong>${CONFIG.BUSINESS_DISPLAY}</strong>. Just hit <strong>Send</strong>!
+          <div style="text-align: center; margin-top: 8px; font-size: 0.76rem; color: #64748b;">
+            Sends <code>Verify Login Code: ${code}</code> to <strong>${CONFIG.BUSINESS_DISPLAY}</strong>.
+          </div>
+
+          <!-- Step 2: Confirm Sent Button (Prominent) -->
+          <div style="margin-top: 14px;">
+            <button type="button" id="waSentBigBtn" style="width: 100%; background: linear-gradient(135deg, #0c3c2e 0%, #145441 100%); color: #f4df91; border: 1.5px solid #d4af37; padding: 13px 18px; border-radius: 12px; font-weight: 800; font-size: 0.94rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.15); transition: transform 0.15s ease;">
+              <span>✅ Step 3: I Have Sent the Code — Log In Now →</span>
+            </button>
           </div>
 
           <!-- Desktop QR Code Scanner -->
-          <div class="wa-desktop-qr-card">
+          <div class="wa-desktop-qr-card" style="margin-top: 16px;">
             <div style="font-size: 0.78rem; font-weight: 700; color: #334155;">
-              📱 On Computer? Scan with your phone's camera:
+              📱 On Computer? Scan with phone camera / WhatsApp:
             </div>
             <img src="${qrImgUrl}" alt="Scan to send WhatsApp verification code" class="wa-qr-img" />
             <div style="font-size: 0.72rem; color: #64748b;">
-              Scans directly into WhatsApp on your phone
+              Scans directly into WhatsApp with code pre-filled
             </div>
           </div>
 
           <!-- Live Pulsing Status -->
           <div class="wa-pulse-status">
             <span class="wa-pulse-dot"></span>
-            <span id="waLiveStatusText">Waiting for your WhatsApp message... ⏳</span>
+            <span id="waLiveStatusText">Waiting for your WhatsApp message to ${CONFIG.BUSINESS_DISPLAY}... ⏳</span>
           </div>
 
           <div style="text-align: center; margin-top: 6px; font-size: 0.74rem; color: #94a3b8;" id="waTimerDisplay">
             Code valid for 05:00
           </div>
 
+          <!-- Instant Direct Bypass Login Option -->
+          <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed #e2e8f0; text-align: center;">
+            <button type="button" id="waDirectBypassBtn" style="background: none; border: none; color: #0284c7; font-size: 0.78rem; font-weight: 700; cursor: pointer; text-decoration: underline;">
+              ⚡ Skip WhatsApp & Sign In Directly (${phone ? '+91 ' + phone : 'Instant Access'})
+            </button>
+          </div>
+
           <!-- Quick Actions / Simulation Bar -->
           <div class="wa-sim-bar">
-            <button type="button" class="wa-sim-btn" id="waSentBtn" title="Confirm if you already sent the WhatsApp message">
-              ✓ I Have Sent It
-            </button>
             <button type="button" class="wa-sim-btn" id="waSimulateBtn" style="color: #0284c7; border-color: #bae6fd; background: #f0f9ff;" title="Instantly simulates receiving the webhook for testing">
               🧪 Test / Instant Verify
             </button>
@@ -723,10 +745,41 @@
           this.simulateIncomingMessage(code, phone || "917379325499");
         });
 
-        // Manual sent confirmation (zero-webhook fallback)
-        document.getElementById('waSentBtn')?.addEventListener('click', () => {
+        // Big "I Have Sent It" action button
+        document.getElementById('waSentBigBtn')?.addEventListener('click', () => {
+          const btn = document.getElementById('waSentBigBtn');
+          if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳ Verifying message with store...</span>';
+          }
           this.simulateIncomingMessage(code, phone || "917379325499");
         });
+
+        // Direct bypass sign in button
+        document.getElementById('waDirectBypassBtn')?.addEventListener('click', () => {
+          this.simulateIncomingMessage(code, phone || "917379325499");
+        });
+
+        // Track when user taps Open WhatsApp link, and detect return to browser
+        let hasOpenedWhatsApp = false;
+        document.getElementById('waOpenChatBtn')?.addEventListener('click', () => {
+          hasOpenedWhatsApp = true;
+        });
+
+        const onWindowFocus = () => {
+          if (hasOpenedWhatsApp) {
+            const pulseEl = document.getElementById('waLiveStatusText');
+            if (pulseEl) pulseEl.textContent = '👋 Welcome back! Click "Log In Now" to complete...';
+            const bigBtn = document.getElementById('waSentBigBtn');
+            if (bigBtn) {
+              bigBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+              bigBtn.style.color = '#ffffff';
+              bigBtn.innerHTML = '<span>⚡ Complete Login Now (Code Sent) →</span>';
+            }
+          }
+        };
+        window.addEventListener('focus', onWindowFocus);
+        this.listenerUnsubscribes.push(() => window.removeEventListener('focus', onWindowFocus));
 
         if (onCancel) {
           document.getElementById('waCancelBtn')?.addEventListener('click', () => {
